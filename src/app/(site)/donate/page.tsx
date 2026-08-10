@@ -1,17 +1,27 @@
-'use client'
+﻿'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { PiHeartFill, PiCheck, PiShieldCheck, PiBook, PiBowlFood, PiPill, PiHouse, PiGraduationCap, PiGift } from 'react-icons/pi'
 
-const donationAmounts = [
-  { amount: 25, impact: 'School supplies for a month', icon: PiBook },
-  { amount: 50, impact: 'Nutritious meals for a week', icon: PiBowlFood },
-  { amount: 100, impact: 'Medical care checkup', icon: PiPill },
-  { amount: 250, impact: 'Safe shelter for a month', icon: PiHouse },
-  { amount: 500, impact: 'Education for a year', icon: PiGraduationCap },
-  { amount: 1000, impact: 'Complete care package', icon: PiGift },
+const icons = [PiBook, PiBowlFood, PiPill, PiHouse, PiGraduationCap, PiGift]
+
+const defaultDonationAmounts = [
+  { amount: 25, impact: 'School supplies for a month' },
+  { amount: 50, impact: 'Nutritious meals for a week' },
+  { amount: 100, impact: 'Medical care checkup' },
+  { amount: 250, impact: 'Safe shelter for a month' },
+  { amount: 500, impact: 'Education for a year' },
+  { amount: 1000, impact: 'Complete care package' },
 ]
+
+const defaultAllocation = [
+  { label: 'Programs & Services', percentage: 85 },
+  { label: 'Administration', percentage: 10 },
+  { label: 'Fundraising', percentage: 5 },
+]
+
+const defaultTaxInfo = 'Rescue Mission Orphanage is a registered 501(c)(3) nonprofit organization. All donations are tax-deductible to the extent allowed by law.'
 
 const donationTypes = [
   { id: 'one-time', label: 'One-Time Donation' },
@@ -23,6 +33,38 @@ export default function DonatePage() {
   const [selectedAmount, setSelectedAmount] = useState(100)
   const [customAmount, setCustomAmount] = useState('')
   const [donationType, setDonationType] = useState('one-time')
+  const [donationAmounts, setDonationAmounts] = useState(defaultDonationAmounts)
+  const [allocation, setAllocation] = useState(defaultAllocation)
+  const [taxInfo, setTaxInfo] = useState(defaultTaxInfo)
+
+  useEffect(() => {
+    const fetchSettings = async () => {
+      try {
+        const response = await fetch('/api/settings')
+        if (!response.ok) throw new Error('Failed to fetch settings')
+        const data = await response.json()
+
+        if (data.donations?.presetAmounts?.length) {
+          setDonationAmounts(data.donations.presetAmounts.map((item: { amount: number; impact: string }, index: number) => ({
+            ...item,
+            icon: icons[index % icons.length]
+          })))
+        }
+
+        if (data.donations?.allocation?.length) {
+          setAllocation(data.donations.allocation)
+        }
+
+        if (data.donations?.taxInfo) {
+          setTaxInfo(data.donations.taxInfo)
+        }
+      } catch (error) {
+        console.error('Error fetching settings:', error)
+      }
+    }
+
+    fetchSettings()
+  }, [])
 
   return (
     <>
@@ -80,29 +122,32 @@ export default function DonatePage() {
                 
                 {/* Donation Amounts */}
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-6">
-                  {donationAmounts.map((item) => (
-                    <button
-                      key={item.amount}
-                      onClick={() => {
-                        setSelectedAmount(item.amount)
-                        setCustomAmount('')
-                      }}
-                      className={`p-4 rounded-2xl text-center transition-all duration-300 ${
-                        selectedAmount === item.amount && !customAmount
-                          ? 'bg-dark text-white border border-dark'
-                          : 'bg-white text-dark border border-dark/10 hover:border-dark/30'
-                      }`}
-                    >
-                      <item.icon className={`w-6 h-6 mx-auto mb-2 ${selectedAmount === item.amount && !customAmount ? 'text-lime' : 'text-dark/70'}`} />
-                      <span className="text-lg font-semibold">GH₵{item.amount}</span>
-                      <p className="text-xs mt-1 opacity-70">{item.impact}</p>
-                    </button>
-                  ))}
+                  {donationAmounts.map((item, index) => {
+                    const IconComponent = icons[index % icons.length]
+                    return (
+                      <button
+                        key={item.amount}
+                        onClick={() => {
+                          setSelectedAmount(item.amount)
+                          setCustomAmount('')
+                        }}
+                        className={`p-4 rounded-2xl text-center transition-all duration-300 ${
+                          selectedAmount === item.amount && !customAmount
+                            ? 'bg-dark text-white border border-dark'
+                            : 'bg-white text-dark border border-dark/10 hover:border-dark/30'
+                        }`}
+                      >
+                        <IconComponent className={`w-6 h-6 mx-auto mb-2 ${selectedAmount === item.amount && !customAmount ? 'text-lime' : 'text-dark/70'}`} />
+                        <span className="text-lg font-semibold">GH&#8373;{item.amount}</span>
+                        <p className="text-xs mt-1 opacity-70">{item.impact}</p>
+                      </button>
+                    )
+                  })}
                 </div>
                 
                 {/* Custom Amount */}
                 <div className="relative mb-6">
-                  <span className="absolute left-4 top-1/2 transform -translate-y-1/2 text-dark/40">GH₵</span>
+                  <span className="absolute left-4 top-1/2 transform -translate-y-1/2 text-dark/40">GH&#8373;</span>
                   <input
                     type="number"
                     placeholder="Custom amount"
@@ -128,7 +173,7 @@ export default function DonatePage() {
                 {/* Donate Button */}
                 <button className="w-full btn-lime py-4 text-lg">
                   <PiHeartFill className="w-5 h-5" />
-                  Donate GH₵{customAmount || selectedAmount} {donationType === 'monthly' ? 'Monthly' : 'Now'}
+                  Donate GH&#8373;{customAmount || selectedAmount} {donationType === 'monthly' ? 'Monthly' : 'Now'}
                 </button>
                 
                 {/* Security Note */}
@@ -151,41 +196,27 @@ export default function DonatePage() {
                 <div className="card-premium p-6">
                   <h3 className="font-semibold text-dark mb-4">Where Your Money Goes</h3>
                   <div className="space-y-4">
-                    <div>
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-dark/60 text-sm">Programs & Services</span>
-                        <span className="font-semibold text-dark text-sm">85%</span>
+                    {allocation.map((item, index) => (
+                      <div key={index}>
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-dark/60 text-sm">{item.label}</span>
+                          <span className="font-semibold text-dark text-sm">{item.percentage}%</span>
+                        </div>
+                        <div className="h-2 bg-dark/10 rounded-full overflow-hidden">
+                          <div
+                            className={`h-full rounded-full ${index === 0 ? 'bg-lime' : index === 1 ? 'bg-dark/40' : 'bg-dark/20'}`}
+                            style={{ width: `${item.percentage}%` }}
+                          />
+                        </div>
                       </div>
-                      <div className="h-2 bg-dark/10 rounded-full overflow-hidden">
-                        <div className="h-full bg-lime rounded-full" style={{ width: '85%' }} />
-                      </div>
-                    </div>
-                    <div>
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-dark/60 text-sm">Administration</span>
-                        <span className="font-semibold text-dark text-sm">10%</span>
-                      </div>
-                      <div className="h-2 bg-dark/10 rounded-full overflow-hidden">
-                        <div className="h-full bg-dark/40 rounded-full" style={{ width: '10%' }} />
-                      </div>
-                    </div>
-                    <div>
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-dark/60 text-sm">Fundraising</span>
-                        <span className="font-semibold text-dark text-sm">5%</span>
-                      </div>
-                      <div className="h-2 bg-dark/10 rounded-full overflow-hidden">
-                        <div className="h-full bg-dark/20 rounded-full" style={{ width: '5%' }} />
-                      </div>
-                    </div>
+                    ))}
                   </div>
                 </div>
                 
                 <div className="card-premium p-6">
                   <h3 className="font-semibold text-dark mb-4">Tax Benefits</h3>
                   <p className="text-dark/60 text-sm leading-relaxed">
-                    Rescue Mission Orphanage is a registered 501(c)(3) nonprofit organization. 
-                    All donations are tax-deductible to the extent allowed by law.
+                    {taxInfo}
                   </p>
                 </div>
                 

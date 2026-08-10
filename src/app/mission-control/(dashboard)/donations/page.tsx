@@ -9,10 +9,14 @@ import {
   PiArrowDownRight,
   PiCalendar,
   PiExport,
+  PiPlus,
+  PiSpinner,
 } from 'react-icons/pi'
+import { useResource } from '@/lib/useResource'
+import Modal from '@/components/dashboard/Modal'
 
 type Donation = {
-  id: string
+  id: number
   donorName: string
   email: string
   amount: number
@@ -20,24 +24,6 @@ type Donation = {
   date: string
   status: 'Completed' | 'Pending' | 'Failed'
 }
-
-const donations: Donation[] = [
-  { id: 'DN-001', donorName: 'Kwame Mensah', email: 'kwame.mensah@gmail.com', amount: 2500, type: 'One-time', date: '2026-08-01', status: 'Completed' },
-  { id: 'DN-002', donorName: 'Ama Osei', email: 'ama.osei@yahoo.com', amount: 1500, type: 'Monthly', date: '2026-08-02', status: 'Completed' },
-  { id: 'DN-003', donorName: 'Kofi Asante', email: 'kofi.asante@outlook.com', amount: 5000, type: 'Sponsorship', date: '2026-08-03', status: 'Pending' },
-  { id: 'DN-004', donorName: 'Abena Boateng', email: 'abena.boateng@gmail.com', amount: 500, type: 'One-time', date: '2026-08-04', status: 'Completed' },
-  { id: 'DN-005', donorName: 'Kwadwo Appiah', email: 'kwadwo.appiah@gmail.com', amount: 750, type: 'Monthly', date: '2026-08-05', status: 'Failed' },
-  { id: 'DN-006', donorName: 'Akosua Frimpong', email: 'akosua.frimpong@yahoo.com', amount: 3000, type: 'Sponsorship', date: '2026-08-06', status: 'Completed' },
-  { id: 'DN-007', donorName: 'Yaw Boateng', email: 'yaw.boateng@gmail.com', amount: 200, type: 'One-time', date: '2026-08-07', status: 'Pending' },
-  { id: 'DN-008', donorName: 'Efua Mensah', email: 'efua.mensah@outlook.com', amount: 1800, type: 'Monthly', date: '2026-08-07', status: 'Completed' },
-  { id: 'DN-009', donorName: 'Kojo Adjei', email: 'kojo.adjei@gmail.com', amount: 1200, type: 'One-time', date: '2026-08-08', status: 'Failed' },
-  { id: 'DN-010', donorName: 'Ama Serwaa', email: 'ama.serwaa@yahoo.com', amount: 4500, type: 'Sponsorship', date: '2026-08-08', status: 'Completed' },
-  { id: 'DN-011', donorName: 'Nana Osei-Bonsu', email: 'nana.oseibonsu@gmail.com', amount: 800, type: 'One-time', date: '2026-08-09', status: 'Pending' },
-  { id: 'DN-012', donorName: 'Adwoa Korankye', email: 'adwoa.korankye@outlook.com', amount: 2200, type: 'Monthly', date: '2026-08-09', status: 'Completed' },
-  { id: 'DN-013', donorName: 'Kwesi Amoako', email: 'kwesi.amoako@gmail.com', amount: 50, type: 'One-time', date: '2026-08-09', status: 'Completed' },
-  { id: 'DN-014', donorName: 'Esi Ackah', email: 'esi.ackah@yahoo.com', amount: 3500, type: 'Sponsorship', date: '2026-08-10', status: 'Pending' },
-  { id: 'DN-015', donorName: 'Kofi Mensah', email: 'kofi.mensah@gmail.com', amount: 950, type: 'One-time', date: '2026-08-10', status: 'Completed' },
-]
 
 const statusStyles: Record<string, string> = {
   Completed: 'bg-lime/10 text-dark',
@@ -51,18 +37,44 @@ const typeStyles: Record<string, string> = {
   Sponsorship: 'bg-blue-100 text-blue-700',
 }
 
+type DonationForm = {
+  donorName: string
+  email: string
+  amount: string
+  type: Donation['type']
+  status: Donation['status']
+  date: string
+}
+
+const emptyForm: DonationForm = {
+  donorName: '',
+  email: '',
+  amount: '',
+  type: 'One-time',
+  status: 'Pending',
+  date: '',
+}
+
+const inputClasses =
+  'w-full px-4 py-2.5 rounded-xl border border-dark/15 bg-white text-sm text-dark placeholder:text-dark/35 focus:outline-none focus:border-dark/40 transition-colors'
+const labelClasses = 'block text-sm font-medium text-dark mb-1.5'
+
 export default function DonationsPage() {
+  const { data: donations, setData, loading, error, reload } = useResource<Donation>('/api/donations')
   const [searchQuery, setSearchQuery] = useState('')
   const [activeFilter, setActiveFilter] = useState<'all' | 'completed' | 'pending' | 'failed'>('all')
+  const [viewing, setViewing] = useState<Donation | null>(null)
+  const [formOpen, setFormOpen] = useState(false)
+  const [form, setForm] = useState<DonationForm>(emptyForm)
+  const [saving, setSaving] = useState(false)
+  const [busyId, setBusyId] = useState<number | null>(null)
 
   const filtered = donations.filter((d) => {
     const matchSearch =
       d.donorName.toLowerCase().includes(searchQuery.toLowerCase()) ||
       d.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      d.id.toLowerCase().includes(searchQuery.toLowerCase())
-    const matchFilter =
-      activeFilter === 'all' ||
-      d.status.toLowerCase() === activeFilter
+      `DN-${String(d.id).padStart(3, '0')}`.toLowerCase().includes(searchQuery.toLowerCase())
+    const matchFilter = activeFilter === 'all' || d.status.toLowerCase() === activeFilter
     return matchSearch && matchFilter
   })
 
@@ -82,6 +94,87 @@ export default function DonationsPage() {
   ]
 
   const formatCurrency = (val: number) => `GH₵${val.toLocaleString()}`
+  const formatId = (id: number) => `DN-${String(id).padStart(3, '0')}`
+
+  const exportCSV = () => {
+    const header = ['ID', 'Donor Name', 'Email', 'Amount', 'Type', 'Date', 'Status']
+    const rows = filtered.map((d) => [
+      formatId(d.id),
+      d.donorName,
+      d.email,
+      d.amount,
+      d.type,
+      d.date,
+      d.status,
+    ])
+    const csv = [header, ...rows]
+      .map((r) => r.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(','))
+      .join('\n')
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = `donations-${new Date().toISOString().slice(0, 10)}.csv`
+    link.click()
+    URL.revokeObjectURL(url)
+  }
+
+  const handleSave = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setSaving(true)
+    try {
+      const res = await fetch('/api/donations', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...form,
+          amount: Number(form.amount),
+          date: form.date || new Date().toISOString().slice(0, 10),
+        }),
+      })
+      if (!res.ok) throw new Error()
+      setFormOpen(false)
+      setForm(emptyForm)
+      reload()
+    } catch {
+      alert('Failed to record the donation.')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const updateStatus = async (donation: Donation, status: Donation['status']) => {
+    setBusyId(donation.id)
+    try {
+      const res = await fetch(`/api/donations/${donation.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status }),
+      })
+      if (!res.ok) throw new Error()
+      setData((prev) => prev.map((d) => (d.id === donation.id ? { ...d, status } : d)))
+      setViewing((v) => (v && v.id === donation.id ? { ...v, status } : v))
+    } catch {
+      alert('Failed to update the donation status.')
+    } finally {
+      setBusyId(null)
+    }
+  }
+
+  const deleteDonation = async (donation: Donation) => {
+    if (!confirm(`Delete donation ${formatId(donation.id)} from ${donation.donorName}?`)) return
+    setBusyId(donation.id)
+    try {
+      const res = await fetch(`/api/donations/${donation.id}`, { method: 'DELETE' })
+      if (!res.ok) throw new Error()
+      setData((prev) => prev.filter((d) => d.id !== donation.id))
+      setViewing(null)
+    } catch {
+      alert('Failed to delete the donation.')
+    } finally {
+      setBusyId(null)
+    }
+  }
 
   return (
     <div className="min-h-screen bg-cream p-4 md:p-8">
@@ -97,10 +190,22 @@ export default function DonationsPage() {
             <h1 className="text-3xl font-bold text-dark">Donations</h1>
             <p className="mt-1 text-dark/60">Manage and track all donations</p>
           </div>
-          <button className="inline-flex items-center gap-2 rounded-xl bg-dark px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-dark/90">
-            <PiExport className="text-lg" />
-            Export
-          </button>
+          <div className="flex gap-3">
+            <button
+              onClick={exportCSV}
+              className="inline-flex items-center gap-2 rounded-xl border border-dark/15 bg-white px-5 py-2.5 text-sm font-semibold text-dark transition-colors hover:bg-dark/5"
+            >
+              <PiExport className="text-lg" />
+              Export
+            </button>
+            <button
+              onClick={() => setFormOpen(true)}
+              className="inline-flex items-center gap-2 rounded-xl bg-dark px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-dark/90"
+            >
+              <PiPlus className="text-lg" />
+              Record Donation
+            </button>
+          </div>
         </motion.div>
 
         {/* Summary Stats */}
@@ -166,6 +271,12 @@ export default function DonationsPage() {
           </div>
         </motion.div>
 
+        {error && (
+          <div className="mb-4 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-600">
+            {error}
+          </div>
+        )}
+
         {/* Desktop Table */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -186,7 +297,13 @@ export default function DonationsPage() {
               </tr>
             </thead>
             <tbody>
-              {filtered.length === 0 ? (
+              {loading ? (
+                <tr>
+                  <td colSpan={7} className="px-6 py-16 text-center">
+                    <PiSpinner className="mx-auto animate-spin text-2xl text-dark/30" />
+                  </td>
+                </tr>
+              ) : filtered.length === 0 ? (
                 <tr>
                   <td colSpan={7} className="px-6 py-12 text-center text-sm text-dark/40">
                     No donations found matching your criteria.
@@ -203,7 +320,7 @@ export default function DonationsPage() {
                   >
                     <td className="px-6 py-4">
                       <p className="text-sm font-semibold text-dark">{d.donorName}</p>
-                      <p className="text-xs text-dark/40">{d.id}</p>
+                      <p className="text-xs text-dark/40">{formatId(d.id)}</p>
                     </td>
                     <td className="px-6 py-4 text-sm text-dark/60">{d.email}</td>
                     <td className="px-6 py-4 text-sm font-bold text-dark">{formatCurrency(d.amount)}</td>
@@ -219,7 +336,10 @@ export default function DonationsPage() {
                       </span>
                     </td>
                     <td className="px-6 py-4 text-right">
-                      <button className="rounded-lg bg-dark/5 px-3 py-1.5 text-xs font-medium text-dark transition-colors hover:bg-dark hover:text-white">
+                      <button
+                        onClick={() => setViewing(d)}
+                        className="rounded-lg bg-dark/5 px-3 py-1.5 text-xs font-medium text-dark transition-colors hover:bg-dark hover:text-white"
+                      >
                         View
                       </button>
                     </td>
@@ -232,7 +352,11 @@ export default function DonationsPage() {
 
         {/* Mobile Cards */}
         <div className="space-y-3 md:hidden">
-          {filtered.length === 0 ? (
+          {loading ? (
+            <div className="rounded-2xl border border-dark/10 bg-white p-12 text-center">
+              <PiSpinner className="mx-auto animate-spin text-2xl text-dark/30" />
+            </div>
+          ) : filtered.length === 0 ? (
             <div className="rounded-2xl border border-dark/10 bg-white p-8 text-center text-sm text-dark/40">
               No donations found matching your criteria.
             </div>
@@ -262,7 +386,10 @@ export default function DonationsPage() {
                 </div>
                 <div className="flex items-center justify-between">
                   <p className="text-xs text-dark/40">{d.date}</p>
-                  <button className="rounded-lg bg-dark/5 px-3 py-1.5 text-xs font-medium text-dark transition-colors hover:bg-dark hover:text-white">
+                  <button
+                    onClick={() => setViewing(d)}
+                    className="rounded-lg bg-dark/5 px-3 py-1.5 text-xs font-medium text-dark transition-colors hover:bg-dark hover:text-white"
+                  >
                     View
                   </button>
                 </div>
@@ -271,6 +398,158 @@ export default function DonationsPage() {
           )}
         </div>
       </div>
+
+      {/* Record Donation Modal */}
+      <Modal open={formOpen} onClose={() => setFormOpen(false)} title="Record Donation">
+        <form onSubmit={handleSave} className="space-y-4">
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div>
+              <label className={labelClasses}>Donor name *</label>
+              <input
+                className={inputClasses}
+                value={form.donorName}
+                onChange={(e) => setForm((p) => ({ ...p, donorName: e.target.value }))}
+                required
+              />
+            </div>
+            <div>
+              <label className={labelClasses}>Email *</label>
+              <input
+                type="email"
+                className={inputClasses}
+                value={form.email}
+                onChange={(e) => setForm((p) => ({ ...p, email: e.target.value }))}
+                required
+              />
+            </div>
+            <div>
+              <label className={labelClasses}>Amount (GH₵) *</label>
+              <input
+                type="number"
+                min="1"
+                step="any"
+                className={inputClasses}
+                value={form.amount}
+                onChange={(e) => setForm((p) => ({ ...p, amount: e.target.value }))}
+                required
+              />
+            </div>
+            <div>
+              <label className={labelClasses}>Type</label>
+              <select
+                className={inputClasses}
+                value={form.type}
+                onChange={(e) => setForm((p) => ({ ...p, type: e.target.value as Donation['type'] }))}
+              >
+                <option>One-time</option>
+                <option>Monthly</option>
+                <option>Sponsorship</option>
+              </select>
+            </div>
+            <div>
+              <label className={labelClasses}>Status</label>
+              <select
+                className={inputClasses}
+                value={form.status}
+                onChange={(e) => setForm((p) => ({ ...p, status: e.target.value as Donation['status'] }))}
+              >
+                <option>Completed</option>
+                <option>Pending</option>
+                <option>Failed</option>
+              </select>
+            </div>
+            <div>
+              <label className={labelClasses}>Date</label>
+              <input
+                type="date"
+                className={inputClasses}
+                value={form.date}
+                onChange={(e) => setForm((p) => ({ ...p, date: e.target.value }))}
+              />
+            </div>
+          </div>
+          <div className="flex justify-end gap-3 pt-2">
+            <button
+              type="button"
+              onClick={() => setFormOpen(false)}
+              className="px-5 py-2.5 rounded-xl border border-dark/15 text-sm font-semibold text-dark hover:bg-dark/5 transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={saving}
+              className="px-6 py-2.5 rounded-xl bg-dark text-white text-sm font-semibold hover:bg-dark/90 transition-colors disabled:opacity-60"
+            >
+              {saving ? 'Saving...' : 'Record Donation'}
+            </button>
+          </div>
+        </form>
+      </Modal>
+
+      {/* View Donation Modal */}
+      <Modal
+        open={viewing !== null}
+        onClose={() => setViewing(null)}
+        title={viewing ? `Donation ${formatId(viewing.id)}` : ''}
+        maxWidth="max-w-xl"
+      >
+        {viewing && (
+          <div className="space-y-5">
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-wider text-dark/40">Donor</p>
+                <p className="mt-1 font-semibold text-dark">{viewing.donorName}</p>
+                <p className="text-sm text-dark/60">{viewing.email}</p>
+              </div>
+              <div className="sm:text-right">
+                <p className="text-xs font-semibold uppercase tracking-wider text-dark/40">Amount</p>
+                <p className="mt-1 text-2xl font-bold text-dark">{formatCurrency(viewing.amount)}</p>
+              </div>
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-wider text-dark/40">Type</p>
+                <span className={`mt-1 inline-block rounded-full px-2.5 py-1 text-xs font-medium ${typeStyles[viewing.type]}`}>
+                  {viewing.type}
+                </span>
+              </div>
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-wider text-dark/40">Date</p>
+                <p className="mt-1 text-sm text-dark/70">{viewing.date}</p>
+              </div>
+            </div>
+
+            <div className="border-t border-dark/10 pt-4">
+              <label className={labelClasses}>Update status</label>
+              <div className="flex flex-wrap gap-2">
+                {(['Completed', 'Pending', 'Failed'] as const).map((s) => (
+                  <button
+                    key={s}
+                    onClick={() => updateStatus(viewing, s)}
+                    disabled={busyId === viewing.id}
+                    className={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors disabled:opacity-60 ${
+                      viewing.status === s
+                        ? 'bg-dark text-white'
+                        : 'bg-dark/5 text-dark hover:bg-dark/10'
+                    }`}
+                  >
+                    {s}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="flex justify-end border-t border-dark/10 pt-4">
+              <button
+                onClick={() => deleteDonation(viewing)}
+                disabled={busyId === viewing.id}
+                className="px-5 py-2.5 rounded-xl border border-red-200 text-sm font-semibold text-red-600 hover:bg-red-50 transition-colors disabled:opacity-60"
+              >
+                Delete Donation
+              </button>
+            </div>
+          </div>
+        )}
+      </Modal>
     </div>
   )
 }

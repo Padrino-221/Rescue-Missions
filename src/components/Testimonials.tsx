@@ -1,10 +1,11 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import Image from 'next/image'
 import { motion } from 'framer-motion'
 import { PiStarFill } from 'react-icons/pi'
 
-const testimonials = [
+const defaultTestimonials = [
   {
     quote:
       'Supporting Rescue Mission has been one of the most rewarding experiences of my life. Seeing the direct impact on children is incredible.',
@@ -35,6 +36,33 @@ const testimonials = [
 ]
 
 export default function Testimonials() {
+  const [testimonials, setTestimonials] = useState(defaultTestimonials)
+
+  useEffect(() => {
+    async function fetchSettings() {
+      try {
+        const res = await fetch('/api/settings')
+        if (!res.ok) throw new Error('Failed to fetch settings')
+        const data = await res.json()
+        if (data.testimonials && Array.isArray(data.testimonials)) {
+          // Map to ensure each has rating (default to 5)
+          const mapped = data.testimonials.map((t: any) => ({
+            quote: t.quote || '',
+            author: t.author || '',
+            role: t.role || '',
+            avatar: t.avatar || '',
+            rating: t.rating || 5,
+          }))
+          setTestimonials(mapped)
+        }
+      } catch (error) {
+        console.error('Error fetching testimonials:', error)
+        // Keep default testimonials
+      }
+    }
+    fetchSettings()
+  }, [])
+
   return (
     <section className="section-padding bg-white">
       <div className="container-premium">

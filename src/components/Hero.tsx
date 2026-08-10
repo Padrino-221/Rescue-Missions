@@ -1,11 +1,54 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { motion } from 'framer-motion'
 import { PiArrowRight, PiHeartFill, PiSun } from 'react-icons/pi'
 
+interface HeroSettings {
+  heading: string
+  description: string
+  cta1Text: string
+  cta2Text: string
+  imageUrl: string
+  imageAlt: string
+}
+
+const defaults: HeroSettings = {
+  heading: 'Every child deserves a childhood.',
+  description:
+    'Rescue Mission Orphanage provides shelter, education, and care to children who need it most — turning hardship into hope, one child at a time.',
+  cta1Text: 'Donate Now',
+  cta2Text: 'Explore Our Work',
+  imageUrl:
+    'https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?auto=format&fit=crop&w=1200&q=80',
+  imageAlt: 'Children playing at Rescue Mission Orphanage',
+}
+
 export default function Hero() {
+  const [hero, setHero] = useState<HeroSettings>(defaults)
+
+  useEffect(() => {
+    fetch('/api/settings')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data?.homeHero) {
+          setHero({
+            heading: data.homeHero.heading || defaults.heading,
+            description: data.homeHero.description || defaults.description,
+            cta1Text: data.homeHero.cta1Text || defaults.cta1Text,
+            cta2Text: data.homeHero.cta2Text || defaults.cta2Text,
+            imageUrl: data.homeHero.imageUrl || defaults.imageUrl,
+            imageAlt: data.homeHero.imageAlt || defaults.imageAlt,
+          })
+        }
+      })
+      .catch(() => {})
+  }, [])
+
+  const [firstPart, lastWord] = splitHeading(hero.heading)
+
   return (
     <section className="relative bg-cream overflow-hidden">
       <div className="absolute top-24 left-10 w-72 h-72 bg-sky/25 rounded-full blur-3xl" />
@@ -22,26 +65,25 @@ export default function Hero() {
             className="lg:col-span-6"
           >
             <h1 className="text-4xl sm:text-5xl md:text-6xl xl:text-[4.5rem] font-serif text-dark leading-[0.88]">
-              Every child deserves a{' '}
+              {firstPart}{' '}
               <span className="relative inline-block">
-                childhood.
+                {lastWord}
                 <span className="absolute -bottom-1 left-0 right-0 h-4 bg-lime/70 -z-10 -skew-x-6 rounded-full" />
               </span>
             </h1>
 
             <p className="mt-8 text-lg text-dark/60 max-w-lg leading-relaxed">
-              Rescue Mission Orphanage provides shelter, education, and care to children who
-              need it most — turning hardship into hope, one child at a time.
+              {hero.description}
             </p>
 
             <div className="mt-10 flex flex-wrap gap-3 sm:gap-4">
               <Link href="/donate" className="btn-lime !px-6 !py-3 sm:!px-8 sm:!py-4 text-sm sm:text-base group">
                 <PiHeartFill className="w-4 h-4 sm:w-5 sm:h-5" />
-                Donate Now
+                {hero.cta1Text}
                 <PiArrowRight className="w-4 h-4 sm:w-5 sm:h-5 group-hover:translate-x-1 transition-transform" />
               </Link>
               <Link href="/programs" className="btn-secondary !px-6 !py-3 sm:!px-8 sm:!py-4 text-sm sm:text-base group">
-                Explore Our Work
+                {hero.cta2Text}
                 <PiArrowRight className="w-4 h-4 sm:w-5 sm:h-5 group-hover:translate-x-1 transition-transform" />
               </Link>
             </div>
@@ -59,8 +101,8 @@ export default function Hero() {
               <div className="absolute -inset-3 rounded-[3rem] bg-lime -rotate-3 translate-x-4 translate-y-4" />
               <div className="relative rounded-[2.5rem] overflow-hidden aspect-[4/3] border-4 border-cream">
                 <Image
-                  src="https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?auto=format&fit=crop&w=1200&q=80"
-                  alt="Children playing at Rescue Mission Orphanage"
+                  src={hero.imageUrl}
+                  alt={hero.imageAlt}
                   fill
                   priority
                   sizes="(min-width: 1024px) 52vw, 100vw"
@@ -78,4 +120,11 @@ export default function Hero() {
       </div>
     </section>
   )
+}
+
+function splitHeading(heading: string): [string, string] {
+  const words = heading.trim().split(/\s+/)
+  if (words.length <= 1) return ['', heading]
+  const lastWord = words.pop()!
+  return [words.join(' '), lastWord]
 }

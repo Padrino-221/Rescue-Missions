@@ -8,105 +8,46 @@ import {
   PiTrash,
   PiImage,
   PiPlayFill,
-  PiMagnifyingGlass
+  PiMagnifyingGlass,
+  PiSpinner,
 } from 'react-icons/pi'
+import { useResource } from '@/lib/useResource'
+import Modal from '@/components/dashboard/Modal'
 
-const mockGalleryData = [
-  {
-    id: 1,
-    type: 'image' as const,
-    category: 'Events' as const,
-    title: 'Annual Fundraising Gala',
-    image: 'https://images.unsplash.com/photo-1511578314322-379afb476865?auto=format&fit=crop&w=400&q=80'
-  },
-  {
-    id: 2,
-    type: 'video' as const,
-    category: 'Programs' as const,
-    title: 'After-School Tutoring',
-    image: 'https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&w=400&q=80'
-  },
-  {
-    id: 3,
-    type: 'image' as const,
-    category: 'Facilities' as const,
-    title: 'New Playground Area',
-    image: 'https://images.unsplash.com/photo-1575783970733-1aaedde1db74?auto=format&fit=crop&w=400&q=80'
-  },
-  {
-    id: 4,
-    type: 'image' as const,
-    category: 'Children' as const,
-    title: 'Art Workshop Day',
-    image: 'https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?auto=format&fit=crop&w=400&q=80'
-  },
-  {
-    id: 5,
-    type: 'video' as const,
-    category: 'Events' as const,
-    title: 'Holiday Celebration',
-    image: 'https://images.unsplash.com/photo-1516627145497-ae6968895b74?auto=format&fit=crop&w=400&q=80'
-  },
-  {
-    id: 6,
-    type: 'image' as const,
-    category: 'Programs' as const,
-    title: 'Music Lessons',
-    image: 'https://images.unsplash.com/photo-1511379938547-c1f69419868d?auto=format&fit=crop&w=400&q=80'
-  },
-  {
-    id: 7,
-    type: 'image' as const,
-    category: 'Facilities' as const,
-    title: 'Library Reading Corner',
-    image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80'
-  },
-  {
-    id: 8,
-    type: 'video' as const,
-    category: 'Children' as const,
-    title: 'Sports Day Highlights',
-    image: 'https://images.unsplash.com/photo-1461896836934-bd45ba06879b?auto=format&fit=crop&w=400&q=80'
-  },
-  {
-    id: 9,
-    type: 'image' as const,
-    category: 'Events' as const,
-    title: 'Community Outreach',
-    image: 'https://images.unsplash.com/photo-1559027615-cd4628902d4a?auto=format&fit=crop&w=400&q=80'
-  },
-  {
-    id: 10,
-    type: 'image' as const,
-    category: 'Programs' as const,
-    title: 'Computer Literacy Class',
-    image: 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?auto=format&fit=crop&w=400&q=80'
-  },
-  {
-    id: 11,
-    type: 'video' as const,
-    category: 'Facilities' as const,
-    title: 'Dining Hall Renovation',
-    image: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=400&q=80'
-  },
-  {
-    id: 12,
-    type: 'image' as const,
-    category: 'Children' as const,
-    title: 'Garden Planting Day',
-    image: 'https://images.unsplash.com/photo-1416879595882-3373a0480b5b?auto=format&fit=crop&w=400&q=80'
-  }
-]
+type GalleryItem = {
+  id: number
+  type: 'image' | 'video'
+  category: string
+  title: string
+  image: string
+}
 
 const categories = ['All', 'Events', 'Programs', 'Facilities', 'Children'] as const
 
+type GalleryForm = {
+  title: string
+  category: string
+  type: GalleryItem['type']
+  image: string
+}
+
+const emptyForm: GalleryForm = { title: '', category: 'Events', type: 'image', image: '' }
+
+const inputClasses =
+  'w-full px-4 py-2.5 rounded-xl border border-[#0e3b2b]/15 bg-white text-sm text-[#0e3b2b] placeholder:text-[#0e3b2b]/35 focus:outline-none focus:border-[#0e3b2b]/40 transition-colors'
+const labelClasses = 'block text-sm font-medium text-[#0e3b2b] mb-1.5'
+
 export default function GalleryPage() {
+  const { data: items, setData, loading, error, reload } = useResource<GalleryItem>('/api/gallery')
   const [activeCategory, setActiveCategory] = useState<string>('All')
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedItems, setSelectedItems] = useState<number[]>([])
-  const [hoveredItem, setHoveredItem] = useState<number | null>(null)
+  const [formOpen, setFormOpen] = useState(false)
+  const [form, setForm] = useState<GalleryForm>(emptyForm)
+  const [saving, setSaving] = useState(false)
+  const [busyIds, setBusyIds] = useState<number[]>([])
 
-  const filteredItems = mockGalleryData.filter((item) => {
+  const filteredItems = items.filter((item) => {
     const matchesCategory = activeCategory === 'All' || item.category === activeCategory
     const matchesSearch = item.title.toLowerCase().includes(searchQuery.toLowerCase())
     return matchesCategory && matchesSearch
@@ -118,8 +59,54 @@ export default function GalleryPage() {
     )
   }
 
-  const deleteSelected = () => {
-    setSelectedItems([])
+  const deleteItem = async (id: number) => {
+    const item = items.find((i) => i.id === id)
+    if (!confirm(`Delete "${item?.title ?? 'this item'}" from the gallery?`)) return
+    setBusyIds((prev) => [...prev, id])
+    try {
+      const res = await fetch(`/api/gallery/${id}`, { method: 'DELETE' })
+      if (!res.ok) throw new Error()
+      setData((prev) => prev.filter((i) => i.id !== id))
+      setSelectedItems((prev) => prev.filter((i) => i !== id))
+    } catch {
+      alert('Failed to delete the item.')
+    } finally {
+      setBusyIds((prev) => prev.filter((i) => i !== id))
+    }
+  }
+
+  const deleteSelected = async () => {
+    if (!confirm(`Delete ${selectedItems.length} selected item(s)?`)) return
+    setBusyIds((prev) => [...new Set([...prev, ...selectedItems])])
+    try {
+      await Promise.all(selectedItems.map((id) => fetch(`/api/gallery/${id}`, { method: 'DELETE' })))
+      setData((prev) => prev.filter((i) => !selectedItems.includes(i.id)))
+      setSelectedItems([])
+    } catch {
+      alert('Failed to delete some items.')
+    } finally {
+      setBusyIds((prev) => prev.filter((id) => !selectedItems.includes(id)))
+    }
+  }
+
+  const handleUpload = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setSaving(true)
+    try {
+      const res = await fetch('/api/gallery', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(form),
+      })
+      if (!res.ok) throw new Error()
+      setFormOpen(false)
+      setForm(emptyForm)
+      reload()
+    } catch {
+      alert('Failed to add the item. Make sure the image URL is valid.')
+    } finally {
+      setSaving(false)
+    }
   }
 
   return (
@@ -127,7 +114,10 @@ export default function GalleryPage() {
       <div className="max-w-7xl mx-auto">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
           <h1 className="text-3xl font-bold text-[#0e3b2b]">Gallery</h1>
-          <button className="flex items-center gap-2 bg-[#7ed957] text-[#0e3b2b] font-semibold px-5 py-2.5 rounded-xl hover:bg-[#6bc945] transition-colors">
+          <button
+            onClick={() => setFormOpen(true)}
+            className="flex items-center gap-2 bg-[#7ed957] text-[#0e3b2b] font-semibold px-5 py-2.5 rounded-xl hover:bg-[#6bc945] transition-colors"
+          >
             <PiPlus className="w-5 h-5" />
             Upload
           </button>
@@ -181,70 +171,86 @@ export default function GalleryPage() {
           </div>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          {filteredItems.map((item) => (
-            <motion.div
-              key={item.id}
-              layout
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              className={`relative bg-white rounded-2xl border border-[#0e3b2b]/10 overflow-hidden cursor-pointer group ${
-                selectedItems.includes(item.id)
-                  ? 'ring-2 ring-[#7ed957] ring-offset-2'
-                  : ''
-              }`}
-              onMouseEnter={() => setHoveredItem(item.id)}
-              onMouseLeave={() => setHoveredItem(null)}
-              onClick={() => toggleSelect(item.id)}
-            >
-              <div className="relative aspect-square">
-                <Image
-                  src={item.image}
-                  alt={item.title}
-                  fill
-                  className="object-cover"
-                  sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, 25vw"
-                />
+        {error && (
+          <div className="mb-4 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-600">
+            {error}
+          </div>
+        )}
 
-                <div
-                  className={`absolute inset-0 bg-[#0e3b2b]/0 group-hover:bg-[#0e3b2b]/50 transition-all duration-300 flex flex-col items-center justify-center p-3`}
-                >
-                  <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col items-center gap-2 text-white w-full">
-                    <div className="flex items-center gap-1.5">
-                      {item.type === 'video' && (
-                        <span className="flex items-center gap-1 bg-[#7ed957] text-[#0e3b2b] text-xs font-semibold px-2 py-0.5 rounded-full">
-                          <PiPlayFill className="w-3 h-3" />
-                          Video
-                        </span>
-                      )}
-                      {item.type === 'image' && (
-                        <span className="flex items-center gap-1 bg-white/20 backdrop-blur-sm text-white text-xs font-semibold px-2 py-0.5 rounded-full">
-                          <PiImage className="w-3 h-3" />
-                          Image
-                        </span>
-                      )}
+        {loading ? (
+          <div className="rounded-2xl border border-[#0e3b2b]/10 bg-white p-16 text-center">
+            <PiSpinner className="mx-auto animate-spin text-2xl text-[#0e3b2b]/30" />
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            {filteredItems.map((item) => (
+              <motion.div
+                key={item.id}
+                layout
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                className={`relative bg-white rounded-2xl border border-[#0e3b2b]/10 overflow-hidden cursor-pointer group ${
+                  selectedItems.includes(item.id)
+                    ? 'ring-2 ring-[#7ed957] ring-offset-2'
+                    : ''
+                }`}
+                onClick={() => toggleSelect(item.id)}
+              >
+                <div className="relative aspect-square">
+                  <Image
+                    src={item.image}
+                    alt={item.title}
+                    fill
+                    className="object-cover"
+                    sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, 25vw"
+                  />
+
+                  <div
+                    className={`absolute inset-0 bg-[#0e3b2b]/0 group-hover:bg-[#0e3b2b]/50 transition-all duration-300 flex flex-col items-center justify-center p-3`}
+                  >
+                    <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col items-center gap-2 text-white w-full">
+                      <div className="flex items-center gap-1.5">
+                        {item.type === 'video' && (
+                          <span className="flex items-center gap-1 bg-[#7ed957] text-[#0e3b2b] text-xs font-semibold px-2 py-0.5 rounded-full">
+                            <PiPlayFill className="w-3 h-3" />
+                            Video
+                          </span>
+                        )}
+                        {item.type === 'image' && (
+                          <span className="flex items-center gap-1 bg-white/20 backdrop-blur-sm text-white text-xs font-semibold px-2 py-0.5 rounded-full">
+                            <PiImage className="w-3 h-3" />
+                            Image
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-sm font-semibold text-center leading-tight">
+                        {item.title}
+                      </p>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          deleteItem(item.id)
+                        }}
+                        disabled={busyIds.includes(item.id)}
+                        className="mt-1 flex items-center gap-1 bg-red-500 hover:bg-red-600 text-white text-xs font-medium px-3 py-1.5 rounded-lg transition-colors disabled:opacity-60"
+                      >
+                        {busyIds.includes(item.id) ? (
+                          <PiSpinner className="w-3.5 h-3.5 animate-spin" />
+                        ) : (
+                          <PiTrash className="w-3.5 h-3.5" />
+                        )}
+                        Delete
+                      </button>
                     </div>
-                    <p className="text-sm font-semibold text-center leading-tight">
-                      {item.title}
-                    </p>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation()
-                      }}
-                      className="mt-1 flex items-center gap-1 bg-red-500 hover:bg-red-600 text-white text-xs font-medium px-3 py-1.5 rounded-lg transition-colors"
-                    >
-                      <PiTrash className="w-3.5 h-3.5" />
-                      Delete
-                    </button>
                   </div>
                 </div>
-              </div>
-            </motion.div>
-          ))}
-        </div>
+              </motion.div>
+            ))}
+          </div>
+        )}
 
-        {filteredItems.length === 0 && (
+        {!loading && filteredItems.length === 0 && (
           <div className="text-center py-16">
             <PiImage className="w-16 h-16 text-[#0e3b2b]/20 mx-auto mb-4" />
             <p className="text-[#0e3b2b]/50 text-lg font-medium">
@@ -253,6 +259,77 @@ export default function GalleryPage() {
           </div>
         )}
       </div>
+
+      {/* Upload Modal */}
+      <Modal open={formOpen} onClose={() => setFormOpen(false)} title="Add to Gallery">
+        <form onSubmit={handleUpload} className="space-y-4">
+          <div>
+            <label className={labelClasses}>Title *</label>
+            <input
+              className={inputClasses}
+              value={form.title}
+              onChange={(e) => setForm((p) => ({ ...p, title: e.target.value }))}
+              required
+            />
+          </div>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div>
+              <label className={labelClasses}>Category</label>
+              <select
+                className={inputClasses}
+                value={form.category}
+                onChange={(e) => setForm((p) => ({ ...p, category: e.target.value }))}
+              >
+                {categories.filter((c) => c !== 'All').map((c) => (
+                  <option key={c} value={c}>{c}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className={labelClasses}>Type</label>
+              <select
+                className={inputClasses}
+                value={form.type}
+                onChange={(e) => setForm((p) => ({ ...p, type: e.target.value as GalleryItem['type'] }))}
+              >
+                <option value="image">Image</option>
+                <option value="video">Video</option>
+              </select>
+            </div>
+          </div>
+          <div>
+            <label className={labelClasses}>Image URL *</label>
+            <input
+              className={inputClasses}
+              value={form.image}
+              placeholder="https://..."
+              onChange={(e) => setForm((p) => ({ ...p, image: e.target.value }))}
+              required
+            />
+          </div>
+          {form.image && (
+            <div className="relative h-40 rounded-xl overflow-hidden border border-[#0e3b2b]/10">
+              <Image src={form.image} alt="Preview" fill className="object-cover" />
+            </div>
+          )}
+          <div className="flex justify-end gap-3 pt-2">
+            <button
+              type="button"
+              onClick={() => setFormOpen(false)}
+              className="px-5 py-2.5 rounded-xl border border-[#0e3b2b]/15 text-sm font-semibold text-[#0e3b2b] hover:bg-[#0e3b2b]/5 transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={saving}
+              className="px-6 py-2.5 rounded-xl bg-[#0e3b2b] text-white text-sm font-semibold hover:bg-[#0e3b2b]/90 transition-colors disabled:opacity-60"
+            >
+              {saving ? 'Adding...' : 'Add to Gallery'}
+            </button>
+          </div>
+        </form>
+      </Modal>
     </div>
   )
 }

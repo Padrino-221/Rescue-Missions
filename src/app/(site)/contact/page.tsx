@@ -1,13 +1,13 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { PiPhone, PiEnvelope, PiMapPin, PiClock, PiPaperPlaneTilt, PiFacebookLogo, PiTwitterLogo, PiInstagramLogo, PiYoutubeLogo } from 'react-icons/pi'
 import Input from '@/components/ui/Input'
 import Select from '@/components/ui/Select'
 import Textarea from '@/components/ui/Textarea'
 
-const contactInfo = [
+const defaultContactInfo = [
   {
     icon: PiPhone,
     title: 'Phone',
@@ -30,19 +30,77 @@ const contactInfo = [
   },
 ]
 
-const faqs = [
+const defaultFaqs = [
   { question: 'How can I volunteer?', answer: 'Visit our Get Involved page or contact us directly to learn about volunteer opportunities.' },
   { question: 'Are donations tax-deductible?', answer: 'Yes! We are a registered 501(c)(3) organization. All donations are tax-deductible.' },
   { question: 'How do I sponsor a child?', answer: 'Contact us or visit our Donate page to learn about our sponsorship program.' },
 ]
 
+const defaultSocialLinks = [
+  { icon: PiFacebookLogo, href: '#' },
+  { icon: PiTwitterLogo, href: '#' },
+  { icon: PiInstagramLogo, href: '#' },
+  { icon: PiYoutubeLogo, href: '#' },
+]
+
 export default function ContactPage() {
+  const [contactInfo, setContactInfo] = useState(defaultContactInfo)
+  const [faqs, setFaqs] = useState(defaultFaqs)
+  const [socialLinks, setSocialLinks] = useState(defaultSocialLinks)
+
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     subject: '',
     message: '',
   })
+
+  useEffect(() => {
+    fetch('/api/settings')
+      .then((res) => res.json())
+      .then((data) => {
+        const contact = data?.contact
+        if (contact) {
+          setContactInfo([
+            {
+              icon: PiPhone,
+              title: 'Phone',
+              details: [contact.phone1 || '+1 (234) 567-890', contact.phone2 || '+1 (234) 567-891'],
+            },
+            {
+              icon: PiEnvelope,
+              title: 'Email',
+              details: [contact.email1 || 'info@rescuemission.org', contact.email2 || 'donate@rescuemission.org'],
+            },
+            {
+              icon: PiMapPin,
+              title: 'Address',
+              details: [contact.address1 || '123 Hope Street', contact.address2 || 'City, State 12345'],
+            },
+            {
+              icon: PiClock,
+              title: 'Office Hours',
+              details: [contact.officeHours1 || 'Mon - Fri: 9:00 AM - 5:00 PM', contact.officeHours2 || 'Sat: 9:00 AM - 1:00 PM'],
+            },
+          ])
+        }
+
+        const social = data?.social
+        if (social) {
+          setSocialLinks([
+            { icon: PiFacebookLogo, href: social.facebook || '#' },
+            { icon: PiTwitterLogo, href: social.twitter || '#' },
+            { icon: PiInstagramLogo, href: social.instagram || '#' },
+            { icon: PiYoutubeLogo, href: social.youtube || '#' },
+          ])
+        }
+
+        if (data?.faq?.length) {
+          setFaqs(data.faq)
+        }
+      })
+      .catch(() => {})
+  }, [])
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -162,13 +220,13 @@ export default function ContactPage() {
               <div className="mt-8">
                 <h3 className="font-semibold text-dark mb-4">Follow Us</h3>
                 <div className="flex gap-3">
-                  {[PiFacebookLogo, PiTwitterLogo, PiInstagramLogo, PiYoutubeLogo].map((Icon, i) => (
+                  {socialLinks.map((social, i) => (
                     <a
                       key={i}
-                      href="#"
+                      href={social.href}
                       className="w-11 h-11 rounded-xl border border-dark/20 flex items-center justify-center text-dark/60 hover:bg-dark hover:text-lime hover:border-dark transition-all duration-300"
                     >
-                      <Icon className="w-4 h-4" />
+                      <social.icon className="w-4 h-4" />
                     </a>
                   ))}
                 </div>

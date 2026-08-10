@@ -5,11 +5,12 @@ import { motion } from 'framer-motion';
 import {
   PiMagnifyingGlass,
   PiEnvelope,
-  PiPhone,
   PiClock,
   PiCheck,
   PiTrash,
+  PiSpinner,
 } from 'react-icons/pi';
+import { useResource } from '@/lib/useResource';
 
 type Contact = {
   id: number;
@@ -21,106 +22,14 @@ type Contact = {
   read: boolean;
 };
 
-const mockContacts: Contact[] = [
-  {
-    id: 1,
-    name: 'Sarah Mitchell',
-    email: 'sarah.mitchell@email.com',
-    subject: 'General Inquiry',
-    message: 'I would like to learn more about your orphanage programs and how I can support them.',
-    date: '2026-08-08',
-    read: false,
-  },
-  {
-    id: 2,
-    name: 'James Rodriguez',
-    email: 'james.r@email.com',
-    subject: 'Donation Question',
-    message: 'Can I make a recurring monthly donation? What payment methods do you accept?',
-    date: '2026-08-07',
-    read: false,
-  },
-  {
-    id: 3,
-    name: 'Emily Chen',
-    email: 'emily.chen@email.com',
-    subject: 'Volunteer Opportunity',
-    message: 'I am interested in volunteering this summer. What positions are available?',
-    date: '2026-08-06',
-    read: true,
-  },
-  {
-    id: 4,
-    name: 'Michael Okafor',
-    email: 'm.okafor@email.com',
-    subject: 'Partnership',
-    message: 'Our organization would like to discuss a potential partnership with your orphanage.',
-    date: '2026-08-05',
-    read: true,
-  },
-  {
-    id: 5,
-    name: 'Lisa Patel',
-    email: 'lisa.patel@email.com',
-    subject: 'Media Inquiry',
-    message: 'I am a journalist covering children welfare. May I schedule an interview?',
-    date: '2026-08-04',
-    read: false,
-  },
-  {
-    id: 6,
-    name: 'David Kim',
-    email: 'david.kim@email.com',
-    subject: 'General Inquiry',
-    message: 'What are the visiting hours and requirements to visit the orphanage?',
-    date: '2026-08-03',
-    read: true,
-  },
-  {
-    id: 7,
-    name: 'Amanda Foster',
-    email: 'amanda.f@email.com',
-    subject: 'Donation Question',
-    message: 'I would like to donate clothes and toys. Do you have specific needs?',
-    date: '2026-08-02',
-    read: false,
-  },
-  {
-    id: 8,
-    name: 'Robert Singh',
-    email: 'r.singh@email.com',
-    subject: 'Volunteer Opportunity',
-    message: 'I have experience in teaching. Can I help with educational programs?',
-    date: '2026-08-01',
-    read: true,
-  },
-  {
-    id: 9,
-    name: 'Jennifer Adams',
-    email: 'jennifer.a@email.com',
-    subject: 'Partnership',
-    message: 'Our school wants to organize a fundraiser for your orphanage.',
-    date: '2026-07-30',
-    read: true,
-  },
-  {
-    id: 10,
-    name: 'Thomas Wright',
-    email: 't.wright@email.com',
-    subject: 'Media Inquiry',
-    message: 'I am creating a documentary. Would you be interested in participating?',
-    date: '2026-07-28',
-    read: false,
-  },
-];
-
 type FilterType = 'all' | 'unread' | 'read';
 
 export default function ContactsPage() {
+  const { data: contacts, setData, loading, error } = useResource<Contact>('/api/contacts');
   const [searchQuery, setSearchQuery] = useState('');
   const [activeFilter, setActiveFilter] = useState<FilterType>('all');
   const [selectedContacts, setSelectedContacts] = useState<number[]>([]);
-  const [contacts, setContacts] = useState<Contact[]>(mockContacts);
+  const [busyIds, setBusyIds] = useState<number[]>([]);
 
   const filteredContacts = contacts.filter((contact) => {
     const matchesSearch =
@@ -142,40 +51,72 @@ export default function ContactsPage() {
   };
 
   const toggleSelectAll = () => {
-    if (selectedContacts.length === filteredContacts.length) {
+    if (selectedContacts.length === filteredContacts.length && filteredContacts.length > 0) {
       setSelectedContacts([]);
     } else {
       setSelectedContacts(filteredContacts.map((c) => c.id));
     }
   };
 
-  const markSelectedAsRead = () => {
-    setContacts((prev) =>
-      prev.map((c) =>
-        selectedContacts.includes(c.id) ? { ...c, read: true } : c
-      )
-    );
+  const setBusy = (ids: number[], busy: boolean) => {
+    setBusyIds((prev) => (busy ? [...new Set([...prev, ...ids])] : prev.filter((id) => !ids.includes(id))));
+  };
+
+  const markAsRead = async (id: number) => {
+    setBusy([id], true);
+    try {
+      const res = await fetch(`/api/contacts/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ read: true }),
+      });
+      if (!res.ok) throw new Error();
+      setData((prev) => prev.map((c) => (c.id === id ? { ...c, read: true } : c)));
+    } catch {
+      alert('Failed to update the contact.');
+    } finally {
+      setBusy([id], false);
+    }
+  };
+
+  const markSelectedAsRead = async () => {
+    await Promise.all(selectedContacts.map((id) => markAsRead(id)));
     setSelectedContacts([]);
   };
 
-  const deleteSelected = () => {
-    setContacts((prev) => prev.filter((c) => !selectedContacts.includes(c.id)));
-    setSelectedContacts([]);
+  const deleteContact = async (id: number) => {
+    const contact = contacts.find((c) => c.id === id);
+    if (!confirm(`Delete contact from ${contact?.name ?? 'this contact'}? This cannot be undone.`)) return;
+    setBusy([id], true);
+    try {
+      const res = await fetch(`/api/contacts/${id}`, { method: 'DELETE' });
+      if (!res.ok) throw new Error();
+      setData((prev) => prev.filter((c) => c.id !== id));
+      setSelectedContacts((prev) => prev.filter((cid) => cid !== id));
+    } catch {
+      alert('Failed to delete the contact.');
+    } finally {
+      setBusy([id], false);
+    }
   };
 
-  const deleteContact = (id: number) => {
-    setContacts((prev) => prev.filter((c) => c.id !== id));
-    setSelectedContacts((prev) => prev.filter((cid) => cid !== id));
-  };
-
-  const markAsRead = (id: number) => {
-    setContacts((prev) =>
-      prev.map((c) => (c.id === id ? { ...c, read: true } : c))
-    );
+  const deleteSelected = async () => {
+    if (!confirm(`Delete ${selectedContacts.length} contact(s)? This cannot be undone.`)) return;
+    setBusy(selectedContacts, true);
+    try {
+      await Promise.all(selectedContacts.map((id) => fetch(`/api/contacts/${id}`, { method: 'DELETE' })));
+      setData((prev) => prev.filter((c) => !selectedContacts.includes(c.id)));
+      setSelectedContacts([]);
+    } catch {
+      alert('Failed to delete some contacts.');
+    } finally {
+      setBusy(selectedContacts, false);
+    }
   };
 
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);
+    if (Number.isNaN(date.getTime())) return dateStr;
     return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
   };
 
@@ -233,6 +174,10 @@ export default function ContactsPage() {
             </div>
           </div>
 
+          {error && (
+            <div className="border-b border-[#0e3b2b]/10 p-4 text-sm text-red-600">{error}</div>
+          )}
+
           {selectedContacts.length > 0 && (
             <motion.div
               initial={{ opacity: 0, height: 0 }}
@@ -283,115 +228,145 @@ export default function ContactsPage() {
                 </tr>
               </thead>
               <tbody>
-                {filteredContacts.map((contact) => (
-                  <tr
-                    key={contact.id}
-                    className="border-b border-[#0e3b2b]/5 hover:bg-[#0e3b2b]/5 transition-colors"
-                  >
-                    <td className="p-4">
+                {loading ? (
+                  <tr>
+                    <td colSpan={7} className="p-16 text-center">
+                      <PiSpinner className="mx-auto animate-spin text-2xl text-[#0e3b2b]/30" />
+                    </td>
+                  </tr>
+                ) : (
+                  filteredContacts.map((contact) => (
+                    <tr
+                      key={contact.id}
+                      className="border-b border-[#0e3b2b]/5 hover:bg-[#0e3b2b]/5 transition-colors"
+                    >
+                      <td className="p-4">
+                        <input
+                          type="checkbox"
+                          checked={selectedContacts.includes(contact.id)}
+                          onChange={() => toggleSelect(contact.id)}
+                          className="rounded border-[#0e3b2b]/30 text-[#7ed957] focus:ring-[#7ed957]/50"
+                        />
+                      </td>
+                      <td className="p-4">
+                        <span className={`text-[#0e3b2b] ${!contact.read ? 'font-semibold' : ''}`}>
+                          {contact.name}
+                        </span>
+                      </td>
+                      <td className="p-4 text-sm text-[#0e3b2b]/70">{contact.email}</td>
+                      <td className="p-4">
+                        <span className="px-2 py-1 bg-[#0e3b2b]/5 rounded text-xs font-medium text-[#0e3b2b]">
+                          {contact.subject}
+                        </span>
+                      </td>
+                      <td className="p-4 text-sm text-[#0e3b2b]/70">{formatDate(contact.date)}</td>
+                      <td className="p-4">
+                        {!contact.read && (
+                          <span className="w-2.5 h-2.5 bg-[#7ed957] rounded-full block" />
+                        )}
+                      </td>
+                      <td className="p-4">
+                        <div className="flex items-center gap-2">
+                          {!contact.read && (
+                            <button
+                              onClick={() => markAsRead(contact.id)}
+                              disabled={busyIds.includes(contact.id)}
+                              className="p-2 hover:bg-[#0e3b2b]/10 rounded-lg transition-colors text-[#0e3b2b] disabled:opacity-50"
+                              title="Mark as read"
+                            >
+                              <PiEnvelope />
+                            </button>
+                          )}
+                          <button
+                            onClick={() => deleteContact(contact.id)}
+                            disabled={busyIds.includes(contact.id)}
+                            className="p-2 hover:bg-red-50 rounded-lg transition-colors text-red-500 disabled:opacity-50"
+                            title="Delete"
+                          >
+                            {busyIds.includes(contact.id) ? (
+                              <PiSpinner className="animate-spin" />
+                            ) : (
+                              <PiTrash />
+                            )}
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+
+          <div className="md:hidden divide-y divide-[#0e3b2b]/5">
+            {loading ? (
+              <div className="p-12 text-center">
+                <PiSpinner className="mx-auto animate-spin text-2xl text-[#0e3b2b]/30" />
+              </div>
+            ) : (
+              filteredContacts.map((contact) => (
+                <div key={contact.id} className="p-4">
+                  <div className="flex items-start justify-between mb-2">
+                    <div className="flex items-center gap-3">
                       <input
                         type="checkbox"
                         checked={selectedContacts.includes(contact.id)}
                         onChange={() => toggleSelect(contact.id)}
                         className="rounded border-[#0e3b2b]/30 text-[#7ed957] focus:ring-[#7ed957]/50"
                       />
-                    </td>
-                    <td className="p-4">
-                      <span className={`text-[#0e3b2b] ${!contact.read ? 'font-semibold' : ''}`}>
-                        {contact.name}
-                      </span>
-                    </td>
-                    <td className="p-4 text-sm text-[#0e3b2b]/70">{contact.email}</td>
-                    <td className="p-4">
-                      <span className="px-2 py-1 bg-[#0e3b2b]/5 rounded text-xs font-medium text-[#0e3b2b]">
-                        {contact.subject}
-                      </span>
-                    </td>
-                    <td className="p-4 text-sm text-[#0e3b2b]/70">{formatDate(contact.date)}</td>
-                    <td className="p-4">
-                      {!contact.read && (
-                        <span className="w-2.5 h-2.5 bg-[#7ed957] rounded-full block" />
-                      )}
-                    </td>
-                    <td className="p-4">
-                      <div className="flex items-center gap-2">
-                        <button
-                          onClick={() => markAsRead(contact.id)}
-                          className="p-2 hover:bg-[#0e3b2b]/10 rounded-lg transition-colors text-[#0e3b2b]"
-                          title="Mark as read"
-                        >
-                          <PiEnvelope />
-                        </button>
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className={`text-[#0e3b2b] ${!contact.read ? 'font-semibold' : ''}`}>
+                            {contact.name}
+                          </span>
+                          {!contact.read && (
+                            <span className="w-2 h-2 bg-[#7ed957] rounded-full" />
+                          )}
+                        </div>
+                        <span className="text-sm text-[#0e3b2b]/60">{contact.email}</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="ml-8">
+                    <span className="inline-block px-2 py-1 bg-[#0e3b2b]/5 rounded text-xs font-medium text-[#0e3b2b] mb-2">
+                      {contact.subject}
+                    </span>
+                    <p className="text-sm text-[#0e3b2b]/70 mb-2 line-clamp-2">{contact.message}</p>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-1 text-xs text-[#0e3b2b]/50">
+                        <PiClock />
+                        {formatDate(contact.date)}
+                      </div>
+                      <div className="flex items-center gap-1">
+                        {!contact.read && (
+                          <button
+                            onClick={() => markAsRead(contact.id)}
+                            disabled={busyIds.includes(contact.id)}
+                            className="p-1.5 hover:bg-[#0e3b2b]/10 rounded-lg transition-colors text-[#0e3b2b] disabled:opacity-50"
+                          >
+                            <PiEnvelope />
+                          </button>
+                        )}
                         <button
                           onClick={() => deleteContact(contact.id)}
-                          className="p-2 hover:bg-red-50 rounded-lg transition-colors text-red-500"
-                          title="Delete"
+                          disabled={busyIds.includes(contact.id)}
+                          className="p-1.5 hover:bg-red-50 rounded-lg transition-colors text-red-500 disabled:opacity-50"
                         >
-                          <PiTrash />
+                          {busyIds.includes(contact.id) ? (
+                            <PiSpinner className="animate-spin" />
+                          ) : (
+                            <PiTrash />
+                          )}
                         </button>
                       </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-
-          <div className="md:hidden divide-y divide-[#0e3b2b]/5">
-            {filteredContacts.map((contact) => (
-              <div key={contact.id} className="p-4">
-                <div className="flex items-start justify-between mb-2">
-                  <div className="flex items-center gap-3">
-                    <input
-                      type="checkbox"
-                      checked={selectedContacts.includes(contact.id)}
-                      onChange={() => toggleSelect(contact.id)}
-                      className="rounded border-[#0e3b2b]/30 text-[#7ed957] focus:ring-[#7ed957]/50"
-                    />
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <span className={`text-[#0e3b2b] ${!contact.read ? 'font-semibold' : ''}`}>
-                          {contact.name}
-                        </span>
-                        {!contact.read && (
-                          <span className="w-2 h-2 bg-[#7ed957] rounded-full" />
-                        )}
-                      </div>
-                      <span className="text-sm text-[#0e3b2b]/60">{contact.email}</span>
                     </div>
                   </div>
                 </div>
-                <div className="ml-8">
-                  <span className="inline-block px-2 py-1 bg-[#0e3b2b]/5 rounded text-xs font-medium text-[#0e3b2b] mb-2">
-                    {contact.subject}
-                  </span>
-                  <p className="text-sm text-[#0e3b2b]/70 mb-2 line-clamp-2">{contact.message}</p>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-1 text-xs text-[#0e3b2b]/50">
-                      <PiClock />
-                      {formatDate(contact.date)}
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <button
-                        onClick={() => markAsRead(contact.id)}
-                        className="p-1.5 hover:bg-[#0e3b2b]/10 rounded-lg transition-colors text-[#0e3b2b]"
-                      >
-                        <PiEnvelope />
-                      </button>
-                      <button
-                        onClick={() => deleteContact(contact.id)}
-                        className="p-1.5 hover:bg-red-50 rounded-lg transition-colors text-red-500"
-                      >
-                        <PiTrash />
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
+              ))
+            )}
           </div>
 
-          {filteredContacts.length === 0 && (
+          {!loading && filteredContacts.length === 0 && (
             <div className="p-12 text-center">
               <p className="text-[#0e3b2b]/50">No contacts found.</p>
             </div>

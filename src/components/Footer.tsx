@@ -1,5 +1,6 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { PiHeartFill, PiEnvelope, PiPhone, PiMapPin, PiFacebookLogo, PiTwitterLogo, PiInstagramLogo, PiYoutubeLogo, PiLinkedinLogo } from 'react-icons/pi'
 
@@ -12,7 +13,22 @@ const footerLinks = [
   { name: 'Gallery', href: '/gallery' },
 ]
 
-const socialLinks = [
+interface Settings {
+  orgName?: string
+  description?: string
+  phone1?: string
+  email1?: string
+  address1?: string
+  address2?: string
+  facebook?: string
+  twitter?: string
+  instagram?: string
+  youtube?: string
+  linkedin?: string
+  copyrightYear?: string
+}
+
+const defaultSocialLinks = [
   { name: 'Facebook', icon: PiFacebookLogo, href: '#' },
   { name: 'Twitter', icon: PiTwitterLogo, href: '#' },
   { name: 'Instagram', icon: PiInstagramLogo, href: '#' },
@@ -21,6 +37,32 @@ const socialLinks = [
 ]
 
 export default function Footer() {
+  const [settings, setSettings] = useState<Settings | null>(null)
+
+  useEffect(() => {
+    fetch('/api/settings')
+      .then((res) => res.json())
+      .then((data) => setSettings(data))
+      .catch(() => setSettings(null))
+  }, [])
+
+  const orgName = settings?.orgName || 'Rescue Mission'
+  const description = settings?.description || 'Creating sustainable solutions for children in need — empowering them to build a better future.'
+  const phone = settings?.phone1 || '+1 (234) 567-890'
+  const email = settings?.email1 || 'info@rescuemission.org'
+  const address1 = settings?.address1 || ''
+  const address2 = settings?.address2 || ''
+  const fullAddress = [address1, address2].filter(Boolean).join(', ') || '123 Hope Street, City, Country'
+  const copyrightYear = settings?.copyrightYear || '2024'
+
+  const socialLinks = [
+    { name: 'Facebook', icon: PiFacebookLogo, href: settings?.facebook || '#' },
+    { name: 'Twitter', icon: PiTwitterLogo, href: settings?.twitter || '#' },
+    { name: 'Instagram', icon: PiInstagramLogo, href: settings?.instagram || '#' },
+    { name: 'YouTube', icon: PiYoutubeLogo, href: settings?.youtube || '#' },
+    { name: 'LinkedIn', icon: PiLinkedinLogo, href: settings?.linkedin || '#' },
+  ]
+
   return (
     <footer className="bg-dark">
       <div className="container-premium py-12 lg:py-16">
@@ -31,20 +73,20 @@ export default function Footer() {
               <div className="w-9 h-9 bg-lime rounded-full flex items-center justify-center">
                 <PiHeartFill className="w-4 h-4 text-dark" />
               </div>
-              <span className="text-base font-serif font-semibold text-cream">Rescue Mission</span>
+              <span className="text-base font-serif font-semibold text-cream">{orgName}</span>
             </Link>
             <p className="text-cream/45 text-sm max-w-xs leading-relaxed mb-5">
-              Creating sustainable solutions for children in need — empowering them to build a better future.
+              {description}
             </p>
             <div className="space-y-2.5 text-sm">
-              <a href="tel:+1234567890" className="flex items-center gap-2.5 text-cream/45 hover:text-lime transition-colors">
-                <PiPhone className="w-4 h-4" /> +1 (234) 567-890
+              <a href={`tel:${phone.replace(/[^0-9+]/g, '')}`} className="flex items-center gap-2.5 text-cream/45 hover:text-lime transition-colors">
+                <PiPhone className="w-4 h-4" /> {phone}
               </a>
-              <a href="mailto:info@rescuemission.org" className="flex items-center gap-2.5 text-cream/45 hover:text-lime transition-colors">
-                <PiEnvelope className="w-4 h-4" /> info@rescuemission.org
+              <a href={`mailto:${email}`} className="flex items-center gap-2.5 text-cream/45 hover:text-lime transition-colors">
+                <PiEnvelope className="w-4 h-4" /> {email}
               </a>
               <div className="flex items-center gap-2.5 text-cream/45">
-                <PiMapPin className="w-4 h-4" /> 123 Hope Street, City, Country
+                <PiMapPin className="w-4 h-4" /> {fullAddress}
               </div>
             </div>
           </div>
@@ -85,7 +127,7 @@ export default function Footer() {
       {/* Bottom */}
       <div className="border-t border-white/8">
         <div className="container-premium py-5 flex flex-col sm:flex-row justify-between items-center gap-3">
-          <p className="text-cream/30 text-xs">&copy; 2024 Rescue Mission Orphanage. All rights reserved.</p>
+          <p className="text-cream/30 text-xs">&copy; {copyrightYear} {orgName}. All rights reserved.</p>
           <div className="flex gap-5 text-xs text-cream/30">
             <Link href="/about" className="hover:text-cream/60 transition-colors">Privacy</Link>
             <Link href="/about" className="hover:text-cream/60 transition-colors">Terms</Link>

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { PiHeartFill, PiUsers, PiBuilding, PiGift, PiCheck } from 'react-icons/pi'
 import Input from '@/components/ui/Input'
@@ -8,31 +8,55 @@ import Select from '@/components/ui/Select'
 import Textarea from '@/components/ui/Textarea'
 import Link from 'next/link'
 
-const volunteerRoles = [
+const defaultVolunteerRoles = [
   { title: 'Teaching Assistant', commitment: '4 hours/week', description: 'Help children with their studies and homework.' },
   { title: 'Mentor', commitment: '2 hours/week', description: 'Guide and support a child through their journey.' },
   { title: 'Event Coordinator', commitment: 'Flexible', description: 'Help organize and run fundraising events.' },
   { title: 'Skilled Volunteer', commitment: 'Project-based', description: 'Share your professional skills (medical, legal, etc.).' },
 ]
 
-const sponsorshipBenefits = [
-  'Monthly updates and photos of your sponsored child',
-  'Direct correspondence through letters',
-  'Annual progress reports',
-  'Invitation to visit (where possible)',
-  'Tax-deductible donation receipt',
-]
+const defaultSponsorship = {
+  monthlyAmount: 50,
+  benefits: [
+    'Monthly updates and photos of your sponsored child',
+    'Direct correspondence through letters',
+    'Annual progress reports',
+    'Invitation to visit (where possible)',
+    'Tax-deductible donation receipt',
+  ],
+}
 
-const corporateBenefits = [
-  'Brand visibility on our website and events',
-  'Employee engagement opportunities',
-  'Tax benefits for corporate donations',
-  'CSR reporting support',
-  'Partnership certificates',
-]
+const defaultCorporate = {
+  tiers: [
+    { tier: 'Bronze', amount: 'GH₵5,000/year', benefits: 'Logo on website, social media mentions' },
+    { tier: 'Silver', amount: 'GH₵15,000/year', benefits: 'All Bronze + event sponsorship, employee volunteer days' },
+    { tier: 'Gold', amount: 'GH₵30,000/year', benefits: 'All Silver + naming rights, board observer seat' },
+  ],
+  benefits: [
+    'Brand visibility on our website and events',
+    'Employee engagement opportunities',
+    'Tax benefits for corporate donations',
+    'CSR reporting support',
+    'Partnership certificates',
+  ],
+}
 
 export default function GetInvolvedPage() {
   const [activeTab, setActiveTab] = useState('volunteer')
+  const [volunteerRoles, setVolunteerRoles] = useState(defaultVolunteerRoles)
+  const [sponsorship, setSponsorship] = useState(defaultSponsorship)
+  const [corporate, setCorporate] = useState(defaultCorporate)
+
+  useEffect(() => {
+    fetch('/api/settings')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.volunteerRoles) setVolunteerRoles(data.volunteerRoles)
+        if (data.sponsorship) setSponsorship(data.sponsorship)
+        if (data.corporate) setCorporate(data.corporate)
+      })
+      .catch(() => {})
+  }, [])
 
   return (
     <>
@@ -177,9 +201,9 @@ export default function GetInvolvedPage() {
                 </p>
                 
                 <div className="card-premium p-6 mb-8">
-                  <h3 className="font-semibold text-dark mb-4">Monthly Sponsorship: GH₵50/month</h3>
+                  <h3 className="font-semibold text-dark mb-4">Monthly Sponsorship: GH₵{sponsorship.monthlyAmount}/month</h3>
                   <ul className="space-y-3">
-                    {sponsorshipBenefits.map((benefit) => (
+                    {sponsorship.benefits.map((benefit) => (
                       <li key={benefit} className="flex items-start gap-2 text-dark/60 text-sm">
                         <PiCheck className="w-5 h-5 text-lime mt-0.5 flex-shrink-0" />
                         <span>{benefit}</span>
@@ -229,11 +253,7 @@ export default function GetInvolvedPage() {
                 </p>
                 
                 <div className="space-y-4">
-                  {[
-                    { tier: 'Bronze', amount: 'GH₵5,000/year', benefits: 'Logo on website, social media mentions' },
-                    { tier: 'Silver', amount: 'GH₵15,000/year', benefits: 'All Bronze + event sponsorship, employee volunteer days' },
-                    { tier: 'Gold', amount: 'GH₵30,000/year', benefits: 'All Silver + naming rights, board observer seat' },
-                  ].map((item) => (
+                  {corporate.tiers.map((item) => (
                     <div key={item.tier} className="card-premium p-5">
                       <div className="flex items-start gap-4">
                         <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold text-white ${
@@ -254,7 +274,7 @@ export default function GetInvolvedPage() {
               <div className="card-premium p-8">
                 <h3 className="text-xl font-serif text-dark mb-6">Partner Benefits</h3>
                 <ul className="space-y-3">
-                  {corporateBenefits.map((benefit) => (
+                  {corporate.benefits.map((benefit) => (
                     <li key={benefit} className="flex items-start gap-2 text-dark/60 text-sm">
                       <PiCheck className="w-5 h-5 text-lime mt-0.5 flex-shrink-0" />
                       <span>{benefit}</span>

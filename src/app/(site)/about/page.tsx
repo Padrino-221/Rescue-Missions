@@ -1,25 +1,26 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import Image from 'next/image'
 import { PiHeartFill, PiEye, PiShieldCheck, PiGlobe, PiUsers, PiArrowRight, PiHandHeart } from 'react-icons/pi'
 import Link from 'next/link'
 
-const values = [
+const defaultValues = [
   { icon: PiHeartFill, title: 'Compassion', description: 'Empathy at the heart of everything we do.' },
   { icon: PiShieldCheck, title: 'Integrity', description: 'Transparency and accountability in all operations.' },
   { icon: PiGlobe, title: 'Impact', description: 'Sustainable solutions creating lasting change.' },
   { icon: PiUsers, title: 'Collaboration', description: 'Partnerships amplifying our collective impact.' },
 ]
 
-const team = [
+const defaultTeam = [
   { name: 'Grace Mwangi', role: 'Executive Director', bio: '20+ years in nonprofit leadership', avatar: 'https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?auto=format&fit=crop&w=200&q=80' },
   { name: 'David Okonkwo', role: 'Programs Director', bio: 'Expert in child development programs', avatar: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&w=200&q=80' },
   { name: 'Sarah Williams', role: 'Development Manager', bio: 'Passionate about community engagement', avatar: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=200&q=80' },
   { name: 'James Chen', role: 'Finance Director', bio: 'Ensuring transparent financial stewardship', avatar: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=200&q=80' },
 ]
 
-const milestones = [
+const defaultMilestones = [
   { year: '2008', title: 'Founded', description: 'Established with a vision to help orphaned children.' },
   { year: '2012', title: 'First 100 Children', description: 'Reached milestone of supporting 100 children.' },
   { year: '2016', title: 'New Facility', description: 'Opened a new facility to serve more children.' },
@@ -27,7 +28,59 @@ const milestones = [
   { year: '2024', title: '5,000+ Children', description: 'Celebrated supporting over 5,000 children.' },
 ]
 
+const iconMap: Record<string, typeof PiHeartFill> = {
+  Compassion: PiHeartFill,
+  Integrity: PiShieldCheck,
+  Impact: PiGlobe,
+  Collaboration: PiUsers,
+}
+
+const defaultStory = {
+  storyHeading: 'A Journey of Hope Since 2008',
+  storyParagraphs: [
+    'Rescue Mission Orphanage was founded with a simple yet powerful vision: to provide every orphaned child with the opportunity to grow, learn, and thrive in a safe and nurturing environment.',
+    'What started as a small shelter for 10 children has grown into a comprehensive organization serving thousands of children across multiple countries.',
+    'Today, we continue to expand our reach and deepen our impact, guided by the belief that every child deserves a chance at a brighter future.',
+  ],
+  missionStatement: 'To provide comprehensive care, education, and support to orphaned and vulnerable children, empowering them to become self-reliant, compassionate, and productive members of society.',
+  visionStatement: 'A world where every orphaned child has access to quality education, healthcare, and the opportunity to realize their full potential in a loving and supportive environment.',
+}
+
 export default function AboutPage() {
+  const [storyHeading, setStoryHeading] = useState(defaultStory.storyHeading)
+  const [storyParagraphs, setStoryParagraphs] = useState(defaultStory.storyParagraphs)
+  const [missionStatement, setMissionStatement] = useState(defaultStory.missionStatement)
+  const [visionStatement, setVisionStatement] = useState(defaultStory.visionStatement)
+  const [values, setValues] = useState(defaultValues)
+  const [team, setTeam] = useState(defaultTeam)
+  const [milestones, setMilestones] = useState(defaultMilestones)
+
+  useEffect(() => {
+    fetch('/api/settings')
+      .then((res) => res.json())
+      .then((data) => {
+        const about = data?.about
+        if (!about) return
+
+        if (about.storyHeading) setStoryHeading(about.storyHeading)
+        if (about.storyParagraphs?.length) setStoryParagraphs(about.storyParagraphs)
+        if (about.missionStatement) setMissionStatement(about.missionStatement)
+        if (about.visionStatement) setVisionStatement(about.visionStatement)
+        if (about.values?.length) {
+          setValues(
+            about.values.map((v: { title: string; description: string }) => ({
+              icon: iconMap[v.title] || PiHeartFill,
+              title: v.title,
+              description: v.description,
+            }))
+          )
+        }
+        if (about.team?.length) setTeam(about.team)
+        if (about.milestones?.length) setMilestones(about.milestones)
+      })
+      .catch(() => {})
+  }, [])
+
   return (
     <>
       {/* Hero */}
@@ -65,22 +118,12 @@ export default function AboutPage() {
             >
               <span className="pill-tag mb-5 inline-block">Our Story</span>
               <h2 className="mt-3 text-3xl md:text-4xl font-serif text-dark">
-                A Journey of Hope Since 2008
+                {storyHeading}
               </h2>
               <div className="mt-6 space-y-3 text-dark/55 text-[15px] leading-relaxed">
-                <p>
-                  Rescue Mission Orphanage was founded with a simple yet powerful vision: 
-                  to provide every orphaned child with the opportunity to grow, learn, and thrive in 
-                  a safe and nurturing environment.
-                </p>
-                <p>
-                  What started as a small shelter for 10 children has grown into a comprehensive 
-                  organization serving thousands of children across multiple countries.
-                </p>
-                <p>
-                  Today, we continue to expand our reach and deepen our impact, guided by the 
-                  belief that every child deserves a chance at a brighter future.
-                </p>
+                {storyParagraphs.map((paragraph, i) => (
+                  <p key={i}>{paragraph}</p>
+                ))}
               </div>
             </motion.div>
             
@@ -128,8 +171,7 @@ export default function AboutPage() {
               </div>
               <h3 className="text-xl font-serif text-dark">Our Mission</h3>
               <p className="mt-3 text-dark/55 text-[15px] leading-relaxed">
-                To provide comprehensive care, education, and support to orphaned and vulnerable children, 
-                empowering them to become self-reliant, compassionate, and productive members of society.
+                {missionStatement}
               </p>
             </motion.div>
             
@@ -145,8 +187,7 @@ export default function AboutPage() {
               </div>
               <h3 className="text-xl font-serif text-dark">Our Vision</h3>
               <p className="mt-3 text-dark/55 text-[15px] leading-relaxed">
-                A world where every orphaned child has access to quality education, healthcare, 
-                and the opportunity to realize their full potential in a loving and supportive environment.
+                {visionStatement}
               </p>
             </motion.div>
           </div>
