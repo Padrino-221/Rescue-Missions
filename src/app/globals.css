@@ -1,0 +1,204 @@
+@import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;500;600;700;800&family=Nunito:wght@400;500;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --foreground: #0e3b2b;
+  --background: #f8fbf6;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  color: var(--foreground);
+  background: var(--background);
+  font-family: 'Nunito', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  line-height: 1.6;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Baloo 2', sans-serif;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 1.05;
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .font-serif {
+    font-family: 'Baloo 2', sans-serif;
+  }
+
+  .font-body {
+    font-family: 'Nunito', sans-serif;
+  }
+
+  /* Playful sticker kicker */
+  .kicker {
+    @apply inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-full text-[11px] font-extrabold uppercase tracking-[0.18em];
+    background: #e2f7d4;
+    color: #2f6e27;
+  }
+
+  .kicker::before {
+    content: '';
+    @apply w-2 h-2 rounded-full bg-lime-600;
+  }
+
+  .kicker-light {
+    @apply inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-full text-[11px] font-extrabold uppercase tracking-[0.18em];
+    background: rgba(255, 255, 255, 0.12);
+    color: #7ed957;
+  }
+
+  .kicker-light::before {
+    content: '';
+    @apply w-2 h-2 rounded-full bg-lime;
+  }
+
+  .bg-dark-green {
+    background-color: #0e3b2b;
+  }
+
+  .bg-lime-accent {
+    background-color: #7ed957;
+  }
+
+  .text-dark-green {
+    color: #0e3b2b;
+  }
+
+  .text-lime-accent {
+    color: #7ed957;
+  }
+
+  .border-dark {
+    border-color: #0e3b2b;
+  }
+
+  .border-lime {
+    border-color: #7ed957;
+  }
+
+  .pill-tag {
+    @apply inline-flex items-center gap-2 px-4 py-2 rounded-full text-[11px] font-bold uppercase tracking-[0.14em] border border-dark/10 bg-white text-dark;
+    transition: all 0.3s ease;
+  }
+
+  .pill-tag:hover {
+    @apply border-dark bg-dark text-white;
+  }
+
+  .pill-tag-active {
+    @apply bg-dark text-white border-dark;
+  }
+
+  .card-premium {
+    @apply rounded-[1.75rem] bg-white border border-dark/10;
+    transition: all 0.35s ease;
+  }
+
+  .card-premium:hover {
+    border-color: rgba(14, 59, 43, 0.25);
+    transform: translateY(-3px);
+  }
+
+  /* Flat, border-driven buttons */
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2.5 px-7 py-3.5 rounded-full text-sm font-extrabold tracking-wide text-white border-2 border-dark transition-all duration-300;
+    background: #0e3b2b;
+  }
+
+  .btn-primary:hover {
+    background: #15523b;
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-2.5 px-7 py-3.5 rounded-full text-sm font-extrabold tracking-wide transition-all duration-300;
+    border: 2px solid #0e3b2b;
+    color: #0e3b2b;
+    background: transparent;
+  }
+
+  .btn-secondary:hover {
+    background: #0e3b2b;
+    color: #fff;
+  }
+
+  .btn-lime {
+    @apply inline-flex items-center justify-center gap-2.5 px-7 py-3.5 rounded-full text-sm font-extrabold tracking-wide text-dark border-2 border-lime-600 transition-all duration-300;
+    background: #7ed957;
+  }
+
+  .btn-lime:hover {
+    background: #63b93f;
+    border-color: #4f9434;
+  }
+
+  .btn-white {
+    @apply inline-flex items-center justify-center gap-2.5 px-7 py-3.5 rounded-full text-sm font-extrabold tracking-wide text-dark border-2 border-dark/15 transition-all duration-300;
+    background: #fff;
+  }
+
+  .btn-white:hover {
+    border-color: #0e3b2b;
+  }
+
+  .section-padding {
+    @apply py-10 md:py-14;
+  }
+
+  .container-premium {
+    @apply max-w-6xl mx-auto px-5 sm:px-6 lg:px-8;
+  }
+
+  /* Confetti dot pattern for playful sections */
+  .dots {
+    background-image: radial-gradient(rgba(14, 59, 43, 0.12) 1.5px, transparent 1.5px);
+    background-size: 22px 22px;
+  }
+
+  .dots-white {
+    background-image: radial-gradient(rgba(255, 255, 255, 0.16) 1.5px, transparent 1.5px);
+    background-size: 22px 22px;
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f8fbf6;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #0e3b2b;
+  border-radius: 6px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #15523b;
+}
+
+/* Selection color */
+::selection {
+  background-color: #7ed957;
+  color: #0e3b2b;
+}
