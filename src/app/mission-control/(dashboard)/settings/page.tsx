@@ -20,6 +20,7 @@ import {
   PiPlus,
   PiTrash,
 } from 'react-icons/pi'
+import ImageUpload from '@/components/ui/ImageUpload'
 
 const tabs = [
   { id: 'general', label: 'General', icon: PiGear },
@@ -52,12 +53,13 @@ function Field({ label, value, onChange, textarea, placeholder }: { label: strin
   )
 }
 
-function ArrayField({ items, onAdd, onRemove, onUpdate, fields }: {
+function ArrayField({ items, onAdd, onRemove, onUpdate, fields, folder }: {
   items: Record<string, string | number>[]
   onAdd: () => void
   onRemove: (i: number) => void
   onUpdate: (i: number, key: string, val: string) => void
-  fields: { key: string; label: string; textarea?: boolean }[]
+  fields: { key: string; label: string; textarea?: boolean; image?: boolean }[]
+  folder?: string
 }) {
   return (
     <div className="space-y-3">
@@ -66,11 +68,17 @@ function ArrayField({ items, onAdd, onRemove, onUpdate, fields }: {
           <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-3">
             {fields.map((f) => (
               <div key={f.key}>
-                <label className={labelCls}>{f.label}</label>
-                {f.textarea ? (
-                  <textarea value={item[f.key] || ''} onChange={(e) => onUpdate(i, f.key, e.target.value)} className={`${inputCls} resize-none min-h-[60px]`} />
+                {f.image ? (
+                  <ImageUpload value={String(item[f.key] || '')} onChange={(v) => onUpdate(i, f.key, v)} folder={folder} label={f.label} />
                 ) : (
-                  <input type="text" value={item[f.key] || ''} onChange={(e) => onUpdate(i, f.key, e.target.value)} className={inputCls} />
+                  <>
+                    <label className={labelCls}>{f.label}</label>
+                    {f.textarea ? (
+                      <textarea value={item[f.key] || ''} onChange={(e) => onUpdate(i, f.key, e.target.value)} className={`${inputCls} resize-none min-h-[60px]`} />
+                    ) : (
+                      <input type="text" value={item[f.key] || ''} onChange={(e) => onUpdate(i, f.key, e.target.value)} className={inputCls} />
+                    )}
+                  </>
                 )}
               </div>
             ))}
@@ -92,6 +100,16 @@ const defaultSettings = () => ({
   contact: { phone1: '+233 24 567 890', phone2: '+233 20 567 891', email1: 'info@rescuemission.org', email2: 'donate@rescuemission.org', address1: '123 Hope Street', address2: 'Accra, Ghana', officeHours1: 'Mon - Fri: 9:00 AM - 5:00 PM', officeHours2: 'Sat: 9:00 AM - 1:00 PM', mediaEmail: 'media@rescuemission.org' },
   social: { facebook: 'https://facebook.com/rescuemission', twitter: 'https://twitter.com/rescuemission', instagram: 'https://instagram.com/rescuemission', youtube: 'https://youtube.com/rescuemission', linkedin: 'https://linkedin.com/company/rescuemission' },
   homeHero: { heading: 'Every child deserves a childhood.', description: 'Rescue Mission Orphanage provides shelter, education, and care to children who need it most — turning hardship into hope, one child at a time.', cta1Text: 'Donate Now', cta2Text: 'Explore Our Work', imageUrl: 'https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?auto=format&fit=crop&w=900&q=80', imageAlt: 'Children playing at Rescue Mission Orphanage' },
+  exploreOurWork: {
+    kicker: 'Explore Our Work',
+    heading: 'Three paths into our mission',
+    description: 'Start where you feel most moved — learn who we are, give your time, or follow the journeys of children we serve.',
+    items: [
+      { index: '01', title: 'Who We Are', subtitle: 'Our Organization', description: 'Learn about our mission, our values, and the communities we serve.', href: '/about', imageUrl: 'https://images.unsplash.com/photo-1497486751826-5bc8bce4f3f6?auto=format&fit=crop&w=900&q=80' },
+      { index: '02', title: 'Volunteers', subtitle: 'Take Action', description: 'Join our team of dedicated volunteers making a difference on the ground.', href: '/get-involved', imageUrl: 'https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=900&q=80' },
+      { index: '03', title: 'Stories', subtitle: 'Building A Future', description: 'Read inspiring stories of hope, resilience, and transformation.', href: '/stories', imageUrl: 'https://images.unsplash.com/photo-1509099836639-18ba1795216d?auto=format&fit=crop&w=900&q=80' },
+    ],
+  },
   cta: { kicker: 'Give Hope a Home', heading: 'Your kindness becomes a child\'s breakthrough', description: 'Every donation, every volunteer hour, every share — it all adds up to education, healthcare, and a safe home for a child in need.' },
   impactStats: { kicker: 'Our Impact', heading: 'Making a Real Difference', description: 'Measurable, lasting change — from classrooms to clinics, every program is built to lift children out of hardship.', stats: [
     { value: '2,500+', label: 'Children Educated', description: 'Through our learning programs' },
@@ -163,18 +181,21 @@ export default function SettingsPage() {
   // Merge server data over defaults once it arrives
   useEffect(() => {
     if (!serverSettings) return
-    setSettings(prev => {
-      const merged: Record<string, unknown> = { ...prev }
-      const incoming = serverSettings as unknown as Record<string, unknown>
-      for (const key of Object.keys(incoming)) {
-        const value = incoming[key]
-        if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
-          merged[key] = { ...(merged[key] as Record<string, unknown>), ...(value as Record<string, unknown>) }
-        } else if (value !== undefined) {
-          merged[key] = value
+    // Defer to a microtask to avoid synchronously calling setState inside an effect
+    queueMicrotask(() => {
+      setSettings(prev => {
+        const merged: Record<string, unknown> = { ...prev }
+        const incoming = serverSettings as unknown as Record<string, unknown>
+        for (const key of Object.keys(incoming)) {
+          const value = incoming[key]
+          if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
+            merged[key] = { ...(merged[key] as Record<string, unknown>), ...(value as Record<string, unknown>) }
+          } else if (value !== undefined) {
+            merged[key] = value
+          }
         }
-      }
-      return merged as typeof prev
+        return merged as typeof prev
+      })
     })
   }, [serverSettings])
 
@@ -363,9 +384,9 @@ export default function SettingsPage() {
                         <Field label="CTA 2 Text" value={settings.homeHero.cta2Text} onChange={(v) => update('homeHero.cta2Text', v)} />
                       </div>
                       <div className="grid sm:grid-cols-2 gap-4">
-                        <Field label="Hero Image URL" value={settings.homeHero.imageUrl} onChange={(v) => update('homeHero.imageUrl', v)} placeholder="https://..." />
                         <Field label="Hero Image Alt Text" value={settings.homeHero.imageAlt} onChange={(v) => update('homeHero.imageAlt', v)} />
                       </div>
+                      <ImageUpload value={settings.homeHero.imageUrl} onChange={(v) => update('homeHero.imageUrl', v)} folder="rescue-mission/hero" label="Hero Image" />
                     </div>
                   </div>
                   <div className={sectionCls}>
@@ -374,6 +395,20 @@ export default function SettingsPage() {
                       <Field label="Kicker" value={settings.cta.kicker} onChange={(v) => update('cta.kicker', v)} />
                       <Field label="Heading" value={settings.cta.heading} onChange={(v) => update('cta.heading', v)} />
                       <Field label="Description" value={settings.cta.description} onChange={(v) => update('cta.description', v)} textarea />
+                    </div>
+                  </div>
+                  <div className={sectionCls}>
+                    <h2 className="text-lg font-serif text-dark mb-4">Explore Our Work Section</h2>
+                    <div className="space-y-4">
+                      <div className="grid sm:grid-cols-2 gap-4">
+                        <Field label="Kicker" value={settings.exploreOurWork.kicker} onChange={(v) => update('exploreOurWork.kicker', v)} />
+                        <Field label="Heading" value={settings.exploreOurWork.heading} onChange={(v) => update('exploreOurWork.heading', v)} />
+                      </div>
+                      <Field label="Description" value={settings.exploreOurWork.description} onChange={(v) => update('exploreOurWork.description', v)} textarea />
+                      <div className="mt-4">
+                        <h3 className="font-semibold text-dark mb-3">Items</h3>
+                        <ArrayField items={settings.exploreOurWork.items} onAdd={() => addArrayItem('exploreOurWork.items', { index: '', title: '', subtitle: '', description: '', href: '', imageUrl: '' })} onRemove={(i) => removeArrayItem('exploreOurWork.items', i)} onUpdate={(i, k, v) => updateArrayItem('exploreOurWork.items', i, k, v)} fields={[{ key: 'index', label: 'Index' }, { key: 'title', label: 'Title' }, { key: 'subtitle', label: 'Subtitle' }, { key: 'description', label: 'Description', textarea: true }, { key: 'href', label: 'Link URL' }, { key: 'imageUrl', label: 'Image', image: true }]} folder="rescue-mission/explore" />
+                      </div>
                     </div>
                   </div>
                 </>
@@ -405,7 +440,7 @@ export default function SettingsPage() {
                       {settings.about.storyParagraphs.map((p: string, i: number) => (
                         <Field key={i} label={`Paragraph ${i + 1}`} value={p} onChange={(v) => updateListItem('about.storyParagraphs', i, v)} textarea />
                       ))}
-                      <Field label="Story Image URL" value={settings.about.storyImageUrl} onChange={(v) => update('about.storyImageUrl', v)} placeholder="https://..." />
+                      <ImageUpload value={settings.about.storyImageUrl} onChange={(v) => update('about.storyImageUrl', v)} folder="rescue-mission/about" label="Story Image" />
                     </div>
                   </div>
                   <div className={sectionCls}>
@@ -421,7 +456,7 @@ export default function SettingsPage() {
                   </div>
                   <div className={sectionCls}>
                     <h2 className="text-lg font-serif text-dark mb-4">Team Members</h2>
-                    <ArrayField items={settings.about.team} onAdd={() => addArrayItem('about.team', { name: '', role: '', bio: '', avatar: '' })} onRemove={(i) => removeArrayItem('about.team', i)} onUpdate={(i, k, v) => updateArrayItem('about.team', i, k, v)} fields={[{ key: 'name', label: 'Name' }, { key: 'role', label: 'Role' }, { key: 'bio', label: 'Bio' }, { key: 'avatar', label: 'Avatar URL' }]} />
+                    <ArrayField items={settings.about.team} onAdd={() => addArrayItem('about.team', { name: '', role: '', bio: '', avatar: '' })} onRemove={(i) => removeArrayItem('about.team', i)} onUpdate={(i, k, v) => updateArrayItem('about.team', i, k, v)} fields={[{ key: 'name', label: 'Name' }, { key: 'role', label: 'Role' }, { key: 'bio', label: 'Bio' }, { key: 'avatar', label: 'Avatar', image: true }]} folder="rescue-mission/team" />
                   </div>
                   <div className={sectionCls}>
                     <h2 className="text-lg font-serif text-dark mb-4">Milestones</h2>
@@ -433,7 +468,7 @@ export default function SettingsPage() {
               {activeTab === 'testimonials' && (
                 <div className={sectionCls}>
                   <h2 className="text-lg font-serif text-dark mb-4">Testimonials</h2>
-                  <ArrayField items={settings.testimonials} onAdd={() => addArrayItem('testimonials', { quote: '', author: '', role: '', avatar: '' })} onRemove={(i) => removeArrayItem('testimonials', i)} onUpdate={(i, k, v) => updateArrayItem('testimonials', i, k, v)} fields={[{ key: 'quote', label: 'Quote', textarea: true }, { key: 'author', label: 'Author Name' }, { key: 'role', label: 'Role' }, { key: 'avatar', label: 'Avatar URL' }]} />
+                  <ArrayField items={settings.testimonials} onAdd={() => addArrayItem('testimonials', { quote: '', author: '', role: '', avatar: '' })} onRemove={(i) => removeArrayItem('testimonials', i)} onUpdate={(i, k, v) => updateArrayItem('testimonials', i, k, v)} fields={[{ key: 'quote', label: 'Quote', textarea: true }, { key: 'author', label: 'Author Name' }, { key: 'role', label: 'Role' }, { key: 'avatar', label: 'Avatar', image: true }]} folder="rescue-mission/testimonials" />
                 </div>
               )}
 

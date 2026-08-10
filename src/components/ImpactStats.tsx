@@ -1,6 +1,5 @@
 'use client'
 
-import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { PiGraduationCap, PiUsers, PiMapPin, PiCurrencyCircleDollar } from 'react-icons/pi'
 import { useSettings } from '@/lib/useSettings'

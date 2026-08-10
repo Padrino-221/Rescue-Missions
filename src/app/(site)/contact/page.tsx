@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { PiPhone, PiEnvelope, PiMapPin, PiClock, PiPaperPlaneTilt, PiFacebookLogo, PiTwitterLogo, PiInstagramLogo, PiYoutubeLogo } from 'react-icons/pi'
 import Input from '@/components/ui/Input'
@@ -45,7 +45,6 @@ const defaultSocialLinks = [
 ]
 
 export default function ContactPage() {
-  const [faqs, setFaqs] = useState(defaultFaqs)
   const { settings } = useSettings()
 
   const [formData, setFormData] = useState({
@@ -55,7 +54,6 @@ export default function ContactPage() {
     message: '',
   })
 
-  // Derive contact info and social links from settings directly
   const contact = settings?.contact
   const contactInfo = contact
     ? [
@@ -76,10 +74,7 @@ export default function ContactPage() {
       ]
     : defaultSocialLinks
 
-  // Sync FAQ from settings via effect (keeps the state so local filtering/search could be added later)
-  useEffect(() => {
-    if (settings?.faq?.length) setFaqs(settings.faq)
-  }, [settings])
+  const faqs = settings?.faq?.length ? settings.faq : defaultFaqs
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()

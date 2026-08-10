@@ -67,6 +67,19 @@ export interface SiteSettings {
   }
   faq: { question: string; answer: string }[]
   partners: { name: string }[]
+  exploreOurWork: {
+    kicker: string
+    heading: string
+    description: string
+    items: {
+      index: string
+      title: string
+      subtitle: string
+      description: string
+      href: string
+      imageUrl: string
+    }[]
+  }
   cta: { kicker: string; heading: string; description: string }
 }
 

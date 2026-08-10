@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { PiHeartFill, PiUsers, PiBuilding, PiGift, PiCheck } from 'react-icons/pi'
 import Input from '@/components/ui/Input'
@@ -46,9 +46,6 @@ const defaultDonationAmounts = [25, 50, 100, 250, 500, 1000]
 
 export default function GetInvolvedPage() {
   const [activeTab, setActiveTab] = useState('volunteer')
-  const [volunteerRoles, setVolunteerRoles] = useState(defaultVolunteerRoles)
-  const [sponsorship, setSponsorship] = useState(defaultSponsorship)
-  const [corporate, setCorporate] = useState(defaultCorporate)
   const { settings } = useSettings()
 
   const volunteerRoles = settings?.volunteerRoles || defaultVolunteerRoles

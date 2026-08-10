@@ -1,6 +1,5 @@
 'use client'
 
-import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import Image from 'next/image'
 import { PiHeartFill, PiEye, PiShieldCheck, PiGlobe, PiUsers, PiArrowRight, PiHandHeart } from 'react-icons/pi'
