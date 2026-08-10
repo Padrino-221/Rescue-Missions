@@ -3,6 +3,7 @@ import ImpactStats from '@/components/ImpactStats'
 import ProgramsOverview from '@/components/ProgramsOverview'
 import HowWeHelp from '@/components/HowWeHelp'
 import Testimonials from '@/components/Testimonials'
+import Partners from '@/components/Partners'
 import CallToAction from '@/components/CallToAction'
 
 export default function Home() {
@@ -13,6 +14,7 @@ export default function Home() {
       <ProgramsOverview />
       <HowWeHelp />
       <Testimonials />
+      <Partners />
       <CallToAction />
     </>
   )

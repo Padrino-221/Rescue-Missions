@@ -46,7 +46,7 @@ export default function Testimonials() {
         const data = await res.json()
         if (data.testimonials && Array.isArray(data.testimonials)) {
           // Map to ensure each has rating (default to 5)
-          const mapped = data.testimonials.map((t: any) => ({
+          const mapped = data.testimonials.map((t: { quote?: string; author?: string; role?: string; avatar?: string; rating?: number }) => ({
             quote: t.quote || '',
             author: t.author || '',
             role: t.role || '',

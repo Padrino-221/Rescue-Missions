@@ -9,9 +9,7 @@ import {
   PiGlobe,
   PiPhone,
   PiEnvelope,
-  PiMapPin,
   PiCurrencyCircleDollar,
-  PiImage,
   PiShareNetwork,
   PiTrendUp,
   PiHeart,
@@ -40,7 +38,7 @@ const inputCls = 'w-full px-4 py-3 rounded-xl border border-dark/15 bg-white tex
 const labelCls = 'block text-sm font-medium text-dark mb-2'
 const sectionCls = 'bg-white rounded-2xl border border-dark/10 p-6 mb-4'
 
-function Field({ label, value, onChange, textarea, placeholder }: { label: string; value: string; onChange: (v: string) => void; textarea?: boolean; placeholder?: string }) {
+function Field({ label, value, onChange, textarea, placeholder }: { label: string; value: string | number; onChange: (v: string) => void; textarea?: boolean; placeholder?: string }) {
   return (
     <div>
       <label className={labelCls}>{label}</label>
@@ -54,7 +52,7 @@ function Field({ label, value, onChange, textarea, placeholder }: { label: strin
 }
 
 function ArrayField({ items, onAdd, onRemove, onUpdate, fields }: {
-  items: Record<string, string>[]
+  items: Record<string, string | number>[]
   onAdd: () => void
   onRemove: (i: number) => void
   onUpdate: (i: number, key: string, val: string) => void
@@ -89,67 +87,68 @@ function ArrayField({ items, onAdd, onRemove, onUpdate, fields }: {
 }
 
 const defaultSettings = () => ({
-  general: { orgName: 'Rescue Mission Orphanage', tagline: 'Give Hope To Children In Need', description: 'A dedicated charity organization focused on creating sustainable solutions for those in need.', foundedYear: '2008', copyrightYear: '2024' },
+  general: { orgName: 'Rescue Mission Orphanage', tagline: 'Give Hope To Children In Need', description: 'A dedicated charity organization focused on creating sustainable solutions for those in need. Join us in our mission to provide education, healthcare, and shelter to orphaned children.', foundedYear: '2025', copyrightYear: '2025' },
   contact: { phone1: '+233 24 567 890', phone2: '+233 20 567 891', email1: 'info@rescuemission.org', email2: 'donate@rescuemission.org', address1: '123 Hope Street', address2: 'Accra, Ghana', officeHours1: 'Mon - Fri: 9:00 AM - 5:00 PM', officeHours2: 'Sat: 9:00 AM - 1:00 PM', mediaEmail: 'media@rescuemission.org' },
   social: { facebook: 'https://facebook.com/rescuemission', twitter: 'https://twitter.com/rescuemission', instagram: 'https://instagram.com/rescuemission', youtube: 'https://youtube.com/rescuemission', linkedin: 'https://linkedin.com/company/rescuemission' },
-  homeHero: { heading: 'Every child deserves a childhood.', description: 'Rescue Mission Orphanage provides shelter, education, and care to children who need it most.', cta1Text: 'Donate Now', cta2Text: 'Explore Our Work', imageUrl: '', imageAlt: '' },
+  homeHero: { heading: 'Every child deserves a childhood.', description: 'Rescue Mission Orphanage provides shelter, education, and care to children who need it most — turning hardship into hope, one child at a time.', cta1Text: 'Donate Now', cta2Text: 'Explore Our Work', imageUrl: 'https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?auto=format&fit=crop&w=900&q=80', imageAlt: 'Children playing at Rescue Mission Orphanage' },
   cta: { kicker: 'Give Hope a Home', heading: 'Your kindness becomes a child\'s breakthrough', description: 'Every donation, every volunteer hour, every share — it all adds up to education, healthcare, and a safe home for a child in need.' },
-  impactStats: { kicker: 'Our Impact', heading: 'Making a Real Difference', description: 'Measurable, lasting change — from classrooms to clinics.', stats: [
+  impactStats: { kicker: 'Our Impact', heading: 'Making a Real Difference', description: 'Measurable, lasting change — from classrooms to clinics, every program is built to lift children out of hardship.', stats: [
     { value: '2,500+', label: 'Children Educated', description: 'Through our learning programs' },
     { value: '500+', label: 'Families Supported', description: 'With emergency relief' },
     { value: '15+', label: 'Communities', description: 'Across multiple regions' },
     { value: 'GH₵2.5M', label: 'Funds Raised', description: 'From generous donors' },
   ]},
-  about: { storyHeading: 'A Journey of Hope Since 2008', storyParagraphs: ['', '', ''], missionStatement: '', visionStatement: '', values: [
+  about: { storyHeading: 'A Journey of Hope Since 2025', storyParagraphs: [
+    'Rescue Mission Orphanage was founded with a simple yet powerful vision: to provide every orphaned child with the opportunity to grow, learn, and thrive in a safe and nurturing environment.',
+    'What started as a small shelter for 10 children has grown into a comprehensive organization serving thousands of children across multiple countries.',
+    'Today, we continue to expand our reach and deepen our impact, guided by the belief that every child deserves a chance at a brighter future.',
+  ], storyImageUrl: 'https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?auto=format&fit=crop&w=900&q=80', missionStatement: 'To provide comprehensive care, education, and support to orphaned and vulnerable children, empowering them to become self-reliant, compassionate, and productive members of society.', visionStatement: 'A world where every orphaned child has access to quality education, healthcare, and the opportunity to realize their full potential in a loving and supportive environment.', values: [
     { title: 'Compassion', description: 'Empathy at the heart of everything we do.' },
     { title: 'Integrity', description: 'Transparency and accountability in all operations.' },
     { title: 'Impact', description: 'Sustainable solutions creating lasting change.' },
     { title: 'Collaboration', description: 'Partnerships amplifying our collective impact.' },
   ], team: [
-    { name: 'Grace Mwangi', role: 'Executive Director', bio: '20+ years in nonprofit leadership', avatar: '' },
-    { name: 'David Okonkwo', role: 'Programs Director', bio: 'Expert in child development programs', avatar: '' },
-    { name: 'Sarah Williams', role: 'Development Manager', bio: 'Passionate about community engagement', avatar: '' },
-    { name: 'James Chen', role: 'Finance Director', bio: 'Ensuring transparent financial stewardship', avatar: '' },
+    { name: 'Grace Mwangi', role: 'Executive Director', bio: '20+ years in nonprofit leadership', avatar: 'https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?auto=format&fit=crop&w=200&q=80' },
+    { name: 'David Okonkwo', role: 'Programs Director', bio: 'Expert in child development programs', avatar: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&w=200&q=80' },
+    { name: 'Sarah Williams', role: 'Development Manager', bio: 'Passionate about community engagement', avatar: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=200&q=80' },
+    { name: 'James Chen', role: 'Finance Director', bio: 'Ensuring transparent financial stewardship', avatar: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=200&q=80' },
   ], milestones: [
-    { year: '2008', title: 'Founded', description: 'Established with a vision to help orphaned children.' },
-    { year: '2012', title: 'First 100 Children', description: 'Reached milestone of supporting 100 children.' },
-    { year: '2016', title: 'New Facility', description: 'Opened a new facility to serve more children.' },
-    { year: '2020', title: 'Global Expansion', description: 'Extended reach to 5 countries in Africa and Asia.' },
-    { year: '2024', title: '5,000+ Children', description: 'Celebrated supporting over 5,000 children.' },
+    { year: '2025', title: 'Founded', description: 'Established with a vision to help orphaned children.' },
+    { year: '2026', title: 'First 100 Children', description: 'Reached milestone of supporting 100 children.' },
   ]},
   testimonials: [
-    { quote: 'Supporting Rescue Mission has been one of the most rewarding experiences of my life.', author: 'Sarah Johnson', role: 'Monthly Donor', avatar: '' },
-    { quote: 'Volunteering here changed my perspective on life.', author: 'Michael Chen', role: 'Volunteer', avatar: '' },
-    { quote: 'As a corporate partner, we have seen firsthand how Rescue Mission transforms communities.', author: 'Emily Rodriguez', role: 'Corporate Partner', avatar: '' },
+    { quote: 'Supporting Rescue Mission has been one of the most rewarding experiences of my life. Seeing the direct impact on children is incredible.', author: 'Sarah Johnson', role: 'Monthly Donor', avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=200&q=80' },
+    { quote: 'Volunteering here changed my perspective on life. The dedication of the team and the joy of the children is truly inspiring.', author: 'Michael Chen', role: 'Volunteer', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=200&q=80' },
+    { quote: 'As a corporate partner, we have seen firsthand how Rescue Mission transforms communities. Their transparency is unmatched.', author: 'Emily Rodriguez', role: 'Corporate Partner', avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=200&q=80' },
   ],
   volunteerRoles: [
-    { title: 'Teaching Assistant', commitment: '4 hours/week', description: 'Help children with their studies.' },
-    { title: 'Mentor', commitment: '2 hours/week', description: 'Guide and support a child.' },
-    { title: 'Event Coordinator', commitment: 'Flexible', description: 'Help organize fundraising events.' },
-    { title: 'Skilled Volunteer', commitment: 'Project-based', description: 'Share your professional skills.' },
+    { title: 'Teaching Assistant', commitment: '4 hours/week', description: 'Help children with their studies and homework.' },
+    { title: 'Mentor', commitment: '2 hours/week', description: 'Guide and support a child through their journey.' },
+    { title: 'Event Coordinator', commitment: 'Flexible', description: 'Help organize and run fundraising events.' },
+    { title: 'Skilled Volunteer', commitment: 'Project-based', description: 'Share your professional skills (medical, legal, etc.).' },
   ],
-  sponsorship: { monthlyAmount: '50', benefits: ['Monthly updates and photos', 'Direct correspondence through letters', 'Annual progress reports', 'Invitation to visit', 'Tax-deductible donation receipt'] },
+  sponsorship: { monthlyAmount: 50, benefits: ['Monthly updates and photos of your sponsored child', 'Direct correspondence through letters', 'Annual progress reports', 'Invitation to visit (where possible)', 'Tax-deductible donation receipt'] },
   corporate: { tiers: [
     { tier: 'Bronze', amount: 'GH₵5,000/year', benefits: 'Logo on website, social media mentions' },
-    { tier: 'Silver', amount: 'GH₵15,000/year', benefits: 'All Bronze + event sponsorship' },
-    { tier: 'Gold', amount: 'GH₵30,000/year', benefits: 'All Silver + naming rights' },
-  ], benefits: ['Brand visibility', 'Employee engagement opportunities', 'Tax benefits', 'CSR reporting support', 'Partnership certificates'] },
+    { tier: 'Silver', amount: 'GH₵15,000/year', benefits: 'All Bronze + event sponsorship, employee volunteer days' },
+    { tier: 'Gold', amount: 'GH₵30,000/year', benefits: 'All Silver + naming rights, board observer seat' },
+  ], benefits: ['Brand visibility on our website and events', 'Employee engagement opportunities', 'Tax benefits for corporate donations', 'CSR reporting support', 'Partnership certificates'] },
   donations: { presetAmounts: [
-    { amount: '25', impact: 'School supplies for a month' },
-    { amount: '50', impact: 'Nutritious meals for a week' },
-    { amount: '100', impact: 'Medical care checkup' },
-    { amount: '250', impact: 'Safe shelter for a month' },
-    { amount: '500', impact: 'Education for a year' },
-    { amount: '1000', impact: 'Complete care package' },
+    { amount: 25, impact: 'School supplies for a month' },
+    { amount: 50, impact: 'Nutritious meals for a week' },
+    { amount: 100, impact: 'Medical care checkup' },
+    { amount: 250, impact: 'Safe shelter for a month' },
+    { amount: 500, impact: 'Education for a year' },
+    { amount: 1000, impact: 'Complete care package' },
   ], allocation: [
-    { label: 'Programs & Services', percentage: '85' },
-    { label: 'Administration', percentage: '10' },
-    { label: 'Fundraising', percentage: '5' },
-  ], taxInfo: 'Rescue Mission Orphanage is a registered nonprofit organization. All donations are tax-deductible.' },
+    { label: 'Programs & Services', percentage: 85 },
+    { label: 'Administration', percentage: 10 },
+    { label: 'Fundraising', percentage: 5 },
+  ], taxInfo: 'Rescue Mission Orphanage is a registered 501(c)(3) nonprofit organization. All donations are tax-deductible to the extent allowed by law.' },
   faq: [
-    { question: 'How can I volunteer?', answer: 'Visit our Get Involved page or contact us directly.' },
-    { question: 'Are donations tax-deductible?', answer: 'Yes! We are a registered nonprofit organization.' },
-    { question: 'How do I sponsor a child?', answer: 'Contact us or visit our Donate page.' },
+    { question: 'How can I volunteer?', answer: 'Visit our Get Involved page or contact us directly to learn about volunteer opportunities.' },
+    { question: 'Are donations tax-deductible?', answer: 'Yes! We are a registered 501(c)(3) organization. All donations are tax-deductible.' },
+    { question: 'How do I sponsor a child?', answer: 'Contact us or visit our Donate page to learn about our sponsorship program.' },
   ],
   partners: [{ name: 'ZenZap' }, { name: 'sparkle' }, { name: 'Lum Labs' }, { name: 'Pulse' }, { name: 'swift' }, { name: 'innovio' }],
 })
@@ -161,17 +160,19 @@ export default function SettingsPage() {
 
   useEffect(() => {
     fetch('/api/settings').then(r => r.json()).then(data => {
-      if (data && Object.keys(data).length > 0) {
-        setSettings((prev: any) => {
-          const merged: any = { ...prev }
-          for (const key of Object.keys(data) as string[]) {
-            if (typeof data[key] === 'object' && data[key] !== null && !Array.isArray(data[key])) {
-              merged[key] = { ...prev[key], ...data[key] }
-            } else {
-              merged[key] = data[key]
+      const incoming = data as Record<string, unknown> | null
+      if (incoming && Object.keys(incoming).length > 0) {
+        setSettings(prev => {
+          const merged: Record<string, unknown> = { ...prev }
+          for (const key of Object.keys(incoming)) {
+            const value = incoming[key]
+            if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
+              merged[key] = { ...(merged[key] as Record<string, unknown>), ...(value as Record<string, unknown>) }
+            } else if (value !== undefined) {
+              merged[key] = value
             }
           }
-          return merged
+          return merged as typeof prev
         })
       }
     }).catch(() => {})
@@ -260,8 +261,19 @@ export default function SettingsPage() {
     setTimeout(() => setSaved(false), 3000)
   }
 
-  const handleReset = () => {
-    setSettings(defaultSettings())
+  const handleReset = async () => {
+    const fresh = defaultSettings()
+    // Preserve fields the UI can't edit so reset + save never wipes live content.
+    try {
+      const res = await fetch('/api/settings')
+      const data = await res.json()
+      if (data?.homeHero) {
+        fresh.homeHero.imageUrl = data.homeHero.imageUrl || fresh.homeHero.imageUrl
+        fresh.homeHero.imageAlt = data.homeHero.imageAlt || fresh.homeHero.imageAlt
+      }
+      if (data?.about?.storyImageUrl) fresh.about.storyImageUrl = data.about.storyImageUrl
+    } catch {}
+    setSettings(fresh)
   }
 
   return (
@@ -354,6 +366,10 @@ export default function SettingsPage() {
                         <Field label="CTA 1 Text" value={settings.homeHero.cta1Text} onChange={(v) => update('homeHero.cta1Text', v)} />
                         <Field label="CTA 2 Text" value={settings.homeHero.cta2Text} onChange={(v) => update('homeHero.cta2Text', v)} />
                       </div>
+                      <div className="grid sm:grid-cols-2 gap-4">
+                        <Field label="Hero Image URL" value={settings.homeHero.imageUrl} onChange={(v) => update('homeHero.imageUrl', v)} placeholder="https://..." />
+                        <Field label="Hero Image Alt Text" value={settings.homeHero.imageAlt} onChange={(v) => update('homeHero.imageAlt', v)} />
+                      </div>
                     </div>
                   </div>
                   <div className={sectionCls}>
@@ -393,6 +409,7 @@ export default function SettingsPage() {
                       {settings.about.storyParagraphs.map((p: string, i: number) => (
                         <Field key={i} label={`Paragraph ${i + 1}`} value={p} onChange={(v) => updateListItem('about.storyParagraphs', i, v)} textarea />
                       ))}
+                      <Field label="Story Image URL" value={settings.about.storyImageUrl} onChange={(v) => update('about.storyImageUrl', v)} placeholder="https://..." />
                     </div>
                   </div>
                   <div className={sectionCls}>

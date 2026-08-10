@@ -25,6 +25,16 @@ const galleryItems = [
 export default function GalleryPage() {
   const [activeCategory, setActiveCategory] = useState('All')
   const [selectedItem, setSelectedItem] = useState<number | null>(null)
+  const [mediaEmail, setMediaEmail] = useState('media@rescuemission.org')
+
+  useEffect(() => {
+    fetch('/api/settings')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data?.contact?.mediaEmail) setMediaEmail(data.contact.mediaEmail)
+      })
+      .catch(() => {})
+  }, [])
 
   const filteredItems = activeCategory === 'All' 
     ? galleryItems 
@@ -190,7 +200,7 @@ export default function GalleryPage() {
             <button className="btn-primary">
               Download Press Kit
             </button>
-            <a href="mailto:media@rescuemission.org" className="btn-secondary">
+            <a href={`mailto:${mediaEmail}`} className="btn-secondary">
               Contact Media Team
             </a>
           </div>

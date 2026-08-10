@@ -1,4 +1,8 @@
-const partners = [
+'use client'
+
+import { useState, useEffect } from 'react'
+
+const defaultPartners = [
   { name: 'ZenZap' },
   { name: 'sparkle' },
   { name: 'Lum Labs' },
@@ -8,6 +12,17 @@ const partners = [
 ]
 
 export default function Partners() {
+  const [partners, setPartners] = useState(defaultPartners)
+
+  useEffect(() => {
+    fetch('/api/settings')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data?.partners?.length) setPartners(data.partners)
+      })
+      .catch(() => {})
+  }, [])
+
   return (
     <section className="py-16 bg-cream border-y border-dark/10">
       <div className="container-premium">

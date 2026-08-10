@@ -16,6 +16,16 @@ const navigation = [
 export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
+  const [orgName, setOrgName] = useState('Rescue Mission')
+
+  useEffect(() => {
+    fetch('/api/settings')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data?.general?.orgName) setOrgName(data.general.orgName)
+      })
+      .catch(() => {})
+  }, [])
 
   useEffect(() => {
     const handleScroll = () => {
@@ -36,7 +46,7 @@ export default function Header() {
               <PiHeartFill className="w-5 h-5 text-dark" />
             </div>
             <span className="text-lg font-serif font-semibold tracking-tight">
-              Rescue Mission
+              {orgName}
             </span>
           </Link>
 

@@ -1,10 +1,35 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { PiHeartFill, PiArrowUpRight } from 'react-icons/pi'
 
+const defaults = {
+  kicker: 'Give Hope a Home',
+  heading: 'Your kindness becomes a child\'s breakthrough',
+  description:
+    'Every donation, every volunteer hour, every share — it all adds up to education, healthcare, and a safe home for a child in need.',
+}
+
 export default function CallToAction() {
+  const [cta, setCta] = useState(defaults)
+
+  useEffect(() => {
+    fetch('/api/settings')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data?.cta) {
+          setCta({
+            kicker: data.cta.kicker || defaults.kicker,
+            heading: data.cta.heading || defaults.heading,
+            description: data.cta.description || defaults.description,
+          })
+        }
+      })
+      .catch(() => {})
+  }, [])
+
   return (
     <section className="section-padding bg-cream overflow-hidden">
       <div className="container-premium">
@@ -18,15 +43,14 @@ export default function CallToAction() {
           <div className="absolute top-0 right-0 w-96 h-96 bg-sky/15 rounded-full blur-3xl" />
           <div className="absolute bottom-0 left-0 w-72 h-72 bg-coral/15 rounded-full blur-3xl" />
 
-          <span className="kicker-light justify-center mb-8">Give Hope a Home</span>
+          <span className="kicker-light justify-center mb-8">{cta.kicker}</span>
 
           <h2 className="text-4xl md:text-6xl font-serif text-cream leading-[1.02] mx-auto max-w-3xl text-balance">
-            Your kindness becomes a child&apos;s breakthrough
+            {cta.heading}
           </h2>
 
           <p className="mt-8 text-cream/60 text-lg max-w-2xl mx-auto leading-relaxed">
-            Every donation, every volunteer hour, every share — it all adds up to education,
-            healthcare, and a safe home for a child in need.
+            {cta.description}
           </p>
 
           <div className="mt-12 flex flex-wrap justify-center gap-4">

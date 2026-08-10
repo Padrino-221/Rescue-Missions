@@ -41,11 +41,14 @@ const defaultCorporate = {
   ],
 }
 
+const defaultDonationAmounts = [25, 50, 100, 250, 500, 1000]
+
 export default function GetInvolvedPage() {
   const [activeTab, setActiveTab] = useState('volunteer')
   const [volunteerRoles, setVolunteerRoles] = useState(defaultVolunteerRoles)
   const [sponsorship, setSponsorship] = useState(defaultSponsorship)
   const [corporate, setCorporate] = useState(defaultCorporate)
+  const [donationAmounts, setDonationAmounts] = useState<number[]>(defaultDonationAmounts)
 
   useEffect(() => {
     fetch('/api/settings')
@@ -54,6 +57,12 @@ export default function GetInvolvedPage() {
         if (data.volunteerRoles) setVolunteerRoles(data.volunteerRoles)
         if (data.sponsorship) setSponsorship(data.sponsorship)
         if (data.corporate) setCorporate(data.corporate)
+        if (data.donations?.presetAmounts?.length) {
+          const parsed = data.donations.presetAmounts
+            .map((item: { amount: number | string }) => Number(item.amount))
+            .filter((n: number) => !Number.isNaN(n) && n > 0)
+          if (parsed.length) setDonationAmounts(parsed)
+        }
       })
       .catch(() => {})
   }, [])
@@ -307,9 +316,9 @@ export default function GetInvolvedPage() {
               <div className="card-premium p-8">
                 <p className="text-dark/60 mb-6">Choose an amount or enter a custom donation:</p>
                 <div className="grid grid-cols-3 gap-4 mb-6">
-                  {[25, 50, 100, 250, 500, 1000].map((amount) => (
+                  {donationAmounts.map((amount, index) => (
                     <Link
-                      key={amount}
+                      key={`${amount}-${index}`}
                       href="/donate"
                       className="py-3 rounded-2xl border border-dark text-dark font-semibold hover:bg-dark hover:text-white transition-all duration-300 text-center"
                     >

@@ -46,6 +46,9 @@ const defaultStory = {
   visionStatement: 'A world where every orphaned child has access to quality education, healthcare, and the opportunity to realize their full potential in a loving and supportive environment.',
 }
 
+const defaultStoryImage =
+  'https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?auto=format&fit=crop&w=900&q=80'
+
 export default function AboutPage() {
   const [storyHeading, setStoryHeading] = useState(defaultStory.storyHeading)
   const [storyParagraphs, setStoryParagraphs] = useState(defaultStory.storyParagraphs)
@@ -54,6 +57,8 @@ export default function AboutPage() {
   const [values, setValues] = useState(defaultValues)
   const [team, setTeam] = useState(defaultTeam)
   const [milestones, setMilestones] = useState(defaultMilestones)
+  const [foundedYear, setFoundedYear] = useState('2008')
+  const [storyImageUrl, setStoryImageUrl] = useState(defaultStoryImage)
 
   useEffect(() => {
     fetch('/api/settings')
@@ -66,6 +71,8 @@ export default function AboutPage() {
         if (about.storyParagraphs?.length) setStoryParagraphs(about.storyParagraphs)
         if (about.missionStatement) setMissionStatement(about.missionStatement)
         if (about.visionStatement) setVisionStatement(about.visionStatement)
+        if (about.storyImageUrl) setStoryImageUrl(about.storyImageUrl)
+        if (data?.general?.foundedYear) setFoundedYear(data.general.foundedYear)
         if (about.values?.length) {
           setValues(
             about.values.map((v: { title: string; description: string }) => ({
@@ -100,7 +107,7 @@ export default function AboutPage() {
             </h1>
             <p className="mt-5 text-lg text-dark/55 max-w-xl leading-relaxed">
               A journey of hope, dedication, and transformation in the lives of
-              orphaned children since 2008.
+              orphaned children since {foundedYear}.
             </p>
           </motion.div>
         </div>
@@ -138,7 +145,7 @@ export default function AboutPage() {
               <div className="absolute -inset-3 bg-lime/20 rounded-[2.5rem] rotate-1" />
               <div className="relative rounded-[2rem] overflow-hidden aspect-[4/3] border-2 border-white">
                 <Image
-                  src="https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?auto=format&fit=crop&w=900&q=80"
+                  src={storyImageUrl}
                   alt="Children at the orphanage"
                   fill
                   sizes="(min-width: 1024px) 45vw, 100vw"

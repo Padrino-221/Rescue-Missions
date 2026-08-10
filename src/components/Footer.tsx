@@ -14,27 +14,26 @@ const footerLinks = [
 ]
 
 interface Settings {
-  orgName?: string
-  description?: string
-  phone1?: string
-  email1?: string
-  address1?: string
-  address2?: string
-  facebook?: string
-  twitter?: string
-  instagram?: string
-  youtube?: string
-  linkedin?: string
-  copyrightYear?: string
+  general?: {
+    orgName?: string
+    description?: string
+    tagline?: string
+    copyrightYear?: string
+  }
+  contact?: {
+    phone1?: string
+    email1?: string
+    address1?: string
+    address2?: string
+  }
+  social?: {
+    facebook?: string
+    twitter?: string
+    instagram?: string
+    youtube?: string
+    linkedin?: string
+  }
 }
-
-const defaultSocialLinks = [
-  { name: 'Facebook', icon: PiFacebookLogo, href: '#' },
-  { name: 'Twitter', icon: PiTwitterLogo, href: '#' },
-  { name: 'Instagram', icon: PiInstagramLogo, href: '#' },
-  { name: 'YouTube', icon: PiYoutubeLogo, href: '#' },
-  { name: 'LinkedIn', icon: PiLinkedinLogo, href: '#' },
-]
 
 export default function Footer() {
   const [settings, setSettings] = useState<Settings | null>(null)
@@ -46,21 +45,22 @@ export default function Footer() {
       .catch(() => setSettings(null))
   }, [])
 
-  const orgName = settings?.orgName || 'Rescue Mission'
-  const description = settings?.description || 'Creating sustainable solutions for children in need — empowering them to build a better future.'
-  const phone = settings?.phone1 || '+1 (234) 567-890'
-  const email = settings?.email1 || 'info@rescuemission.org'
-  const address1 = settings?.address1 || ''
-  const address2 = settings?.address2 || ''
+  const orgName = settings?.general?.orgName || 'Rescue Mission'
+  const tagline = settings?.general?.tagline || ''
+  const description = settings?.general?.description || 'Creating sustainable solutions for children in need — empowering them to build a better future.'
+  const phone = settings?.contact?.phone1 || '+1 (234) 567-890'
+  const email = settings?.contact?.email1 || 'info@rescuemission.org'
+  const address1 = settings?.contact?.address1 || ''
+  const address2 = settings?.contact?.address2 || ''
   const fullAddress = [address1, address2].filter(Boolean).join(', ') || '123 Hope Street, City, Country'
-  const copyrightYear = settings?.copyrightYear || '2024'
+  const copyrightYear = settings?.general?.copyrightYear || '2024'
 
   const socialLinks = [
-    { name: 'Facebook', icon: PiFacebookLogo, href: settings?.facebook || '#' },
-    { name: 'Twitter', icon: PiTwitterLogo, href: settings?.twitter || '#' },
-    { name: 'Instagram', icon: PiInstagramLogo, href: settings?.instagram || '#' },
-    { name: 'YouTube', icon: PiYoutubeLogo, href: settings?.youtube || '#' },
-    { name: 'LinkedIn', icon: PiLinkedinLogo, href: settings?.linkedin || '#' },
+    { name: 'Facebook', icon: PiFacebookLogo, href: settings?.social?.facebook || '#' },
+    { name: 'Twitter', icon: PiTwitterLogo, href: settings?.social?.twitter || '#' },
+    { name: 'Instagram', icon: PiInstagramLogo, href: settings?.social?.instagram || '#' },
+    { name: 'YouTube', icon: PiYoutubeLogo, href: settings?.social?.youtube || '#' },
+    { name: 'LinkedIn', icon: PiLinkedinLogo, href: settings?.social?.linkedin || '#' },
   ]
 
   return (
@@ -69,12 +69,15 @@ export default function Footer() {
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-10 lg:gap-8">
           {/* Brand */}
           <div className="lg:col-span-2">
-            <Link href="/" className="flex items-center gap-2.5 mb-4">
+            <Link href="/" className="flex items-center gap-2.5 mb-4 group">
               <div className="w-9 h-9 bg-lime rounded-full flex items-center justify-center">
                 <PiHeartFill className="w-4 h-4 text-dark" />
               </div>
               <span className="text-base font-serif font-semibold text-cream">{orgName}</span>
             </Link>
+            {tagline && (
+              <p className="text-xs text-cream/40 italic mb-5 -mt-2">{tagline}</p>
+            )}
             <p className="text-cream/45 text-sm max-w-xs leading-relaxed mb-5">
               {description}
             </p>
