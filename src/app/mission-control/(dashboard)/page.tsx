@@ -25,8 +25,6 @@ type Stats = {
   activePrograms: number
   totalPrograms: number
   galleryItems: number
-  childrenServed: string
-  volunteersActive: string
 }
 
 type Activity = { id: string; type: string; message: string }
@@ -89,18 +87,11 @@ export default function MissionControlOverview() {
           bgColor: 'bg-lime/10',
         },
         {
-          label: 'Children Supported',
-          value: stats.childrenServed || '0',
-          change: 'lives touched',
-          icon: PiHeartFill,
+          label: 'Active Programs',
+          value: String(stats.activePrograms),
+          change: `${stats.totalPrograms} total programs`,
+          icon: PiBooks,
           bgColor: 'bg-red-50',
-        },
-        {
-          label: 'Active Volunteers',
-          value: stats.volunteersActive || '0',
-          change: 'volunteers',
-          icon: PiUsers,
-          bgColor: 'bg-blue-50',
         },
         {
           label: 'Published Stories',
@@ -108,6 +99,13 @@ export default function MissionControlOverview() {
           change: `${stats.totalStories} total stories`,
           icon: PiNewspaper,
           bgColor: 'bg-purple-50',
+        },
+        {
+          label: 'Unread Messages',
+          value: String(stats.unreadContacts),
+          change: `${stats.totalContacts} total contacts`,
+          icon: PiChatsCircle,
+          bgColor: 'bg-blue-50',
         },
       ]
     : []

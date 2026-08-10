@@ -19,9 +19,7 @@ export async function GET() {
        (SELECT count(*)::int FROM stories) AS total_stories,
        (SELECT count(*)::int FROM programs WHERE status = 'active') AS active_programs,
        (SELECT count(*)::int FROM programs) AS total_programs,
-       (SELECT count(*)::int FROM gallery_items) AS gallery_items,
-       (SELECT children_served FROM settings WHERE id = 1) AS children_served,
-       (SELECT volunteers_active FROM settings WHERE id = 1) AS volunteers_active`
+       (SELECT count(*)::int FROM gallery_items) AS gallery_items`
   )
 
   // Recent activity: newest donations, stories, contacts and gallery items
@@ -78,8 +76,6 @@ export async function GET() {
       activePrograms: stats.active_programs,
       totalPrograms: stats.total_programs,
       galleryItems: stats.gallery_items,
-      childrenServed: stats.children_served,
-      volunteersActive: stats.volunteers_active,
     },
     activity,
   })
