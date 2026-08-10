@@ -11,6 +11,9 @@ import {
 import { programIcons, programIconOptions } from '@/lib/programIcons';
 import { useResource } from '@/lib/useResource';
 import Modal from '@/components/dashboard/Modal';
+import Select from '@/components/ui/Select';
+import { useToast } from '@/components/ui/Toast';
+import { useAlert } from '@/components/ui/Alert';
 
 type Program = {
   id: number;
@@ -46,6 +49,8 @@ const labelClasses = 'block text-sm font-medium text-dark mb-1.5';
 
 export default function ProgramsPage() {
   const { data: programs, setData, loading, error, reload } = useResource<Program>('/api/programs');
+  const { toast } = useToast();
+  const { confirm } = useAlert();
   const [searchQuery, setSearchQuery] = useState('');
   const [formOpen, setFormOpen] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
@@ -89,26 +94,35 @@ export default function ProgramsPage() {
       });
       if (!res.ok) throw new Error();
       setFormOpen(false);
+      toast(editingId ? 'Program updated successfully' : 'Program created successfully');
       reload();
     } catch {
-      alert('Failed to save the program.');
+      toast('Failed to save the program.', 'error');
     } finally {
       setSaving(false);
     }
   };
 
   const handleDelete = async (program: Program) => {
-    if (!confirm(`Delete the "${program.title}" program? This cannot be undone.`)) return;
-    setBusyId(program.id);
-    try {
-      const res = await fetch(`/api/programs/${program.id}`, { method: 'DELETE' });
-      if (!res.ok) throw new Error();
-      setData((prev) => prev.filter((p) => p.id !== program.id));
-    } catch {
-      alert('Failed to delete the program.');
-    } finally {
-      setBusyId(null);
-    }
+    confirm({
+      title: 'Delete Program',
+      message: `Delete the "${program.title}" program? This cannot be undone.`,
+      icon: 'danger',
+      confirmLabel: 'Delete',
+      onConfirm: async () => {
+        setBusyId(program.id);
+        try {
+          const res = await fetch(`/api/programs/${program.id}`, { method: 'DELETE' });
+          if (!res.ok) throw new Error();
+          toast('Program deleted successfully');
+          setData((prev) => prev.filter((p) => p.id !== program.id));
+        } catch {
+          toast('Failed to delete the program.', 'error');
+        } finally {
+          setBusyId(null);
+        }
+      },
+    });
   };
 
   return (
@@ -296,15 +310,15 @@ export default function ProgramsPage() {
               />
             </div>
             <div>
-              <label className={labelClasses}>Status</label>
-              <select
-                className={inputClasses}
+              <Select
+                label="Status"
                 value={form.status}
-                onChange={(e) => setForm((p) => ({ ...p, status: e.target.value as Program['status'] }))}
-              >
-                <option value="active">Active</option>
-                <option value="inactive">Inactive</option>
-              </select>
+                onChange={(v) => setForm((p) => ({ ...p, status: v as Program['status'] }))}
+                options={[
+                  { label: 'Active', value: 'active' },
+                  { label: 'Inactive', value: 'inactive' },
+                ]}
+              />
             </div>
           </div>
 

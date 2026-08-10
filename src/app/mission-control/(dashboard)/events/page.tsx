@@ -13,6 +13,10 @@ import {
   PiSpinner,
   PiMagnifyingGlass,
 } from 'react-icons/pi'
+import Select from '@/components/ui/Select'
+import ImageUpload from '@/components/ui/ImageUpload'
+import { useToast } from '@/components/ui/Toast'
+import { useAlert } from '@/components/ui/Alert'
 
 interface Event {
   id: string
@@ -47,6 +51,8 @@ export default function EventsPage() {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [deletingId, setDeletingId] = useState<string | null>(null)
+  const { toast } = useToast()
+  const { confirm } = useAlert()
 
   useEffect(() => {
     fetchEvents()
@@ -117,28 +123,42 @@ export default function EventsPage() {
         body: JSON.stringify(formState),
       })
       if (res.ok) {
+        toast(editingEvent ? 'Event updated successfully' : 'Event created successfully')
         await fetchEvents()
         closeModal()
+      } else {
+        toast('Failed to save event.', 'error')
       }
     } catch (err) {
-      console.error('Failed to save event:', err)
+      toast('Failed to save event.', 'error')
     } finally {
       setSaving(false)
     }
   }
 
-  async function handleDelete(id: string) {
-    setDeletingId(id)
-    try {
-      const res = await fetch(`/api/events/${id}`, { method: 'DELETE' })
-      if (res.ok) {
-        await fetchEvents()
-      }
-    } catch (err) {
-      console.error('Failed to delete event:', err)
-    } finally {
-      setDeletingId(null)
-    }
+  function handleDelete(id: string) {
+    confirm({
+      title: 'Delete Event',
+      message: 'Are you sure you want to delete this event? This cannot be undone.',
+      icon: 'danger',
+      confirmLabel: 'Delete',
+      onConfirm: async () => {
+        setDeletingId(id)
+        try {
+          const res = await fetch(`/api/events/${id}`, { method: 'DELETE' })
+          if (res.ok) {
+            toast('Event deleted successfully')
+            await fetchEvents()
+          } else {
+            toast('Failed to delete event.', 'error')
+          }
+        } catch (err) {
+          toast('Failed to delete event.', 'error')
+        } finally {
+          setDeletingId(null)
+        }
+      },
+    })
   }
 
   function formatDate(date: string) {
@@ -446,45 +466,36 @@ export default function EventsPage() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-[#0e3b2b] mb-2">Category</label>
-                  <select
+                  <Select
+                    label="Category"
                     value={formState.category}
-                    onChange={(e) => setFormState({ ...formState, category: e.target.value })}
-                    className="w-full px-4 py-3 rounded-xl border border-[#0e3b2b]/15 bg-white text-[#0e3b2b] text-sm focus:outline-none focus:border-[#0e3b2b]/40"
-                  >
-                    <option>Fundraiser</option>
-                    <option>Community</option>
-                    <option>Volunteer</option>
-                    <option>Celebration</option>
-                    <option>Healthcare</option>
-                    <option>Education</option>
-                    <option>Other</option>
-                  </select>
+                    onChange={(v) => setFormState({ ...formState, category: v })}
+                    options={[
+                      { label: 'Fundraiser', value: 'Fundraiser' },
+                      { label: 'Community', value: 'Community' },
+                      { label: 'Volunteer', value: 'Volunteer' },
+                      { label: 'Celebration', value: 'Celebration' },
+                      { label: 'Healthcare', value: 'Healthcare' },
+                      { label: 'Education', value: 'Education' },
+                      { label: 'Other', value: 'Other' },
+                    ]}
+                  />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-[#0e3b2b] mb-2">Status</label>
-                  <select
+                  <Select
+                    label="Status"
                     value={formState.status}
-                    onChange={(e) => setFormState({ ...formState, status: e.target.value })}
-                    className="w-full px-4 py-3 rounded-xl border border-[#0e3b2b]/15 bg-white text-[#0e3b2b] text-sm focus:outline-none focus:border-[#0e3b2b]/40"
-                  >
-                    <option value="upcoming">Upcoming</option>
-                    <option value="completed">Completed</option>
-                  </select>
+                    onChange={(v) => setFormState({ ...formState, status: v })}
+                    options={[
+                      { label: 'Upcoming', value: 'upcoming' },
+                      { label: 'Completed', value: 'completed' },
+                    ]}
+                  />
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-[#0e3b2b] mb-2">
-                  Image URL
-                </label>
-                <input
-                  type="text"
-                  value={formState.imageUrl}
-                  onChange={(e) => setFormState({ ...formState, imageUrl: e.target.value })}
-                  className="w-full px-4 py-3 rounded-xl border border-[#0e3b2b]/15 bg-white text-[#0e3b2b] text-sm focus:outline-none focus:border-[#0e3b2b]/40"
-                  placeholder="https://example.com/image.jpg"
-                />
+                <ImageUpload value={formState.imageUrl} onChange={(v) => setFormState({ ...formState, imageUrl: v })} folder="rescue-mission/events" label="Event Image" />
               </div>
             </div>
 

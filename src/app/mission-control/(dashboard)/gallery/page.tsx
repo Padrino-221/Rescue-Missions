@@ -13,6 +13,10 @@ import {
 } from 'react-icons/pi'
 import { useResource } from '@/lib/useResource'
 import Modal from '@/components/dashboard/Modal'
+import ImageUpload from '@/components/ui/ImageUpload'
+import Select from '@/components/ui/Select'
+import { useToast } from '@/components/ui/Toast'
+import { useAlert } from '@/components/ui/Alert'
 
 type GalleryItem = {
   id: number
@@ -39,6 +43,8 @@ const labelClasses = 'block text-sm font-medium text-[#0e3b2b] mb-1.5'
 
 export default function GalleryPage() {
   const { data: items, setData, loading, error, reload } = useResource<GalleryItem>('/api/gallery')
+  const { toast } = useToast()
+  const { confirm } = useAlert()
   const [activeCategory, setActiveCategory] = useState<string>('All')
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedItems, setSelectedItems] = useState<number[]>([])
@@ -61,32 +67,48 @@ export default function GalleryPage() {
 
   const deleteItem = async (id: number) => {
     const item = items.find((i) => i.id === id)
-    if (!confirm(`Delete "${item?.title ?? 'this item'}" from the gallery?`)) return
-    setBusyIds((prev) => [...prev, id])
-    try {
-      const res = await fetch(`/api/gallery/${id}`, { method: 'DELETE' })
-      if (!res.ok) throw new Error()
-      setData((prev) => prev.filter((i) => i.id !== id))
-      setSelectedItems((prev) => prev.filter((i) => i !== id))
-    } catch {
-      alert('Failed to delete the item.')
-    } finally {
-      setBusyIds((prev) => prev.filter((i) => i !== id))
-    }
+    confirm({
+      title: 'Delete Item',
+      message: `Delete "${item?.title ?? 'this item'}" from the gallery?`,
+      icon: 'danger',
+      confirmLabel: 'Delete',
+      onConfirm: async () => {
+        setBusyIds((prev) => [...prev, id])
+        try {
+          const res = await fetch(`/api/gallery/${id}`, { method: 'DELETE' })
+          if (!res.ok) throw new Error()
+          toast('Item deleted successfully')
+          setData((prev) => prev.filter((i) => i.id !== id))
+          setSelectedItems((prev) => prev.filter((i) => i !== id))
+        } catch {
+          toast('Failed to delete the item.', 'error')
+        } finally {
+          setBusyIds((prev) => prev.filter((i) => i !== id))
+        }
+      },
+    })
   }
 
   const deleteSelected = async () => {
-    if (!confirm(`Delete ${selectedItems.length} selected item(s)?`)) return
-    setBusyIds((prev) => [...new Set([...prev, ...selectedItems])])
-    try {
-      await Promise.all(selectedItems.map((id) => fetch(`/api/gallery/${id}`, { method: 'DELETE' })))
-      setData((prev) => prev.filter((i) => !selectedItems.includes(i.id)))
-      setSelectedItems([])
-    } catch {
-      alert('Failed to delete some items.')
-    } finally {
-      setBusyIds((prev) => prev.filter((id) => !selectedItems.includes(id)))
-    }
+    confirm({
+      title: 'Delete Selected',
+      message: `Delete ${selectedItems.length} selected item(s)?`,
+      icon: 'danger',
+      confirmLabel: 'Delete',
+      onConfirm: async () => {
+        setBusyIds((prev) => [...new Set([...prev, ...selectedItems])])
+        try {
+          await Promise.all(selectedItems.map((id) => fetch(`/api/gallery/${id}`, { method: 'DELETE' })))
+          toast('Selected items deleted successfully')
+          setData((prev) => prev.filter((i) => !selectedItems.includes(i.id)))
+          setSelectedItems([])
+        } catch {
+          toast('Failed to delete some items.', 'error')
+        } finally {
+          setBusyIds((prev) => prev.filter((id) => !selectedItems.includes(id)))
+        }
+      },
+    })
   }
 
   const handleUpload = async (e: React.FormEvent) => {
@@ -101,9 +123,10 @@ export default function GalleryPage() {
       if (!res.ok) throw new Error()
       setFormOpen(false)
       setForm(emptyForm)
+      toast('Item added to gallery successfully')
       reload()
     } catch {
-      alert('Failed to add the item. Make sure the image URL is valid.')
+      toast('Failed to add the item.', 'error')
     } finally {
       setSaving(false)
     }
@@ -274,44 +297,28 @@ export default function GalleryPage() {
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
-              <label className={labelClasses}>Category</label>
-              <select
-                className={inputClasses}
+              <Select
+                label="Category"
                 value={form.category}
-                onChange={(e) => setForm((p) => ({ ...p, category: e.target.value }))}
-              >
-                {categories.filter((c) => c !== 'All').map((c) => (
-                  <option key={c} value={c}>{c}</option>
-                ))}
-              </select>
+                onChange={(v) => setForm((p) => ({ ...p, category: v }))}
+                options={categories.filter((c) => c !== 'All').map((c) => ({ label: c, value: c }))}
+              />
             </div>
             <div>
-              <label className={labelClasses}>Type</label>
-              <select
-                className={inputClasses}
+              <Select
+                label="Type"
                 value={form.type}
-                onChange={(e) => setForm((p) => ({ ...p, type: e.target.value as GalleryItem['type'] }))}
-              >
-                <option value="image">Image</option>
-                <option value="video">Video</option>
-              </select>
+                onChange={(v) => setForm((p) => ({ ...p, type: v as GalleryItem['type'] }))}
+                options={[
+                  { label: 'Image', value: 'image' },
+                  { label: 'Video', value: 'video' },
+                ]}
+              />
             </div>
           </div>
           <div>
-            <label className={labelClasses}>Image URL *</label>
-            <input
-              className={inputClasses}
-              value={form.image}
-              placeholder="https://..."
-              onChange={(e) => setForm((p) => ({ ...p, image: e.target.value }))}
-              required
-            />
+            <ImageUpload value={form.image} onChange={(v) => setForm((p) => ({ ...p, image: v }))} folder="rescue-mission/gallery" label="Gallery Image" />
           </div>
-          {form.image && (
-            <div className="relative h-40 rounded-xl overflow-hidden border border-[#0e3b2b]/10">
-              <Image src={form.image} alt="Preview" fill className="object-cover" />
-            </div>
-          )}
           <div className="flex justify-end gap-3 pt-2">
             <button
               type="button"

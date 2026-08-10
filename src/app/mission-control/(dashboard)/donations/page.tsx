@@ -14,6 +14,9 @@ import {
 } from 'react-icons/pi'
 import { useResource } from '@/lib/useResource'
 import Modal from '@/components/dashboard/Modal'
+import Select from '@/components/ui/Select'
+import { useToast } from '@/components/ui/Toast'
+import { useAlert } from '@/components/ui/Alert'
 
 type Donation = {
   id: number
@@ -61,6 +64,8 @@ const labelClasses = 'block text-sm font-medium text-dark mb-1.5'
 
 export default function DonationsPage() {
   const { data: donations, setData, loading, error, reload } = useResource<Donation>('/api/donations')
+  const { toast } = useToast()
+  const { confirm } = useAlert()
   const [searchQuery, setSearchQuery] = useState('')
   const [activeFilter, setActiveFilter] = useState<'all' | 'completed' | 'pending' | 'failed'>('all')
   const [viewing, setViewing] = useState<Donation | null>(null)
@@ -135,9 +140,10 @@ export default function DonationsPage() {
       if (!res.ok) throw new Error()
       setFormOpen(false)
       setForm(emptyForm)
+      toast('Donation recorded successfully')
       reload()
     } catch {
-      alert('Failed to record the donation.')
+      toast('Failed to record the donation.', 'error')
     } finally {
       setSaving(false)
     }
@@ -152,28 +158,37 @@ export default function DonationsPage() {
         body: JSON.stringify({ status }),
       })
       if (!res.ok) throw new Error()
+      toast('Donation status updated')
       setData((prev) => prev.map((d) => (d.id === donation.id ? { ...d, status } : d)))
       setViewing((v) => (v && v.id === donation.id ? { ...v, status } : v))
     } catch {
-      alert('Failed to update the donation status.')
+      toast('Failed to update the donation status.', 'error')
     } finally {
       setBusyId(null)
     }
   }
 
   const deleteDonation = async (donation: Donation) => {
-    if (!confirm(`Delete donation ${formatId(donation.id)} from ${donation.donorName}?`)) return
-    setBusyId(donation.id)
-    try {
-      const res = await fetch(`/api/donations/${donation.id}`, { method: 'DELETE' })
-      if (!res.ok) throw new Error()
-      setData((prev) => prev.filter((d) => d.id !== donation.id))
-      setViewing(null)
-    } catch {
-      alert('Failed to delete the donation.')
-    } finally {
-      setBusyId(null)
-    }
+    confirm({
+      title: 'Delete Donation',
+      message: `Delete donation ${formatId(donation.id)} from ${donation.donorName}?`,
+      icon: 'danger',
+      confirmLabel: 'Delete',
+      onConfirm: async () => {
+        setBusyId(donation.id)
+        try {
+          const res = await fetch(`/api/donations/${donation.id}`, { method: 'DELETE' })
+          if (!res.ok) throw new Error()
+          toast('Donation deleted successfully')
+          setData((prev) => prev.filter((d) => d.id !== donation.id))
+          setViewing(null)
+        } catch {
+          toast('Failed to delete the donation.', 'error')
+        } finally {
+          setBusyId(null)
+        }
+      },
+    })
   }
 
   return (
@@ -435,28 +450,28 @@ export default function DonationsPage() {
               />
             </div>
             <div>
-              <label className={labelClasses}>Type</label>
-              <select
-                className={inputClasses}
+              <Select
+                label="Type"
                 value={form.type}
-                onChange={(e) => setForm((p) => ({ ...p, type: e.target.value as Donation['type'] }))}
-              >
-                <option>One-time</option>
-                <option>Monthly</option>
-                <option>Sponsorship</option>
-              </select>
+                onChange={(v) => setForm((p) => ({ ...p, type: v as Donation['type'] }))}
+                options={[
+                  { label: 'One-time', value: 'One-time' },
+                  { label: 'Monthly', value: 'Monthly' },
+                  { label: 'Sponsorship', value: 'Sponsorship' },
+                ]}
+              />
             </div>
             <div>
-              <label className={labelClasses}>Status</label>
-              <select
-                className={inputClasses}
+              <Select
+                label="Status"
                 value={form.status}
-                onChange={(e) => setForm((p) => ({ ...p, status: e.target.value as Donation['status'] }))}
-              >
-                <option>Completed</option>
-                <option>Pending</option>
-                <option>Failed</option>
-              </select>
+                onChange={(v) => setForm((p) => ({ ...p, status: v as Donation['status'] }))}
+                options={[
+                  { label: 'Completed', value: 'Completed' },
+                  { label: 'Pending', value: 'Pending' },
+                  { label: 'Failed', value: 'Failed' },
+                ]}
+              />
             </div>
             <div>
               <label className={labelClasses}>Date</label>

@@ -13,6 +13,10 @@ import {
 } from 'react-icons/pi'
 import { useResource } from '@/lib/useResource'
 import Modal from '@/components/dashboard/Modal'
+import ImageUpload from '@/components/ui/ImageUpload'
+import Select from '@/components/ui/Select'
+import { useToast } from '@/components/ui/Toast'
+import { useAlert } from '@/components/ui/Alert'
 
 type Story = {
   id: number
@@ -47,6 +51,8 @@ const labelClasses = 'block text-sm font-medium text-dark mb-1.5'
 
 export default function StoriesPage() {
   const { data: stories, loading, error, reload } = useResource<Story>('/api/stories')
+  const { toast } = useToast()
+  const { confirm } = useAlert()
   const [searchQuery, setSearchQuery] = useState('')
   const [activeCategory, setActiveCategory] = useState<string>('All')
 
@@ -99,26 +105,35 @@ export default function StoriesPage() {
       })
       if (!res.ok) throw new Error('Save failed')
       setFormOpen(false)
+      toast(editingId ? 'Story updated successfully' : 'Story created successfully')
       reload()
     } catch {
-      alert('Failed to save the story. Please try again.')
+      toast('Failed to save the story. Please try again.', 'error')
     } finally {
       setSaving(false)
     }
   }
 
   const handleDelete = async (story: Story) => {
-    if (!confirm(`Delete "${story.title}"? This cannot be undone.`)) return
-    setBusyId(story.id)
-    try {
-      const res = await fetch(`/api/stories/${story.id}`, { method: 'DELETE' })
-      if (!res.ok) throw new Error('Delete failed')
-      reload()
-    } catch {
-      alert('Failed to delete the story.')
-    } finally {
-      setBusyId(null)
-    }
+    confirm({
+      title: 'Delete Story',
+      message: `Delete "${story.title}"? This cannot be undone.`,
+      icon: 'danger',
+      confirmLabel: 'Delete',
+      onConfirm: async () => {
+        setBusyId(story.id)
+        try {
+          const res = await fetch(`/api/stories/${story.id}`, { method: 'DELETE' })
+          if (!res.ok) throw new Error('Delete failed')
+          toast('Story deleted successfully')
+          reload()
+        } catch {
+          toast('Failed to delete the story.', 'error')
+        } finally {
+          setBusyId(null)
+        }
+      },
+    })
   }
 
   const update = (field: keyof typeof emptyForm, value: string | boolean) =>
@@ -390,16 +405,12 @@ export default function StoriesPage() {
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
-              <label className={labelClasses}>Category</label>
-              <select
-                className={inputClasses}
+              <Select
+                label="Category"
                 value={form.category}
-                onChange={(e) => update('category', e.target.value)}
-              >
-                {categories.filter((c) => c !== 'All').map((c) => (
-                  <option key={c} value={c}>{c}</option>
-                ))}
-              </select>
+                onChange={(v) => update('category', v)}
+                options={categories.filter((c) => c !== 'All').map((c) => ({ label: c, value: c }))}
+              />
             </div>
             <div>
               <label className={labelClasses}>Author</label>
@@ -429,13 +440,7 @@ export default function StoriesPage() {
             </div>
           </div>
           <div>
-            <label className={labelClasses}>Image URL</label>
-            <input
-              className={inputClasses}
-              value={form.image}
-              placeholder="https://..."
-              onChange={(e) => update('image', e.target.value)}
-            />
+            <ImageUpload value={form.image} onChange={(v) => update('image', v)} folder="rescue-mission/stories" label="Story Image" />
           </div>
           <div>
             <label className={labelClasses}>Excerpt</label>

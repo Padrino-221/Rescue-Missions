@@ -13,6 +13,8 @@ import {
   PiX,
 } from 'react-icons/pi';
 import { useResource } from '@/lib/useResource';
+import { useToast } from '@/components/ui/Toast';
+import { useAlert } from '@/components/ui/Alert';
 
 type Contact = {
   id: number;
@@ -28,6 +30,8 @@ type FilterType = 'all' | 'unread' | 'read';
 
 export default function ContactsPage() {
   const { data: contacts, setData, loading, error } = useResource<Contact>('/api/contacts');
+  const { toast } = useToast();
+  const { confirm } = useAlert();
   const [searchQuery, setSearchQuery] = useState('');
   const [activeFilter, setActiveFilter] = useState<FilterType>('all');
   const [selectedContacts, setSelectedContacts] = useState<number[]>([]);
@@ -76,7 +80,7 @@ export default function ContactsPage() {
       if (!res.ok) throw new Error();
       setData((prev) => prev.map((c) => (c.id === id ? { ...c, read: true } : c)));
     } catch {
-      alert('Failed to update the contact.');
+      toast('Failed to update the contact.', 'error');
     } finally {
       setBusy([id], false);
     }
@@ -89,32 +93,48 @@ export default function ContactsPage() {
 
   const deleteContact = async (id: number) => {
     const contact = contacts.find((c) => c.id === id);
-    if (!confirm(`Delete contact from ${contact?.name ?? 'this contact'}? This cannot be undone.`)) return;
-    setBusy([id], true);
-    try {
-      const res = await fetch(`/api/contacts/${id}`, { method: 'DELETE' });
-      if (!res.ok) throw new Error();
-      setData((prev) => prev.filter((c) => c.id !== id));
-      setSelectedContacts((prev) => prev.filter((cid) => cid !== id));
-    } catch {
-      alert('Failed to delete the contact.');
-    } finally {
-      setBusy([id], false);
-    }
+    confirm({
+      title: 'Delete Contact',
+      message: `Delete contact from ${contact?.name ?? 'this contact'}? This cannot be undone.`,
+      icon: 'danger',
+      confirmLabel: 'Delete',
+      onConfirm: async () => {
+        setBusy([id], true);
+        try {
+          const res = await fetch(`/api/contacts/${id}`, { method: 'DELETE' });
+          if (!res.ok) throw new Error();
+          toast('Contact deleted successfully');
+          setData((prev) => prev.filter((c) => c.id !== id));
+          setSelectedContacts((prev) => prev.filter((cid) => cid !== id));
+        } catch {
+          toast('Failed to delete the contact.', 'error');
+        } finally {
+          setBusy([id], false);
+        }
+      },
+    });
   };
 
   const deleteSelected = async () => {
-    if (!confirm(`Delete ${selectedContacts.length} contact(s)? This cannot be undone.`)) return;
-    setBusy(selectedContacts, true);
-    try {
-      await Promise.all(selectedContacts.map((id) => fetch(`/api/contacts/${id}`, { method: 'DELETE' })));
-      setData((prev) => prev.filter((c) => !selectedContacts.includes(c.id)));
-      setSelectedContacts([]);
-    } catch {
-      alert('Failed to delete some contacts.');
-    } finally {
-      setBusy(selectedContacts, false);
-    }
+    confirm({
+      title: 'Delete Contacts',
+      message: `Delete ${selectedContacts.length} contact(s)? This cannot be undone.`,
+      icon: 'danger',
+      confirmLabel: 'Delete',
+      onConfirm: async () => {
+        setBusy(selectedContacts, true);
+        try {
+          await Promise.all(selectedContacts.map((id) => fetch(`/api/contacts/${id}`, { method: 'DELETE' })));
+          toast('Selected contacts deleted successfully');
+          setData((prev) => prev.filter((c) => !selectedContacts.includes(c.id)));
+          setSelectedContacts([]);
+        } catch {
+          toast('Failed to delete some contacts.', 'error');
+        } finally {
+          setBusy(selectedContacts, false);
+        }
+      },
+    });
   };
 
   const formatDate = (dateStr: string) => {
