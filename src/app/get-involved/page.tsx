@@ -177,7 +177,7 @@ export default function GetInvolvedPage() {
                 </p>
                 
                 <div className="card-premium p-6 mb-8">
-                  <h3 className="font-semibold text-dark mb-4">Monthly Sponsorship: $50/month</h3>
+                  <h3 className="font-semibold text-dark mb-4">Monthly Sponsorship: GH₵50/month</h3>
                   <ul className="space-y-3">
                     {sponsorshipBenefits.map((benefit) => (
                       <li key={benefit} className="flex items-start gap-2 text-dark/60 text-sm">
@@ -230,9 +230,9 @@ export default function GetInvolvedPage() {
                 
                 <div className="space-y-4">
                   {[
-                    { tier: 'Bronze', amount: '$5,000/year', benefits: 'Logo on website, social media mentions' },
-                    { tier: 'Silver', amount: '$15,000/year', benefits: 'All Bronze + event sponsorship, employee volunteer days' },
-                    { tier: 'Gold', amount: '$30,000/year', benefits: 'All Silver + naming rights, board observer seat' },
+                    { tier: 'Bronze', amount: 'GH₵5,000/year', benefits: 'Logo on website, social media mentions' },
+                    { tier: 'Silver', amount: 'GH₵15,000/year', benefits: 'All Bronze + event sponsorship, employee volunteer days' },
+                    { tier: 'Gold', amount: 'GH₵30,000/year', benefits: 'All Silver + naming rights, board observer seat' },
                   ].map((item) => (
                     <div key={item.tier} className="card-premium p-5">
                       <div className="flex items-start gap-4">
@@ -293,7 +293,7 @@ export default function GetInvolvedPage() {
                       href="/donate"
                       className="py-3 rounded-2xl border border-dark text-dark font-semibold hover:bg-dark hover:text-white transition-all duration-300 text-center"
                     >
-                      ${amount}
+                       GH₵{amount}
                     </Link>
                   ))}
                 </div>

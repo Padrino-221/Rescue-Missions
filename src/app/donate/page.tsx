@@ -94,7 +94,7 @@ export default function DonatePage() {
                       }`}
                     >
                       <item.icon className={`w-6 h-6 mx-auto mb-2 ${selectedAmount === item.amount && !customAmount ? 'text-lime' : 'text-dark/70'}`} />
-                      <span className="text-lg font-semibold">${item.amount}</span>
+                      <span className="text-lg font-semibold">GH₵{item.amount}</span>
                       <p className="text-xs mt-1 opacity-70">{item.impact}</p>
                     </button>
                   ))}
@@ -102,7 +102,7 @@ export default function DonatePage() {
                 
                 {/* Custom Amount */}
                 <div className="relative mb-6">
-                  <span className="absolute left-4 top-1/2 transform -translate-y-1/2 text-dark/40">$</span>
+                  <span className="absolute left-4 top-1/2 transform -translate-y-1/2 text-dark/40">GH₵</span>
                   <input
                     type="number"
                     placeholder="Custom amount"
@@ -128,7 +128,7 @@ export default function DonatePage() {
                 {/* Donate Button */}
                 <button className="w-full btn-lime py-4 text-lg">
                   <PiHeartFill className="w-5 h-5" />
-                  Donate ${customAmount || selectedAmount} {donationType === 'monthly' ? 'Monthly' : 'Now'}
+                  Donate GH₵{customAmount || selectedAmount} {donationType === 'monthly' ? 'Monthly' : 'Now'}
                 </button>
                 
                 {/* Security Note */}

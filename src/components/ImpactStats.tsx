@@ -7,7 +7,7 @@ const stats = [
   { value: '2,500+', label: 'Children Educated', description: 'Through our learning programs', icon: PiGraduationCap },
   { value: '500+', label: 'Families Supported', description: 'With emergency relief', icon: PiHeartFill },
   { value: '15+', label: 'Communities', description: 'Across multiple regions', icon: PiGlobe },
-  { value: '$2.5M', label: 'Funds Raised', description: 'From generous donors', icon: PiCurrencyDollar },
+  { value: 'GH₵2.5M', label: 'Funds Raised', description: 'From generous donors', icon: PiCurrencyDollar },
 ]
 
 export default function ImpactStats() {

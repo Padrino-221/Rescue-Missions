@@ -64,7 +64,7 @@ export default function FeaturedStory() {
             viewport={{ once: true }}
             transition={{ duration: 0.8, delay: 0.15 }}
           >
-            <span className="kicker mb-6">A Gift of $36</span>
+            <span className="kicker mb-6">A Gift of GH₵36</span>
             <h2 className="text-4xl md:text-5xl font-serif text-dark leading-[1.05]">
               A steady hand changes everything
             </h2>
