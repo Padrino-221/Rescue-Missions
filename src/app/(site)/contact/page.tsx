@@ -45,9 +45,7 @@ const defaultSocialLinks = [
 ]
 
 export default function ContactPage() {
-  const [contactInfo, setContactInfo] = useState(defaultContactInfo)
   const [faqs, setFaqs] = useState(defaultFaqs)
-  const [socialLinks, setSocialLinks] = useState(defaultSocialLinks)
   const { settings } = useSettings()
 
   const [formData, setFormData] = useState({
@@ -57,47 +55,30 @@ export default function ContactPage() {
     message: '',
   })
 
-  useEffect(() => {
-    if (!settings) return
-    const contact = settings?.contact
-    if (contact) {
-      setContactInfo([
-        {
-          icon: PiPhone,
-          title: 'Phone',
-          details: [contact.phone1 || '+1 (234) 567-890', contact.phone2 || '+1 (234) 567-891'],
-        },
-        {
-          icon: PiEnvelope,
-          title: 'Email',
-          details: [contact.email1 || 'info@rescuemission.org', contact.email2 || 'donate@rescuemission.org'],
-        },
-        {
-          icon: PiMapPin,
-          title: 'Address',
-          details: [contact.address1 || '123 Hope Street', contact.address2 || 'City, State 12345'],
-        },
-        {
-          icon: PiClock,
-          title: 'Office Hours',
-          details: [contact.officeHours1 || 'Mon - Fri: 9:00 AM - 5:00 PM', contact.officeHours2 || 'Sat: 9:00 AM - 1:00 PM'],
-        },
-      ])
-    }
+  // Derive contact info and social links from settings directly
+  const contact = settings?.contact
+  const contactInfo = contact
+    ? [
+        { icon: PiPhone, title: 'Phone', details: [contact.phone1 || '+1 (234) 567-890', contact.phone2 || '+1 (234) 567-891'] },
+        { icon: PiEnvelope, title: 'Email', details: [contact.email1 || 'info@rescuemission.org', contact.email2 || 'donate@rescuemission.org'] },
+        { icon: PiMapPin, title: 'Address', details: [contact.address1 || '123 Hope Street', contact.address2 || 'City, State 12345'] },
+        { icon: PiClock, title: 'Office Hours', details: [contact.officeHours1 || 'Mon - Fri: 9:00 AM - 5:00 PM', contact.officeHours2 || 'Sat: 9:00 AM - 1:00 PM'] },
+      ]
+    : defaultContactInfo
 
-    const social = settings?.social
-    if (social) {
-      setSocialLinks([
+  const social = settings?.social
+  const socialLinks = social
+    ? [
         { icon: PiFacebookLogo, href: social.facebook || '#' },
         { icon: PiTwitterLogo, href: social.twitter || '#' },
         { icon: PiInstagramLogo, href: social.instagram || '#' },
         { icon: PiYoutubeLogo, href: social.youtube || '#' },
-      ])
-    }
+      ]
+    : defaultSocialLinks
 
-    if (settings?.faq?.length) {
-      setFaqs(settings.faq)
-    }
+  // Sync FAQ from settings via effect (keeps the state so local filtering/search could be added later)
+  useEffect(() => {
+    if (settings?.faq?.length) setFaqs(settings.faq)
   }, [settings])
 
   const handleSubmit = (e: React.FormEvent) => {

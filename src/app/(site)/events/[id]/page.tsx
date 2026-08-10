@@ -100,17 +100,18 @@ export default function EventDetailPage() {
             transition={{ duration: 0.6 }}
             className="max-w-4xl"
           >
-            <Link
-              href="/events"
-              className="inline-flex items-center gap-2 text-dark/60 hover:text-dark transition-colors mb-6 text-sm font-medium"
-            >
-              <PiArrowLeft className="w-4 h-4" />
-              Back to Events
-            </Link>
+            <div className="flex items-center gap-4 mb-6">
+              <Link
+                href="/events"
+                className="inline-flex items-center gap-2 text-dark/60 hover:text-dark transition-colors text-sm font-medium"
+              >
+                <PiArrowLeft className="w-4 h-4" />
+                Back to Events
+              </Link>
+              <span className="pill-tag text-xs">{event.category}</span>
+            </div>
 
-            <span className="pill-tag text-xs mb-4">{event.category}</span>
-
-            <h1 className="text-4xl sm:text-5xl font-serif text-dark mt-4">
+            <h1 className="text-4xl sm:text-5xl font-serif text-dark">
               {event.title}
             </h1>
 

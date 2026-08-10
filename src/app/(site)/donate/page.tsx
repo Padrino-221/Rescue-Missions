@@ -34,30 +34,14 @@ export default function DonatePage() {
   const [selectedAmount, setSelectedAmount] = useState(100)
   const [customAmount, setCustomAmount] = useState('')
   const [donationType, setDonationType] = useState('one-time')
-  const [donationAmounts, setDonationAmounts] = useState(defaultDonationAmounts)
-  const [allocation, setAllocation] = useState(defaultAllocation)
-  const [taxInfo, setTaxInfo] = useState(defaultTaxInfo)
-
   const { settings } = useSettings()
 
-  useEffect(() => {
-    if (!settings?.donations) return
-
-    if (settings.donations.presetAmounts?.length) {
-      setDonationAmounts(settings.donations.presetAmounts.map((item, index) => ({
-        ...item,
-        icon: icons[index % icons.length]
-      })))
-    }
-
-    if (settings.donations.allocation?.length) {
-      setAllocation(settings.donations.allocation)
-    }
-
-    if (settings.donations.taxInfo) {
-      setTaxInfo(settings.donations.taxInfo)
-    }
-  }, [settings])
+  const d = settings?.donations
+  const donationAmounts = d?.presetAmounts?.length
+    ? d.presetAmounts.map((item, index) => ({ ...item, icon: icons[index % icons.length] }))
+    : defaultDonationAmounts.map((item, index) => ({ ...item, icon: icons[index % icons.length] }))
+  const allocation = d?.allocation?.length ? d.allocation : defaultAllocation
+  const taxInfo = d?.taxInfo || defaultTaxInfo
 
   return (
     <>

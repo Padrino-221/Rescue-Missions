@@ -26,12 +26,8 @@ const galleryItems = [
 export default function GalleryPage() {
   const [activeCategory, setActiveCategory] = useState('All')
   const [selectedItem, setSelectedItem] = useState<number | null>(null)
-  const [mediaEmail, setMediaEmail] = useState('media@rescuemission.org')
   const { settings } = useSettings()
-
-  useEffect(() => {
-    if (settings?.contact?.mediaEmail) setMediaEmail(settings.contact.mediaEmail)
-  }, [settings])
+  const mediaEmail = settings?.contact?.mediaEmail || 'media@rescuemission.org'
 
   const filteredItems = activeCategory === 'All' 
     ? galleryItems 

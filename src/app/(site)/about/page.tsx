@@ -51,40 +51,20 @@ const defaultStoryImage =
   'https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?auto=format&fit=crop&w=900&q=80'
 
 export default function AboutPage() {
-  const [storyHeading, setStoryHeading] = useState(defaultStory.storyHeading)
-  const [storyParagraphs, setStoryParagraphs] = useState(defaultStory.storyParagraphs)
-  const [missionStatement, setMissionStatement] = useState(defaultStory.missionStatement)
-  const [visionStatement, setVisionStatement] = useState(defaultStory.visionStatement)
-  const [values, setValues] = useState(defaultValues)
-  const [team, setTeam] = useState(defaultTeam)
-  const [milestones, setMilestones] = useState(defaultMilestones)
-  const [foundedYear, setFoundedYear] = useState('2008')
-  const [storyImageUrl, setStoryImageUrl] = useState(defaultStoryImage)
-
   const { settings } = useSettings()
 
-  useEffect(() => {
-    const about = settings?.about
-    if (!about) return
-
-    if (about.storyHeading) setStoryHeading(about.storyHeading)
-    if (about.storyParagraphs?.length) setStoryParagraphs(about.storyParagraphs)
-    if (about.missionStatement) setMissionStatement(about.missionStatement)
-    if (about.visionStatement) setVisionStatement(about.visionStatement)
-    if (about.storyImageUrl) setStoryImageUrl(about.storyImageUrl)
-    if (settings?.general?.foundedYear) setFoundedYear(settings.general.foundedYear)
-    if (about.values?.length) {
-      setValues(
-        about.values.map((v: { title: string; description: string }) => ({
-          icon: iconMap[v.title] || PiHeartFill,
-          title: v.title,
-          description: v.description,
-        }))
-      )
-    }
-    if (about.team?.length) setTeam(about.team)
-    if (about.milestones?.length) setMilestones(about.milestones)
-  }, [settings])
+  const about = settings?.about
+  const storyHeading = about?.storyHeading || defaultStory.storyHeading
+  const storyParagraphs = about?.storyParagraphs?.length ? about.storyParagraphs : defaultStory.storyParagraphs
+  const missionStatement = about?.missionStatement || defaultStory.missionStatement
+  const visionStatement = about?.visionStatement || defaultStory.visionStatement
+  const storyImageUrl = about?.storyImageUrl || defaultStoryImage
+  const foundedYear = settings?.general?.foundedYear || '2008'
+  const values = about?.values?.length
+    ? about.values.map((v) => ({ icon: iconMap[v.title] || PiHeartFill, title: v.title, description: v.description }))
+    : defaultValues
+  const team = about?.team?.length ? about.team : defaultTeam
+  const milestones = about?.milestones?.length ? about.milestones : defaultMilestones
 
   return (
     <>

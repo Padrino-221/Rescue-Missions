@@ -49,22 +49,20 @@ export default function GetInvolvedPage() {
   const [volunteerRoles, setVolunteerRoles] = useState(defaultVolunteerRoles)
   const [sponsorship, setSponsorship] = useState(defaultSponsorship)
   const [corporate, setCorporate] = useState(defaultCorporate)
-  const [donationAmounts, setDonationAmounts] = useState<number[]>(defaultDonationAmounts)
-
   const { settings } = useSettings()
 
-  useEffect(() => {
-    if (!settings) return
-    if (settings.volunteerRoles) setVolunteerRoles(settings.volunteerRoles)
-    if (settings.sponsorship) setSponsorship(settings.sponsorship)
-    if (settings.corporate) setCorporate(settings.corporate)
-    if (settings.donations?.presetAmounts?.length) {
+  const volunteerRoles = settings?.volunteerRoles || defaultVolunteerRoles
+  const sponsorship = settings?.sponsorship || defaultSponsorship
+  const corporate = settings?.corporate || defaultCorporate
+  const donationAmounts = (() => {
+    if (settings?.donations?.presetAmounts?.length) {
       const parsed = settings.donations.presetAmounts
         .map((item: { amount: number | string }) => Number(item.amount))
         .filter((n: number) => !Number.isNaN(n) && n > 0)
-      if (parsed.length) setDonationAmounts(parsed)
+      if (parsed.length) return parsed
     }
-  }, [settings])
+    return defaultDonationAmounts
+  })()
 
   return (
     <>
