@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useMemo } from 'react'
 import Image from 'next/image'
 import { motion } from 'framer-motion'
 import { PiStarFill } from 'react-icons/pi'
@@ -37,20 +37,17 @@ const defaultTestimonials = [
 ]
 
 export default function Testimonials() {
-  const [testimonials, setTestimonials] = useState(defaultTestimonials)
   const { settings } = useSettings()
 
-  useEffect(() => {
-    if (settings?.testimonials && Array.isArray(settings.testimonials)) {
-      const mapped = settings.testimonials.map((t) => ({
-        quote: t.quote || '',
-        author: t.author || '',
-        role: t.role || '',
-        avatar: t.avatar || '',
-        rating: (t as { rating?: number }).rating || 5,
-      }))
-      setTestimonials(mapped)
-    }
+  const testimonials = useMemo(() => {
+    if (!settings?.testimonials?.length) return defaultTestimonials
+    return settings.testimonials.map((t) => ({
+      quote: t.quote || '',
+      author: t.author || '',
+      role: t.role || '',
+      avatar: t.avatar || '',
+      rating: (t as { rating?: number }).rating || 5,
+    }))
   }, [settings])
 
   return (

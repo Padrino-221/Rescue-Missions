@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useMemo } from 'react'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { PiHeartFill, PiArrowUpRight } from 'react-icons/pi'
@@ -14,16 +14,14 @@ const defaults = {
 }
 
 export default function CallToAction() {
-  const [cta, setCta] = useState(defaults)
   const { settings } = useSettings()
 
-  useEffect(() => {
-    if (settings?.cta) {
-      setCta({
-        kicker: settings.cta.kicker || defaults.kicker,
-        heading: settings.cta.heading || defaults.heading,
-        description: settings.cta.description || defaults.description,
-      })
+  const cta = useMemo(() => {
+    if (!settings?.cta) return defaults
+    return {
+      kicker: settings.cta.kicker || defaults.kicker,
+      heading: settings.cta.heading || defaults.heading,
+      description: settings.cta.description || defaults.description,
     }
   }, [settings])
 

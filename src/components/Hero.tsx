@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useMemo } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { motion } from 'framer-motion'
@@ -28,20 +28,19 @@ const defaults: HeroSettings = {
 }
 
 export default function Hero() {
-  const [hero, setHero] = useState<HeroSettings>(defaults)
   const { settings } = useSettings()
 
-  useEffect(() => {
-    const homeHero = settings?.homeHero
-    if (!homeHero) return
-    setHero({
-      heading: homeHero.heading || defaults.heading,
-      description: homeHero.description || defaults.description,
-      cta1Text: homeHero.cta1Text || defaults.cta1Text,
-      cta2Text: homeHero.cta2Text || defaults.cta2Text,
-      imageUrl: homeHero.imageUrl || defaults.imageUrl,
-      imageAlt: homeHero.imageAlt || defaults.imageAlt,
-    })
+  const hero = useMemo((): HeroSettings => {
+    const h = settings?.homeHero
+    if (!h) return defaults
+    return {
+      heading: h.heading || defaults.heading,
+      description: h.description || defaults.description,
+      cta1Text: h.cta1Text || defaults.cta1Text,
+      cta2Text: h.cta2Text || defaults.cta2Text,
+      imageUrl: h.imageUrl || defaults.imageUrl,
+      imageAlt: h.imageAlt || defaults.imageAlt,
+    }
   }, [settings])
 
   const [firstPart, lastWord] = splitHeading(hero.heading)

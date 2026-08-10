@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useMemo } from 'react'
 import { useSettings } from '@/lib/useSettings'
 
 const defaultPartners = [
@@ -13,11 +13,11 @@ const defaultPartners = [
 ]
 
 export default function Partners() {
-  const [partners, setPartners] = useState(defaultPartners)
   const { settings } = useSettings()
 
-  useEffect(() => {
-    if (settings?.partners?.length) setPartners(settings.partners)
+  const partners = useMemo(() => {
+    if (settings?.partners?.length) return settings.partners
+    return defaultPartners
   }, [settings])
 
   return (

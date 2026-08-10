@@ -134,13 +134,13 @@ export default function EventDetailPage() {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.2 }}
-            className="rounded-[2rem] overflow-hidden aspect-[21/9]"
+            className="relative rounded-[2rem] overflow-hidden aspect-[21/9]"
           >
             <Image
               src={event.imageUrl}
               alt={event.title}
               fill
-              sizes="100vw"
+              sizes="(min-width: 1024px) 80vw, 100vw"
               className="object-cover"
             />
           </motion.div>

@@ -18,12 +18,8 @@ const navigation = [
 export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
-  const [orgName, setOrgName] = useState('Rescue Mission')
   const { settings } = useSettings()
-
-  useEffect(() => {
-    if (settings?.general?.orgName) setOrgName(settings.general.orgName)
-  }, [settings])
+  const orgName = settings?.general?.orgName || 'Rescue Mission'
 
   useEffect(() => {
     const handleScroll = () => {

@@ -15,31 +15,13 @@ const defaultStats = [
 ]
 
 export default function ImpactStats() {
-  const [stats, setStats] = useState(defaultStats)
-  const [kicker, setKicker] = useState('Our Impact')
-  const [heading, setHeading] = useState('Making a Real Difference')
-  const [description, setDescription] = useState(
-    'Measurable, lasting change — from classrooms to clinics, every program is built to lift children out of hardship.'
-  )
   const { settings } = useSettings()
 
-  useEffect(() => {
-    const impact = settings?.impactStats
-    if (!impact) return
-
-    if (impact.kicker) setKicker(impact.kicker)
-    if (impact.heading) setHeading(impact.heading)
-    if (impact.description) setDescription(impact.description)
-    if (impact.stats && impact.stats.length > 0) {
-      setStats(
-        impact.stats.map((s) => ({
-          value: s.value,
-          label: s.label,
-          description: s.description,
-        }))
-      )
-    }
-  }, [settings])
+  const impact = settings?.impactStats
+  const kicker = impact?.kicker || 'Our Impact'
+  const heading = impact?.heading || 'Making a Real Difference'
+  const description = impact?.description || 'Measurable, lasting change — from classrooms to clinics, every program is built to lift children out of hardship.'
+  const stats = impact?.stats?.length ? impact.stats : defaultStats
 
   return (
     <section className="bg-dark section-padding relative overflow-hidden">
