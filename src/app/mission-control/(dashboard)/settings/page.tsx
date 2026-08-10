@@ -1,729 +1,523 @@
-'use client';
+'use client'
 
-import { useEffect, useState } from 'react';
-import { motion } from 'framer-motion';
+import { useState, useEffect } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import {
   PiGear,
   PiCheck,
   PiArrowCounterClockwise,
   PiGlobe,
   PiPhone,
+  PiEnvelope,
+  PiMapPin,
   PiCurrencyCircleDollar,
+  PiImage,
   PiShareNetwork,
-  PiSpinner,
+  PiTrendUp,
+  PiHeart,
+  PiUsers,
+  PiNewspaper,
+  PiFloppyDisk,
   PiPlus,
   PiTrash,
-} from 'react-icons/pi';
+} from 'react-icons/pi'
 
-// The settings object is stored as data/settings.json by the /api/settings route.
-// This page edits a subset of the sections and preserves everything else on save.
-type SiteSettings = {
-  general: {
-    orgName: string;
-    tagline: string;
-    description: string;
-    foundedYear: string;
-    copyrightYear: string;
-  };
-  contact: {
-    phone1: string;
-    phone2: string;
-    email1: string;
-    email2: string;
-    address1: string;
-    address2: string;
-    officeHours1: string;
-    officeHours2: string;
-    mediaEmail: string;
-  };
-  social: {
-    facebook: string;
-    twitter: string;
-    instagram: string;
-    youtube: string;
-    linkedin: string;
-  };
-  impactStats: {
-    kicker: string;
-    heading: string;
-    description: string;
-    stats: { value: string; label: string; description: string }[];
-  };
-  donations: {
-    presetAmounts: { amount: number; impact: string }[];
-    allocation: { label: string; percentage: number }[];
-    taxInfo: string;
-  };
-  // Other sections (homeHero, about, testimonials, volunteerRoles, sponsorship,
-  // corporate, faq, partners, cta) are preserved untouched on save.
-  [key: string]: unknown;
-};
+const tabs = [
+  { id: 'general', label: 'General', icon: PiGear },
+  { id: 'contact', label: 'Contact', icon: PiPhone },
+  { id: 'social', label: 'Social Media', icon: PiShareNetwork },
+  { id: 'home', label: 'Home Page', icon: PiGlobe },
+  { id: 'impact', label: 'Impact Stats', icon: PiTrendUp },
+  { id: 'about', label: 'About Page', icon: PiHeart },
+  { id: 'testimonials', label: 'Testimonials', icon: PiNewspaper },
+  { id: 'volunteer', label: 'Volunteer & Sponsor', icon: PiUsers },
+  { id: 'corporate', label: 'Corporate', icon: PiCurrencyCircleDollar },
+  { id: 'donations', label: 'Donations', icon: PiCurrencyCircleDollar },
+  { id: 'faq', label: 'FAQ & Partners', icon: PiEnvelope },
+]
 
-const inputClasses =
-  'w-full px-4 py-3 rounded-xl border border-dark/15 bg-white text-dark text-sm focus:outline-none focus:border-dark/40 transition-colors';
+const inputCls = 'w-full px-4 py-3 rounded-xl border border-dark/15 bg-white text-dark text-sm placeholder:text-dark/35 focus:outline-none focus:border-dark/40 transition-colors'
+const labelCls = 'block text-sm font-medium text-dark mb-2'
+const sectionCls = 'bg-white rounded-2xl border border-dark/10 p-6 mb-4'
 
-const labelClasses = 'block text-sm font-medium text-dark mb-2';
+function Field({ label, value, onChange, textarea, placeholder }: { label: string; value: string; onChange: (v: string) => void; textarea?: boolean; placeholder?: string }) {
+  return (
+    <div>
+      <label className={labelCls}>{label}</label>
+      {textarea ? (
+        <textarea value={value} onChange={(e) => onChange(e.target.value)} className={`${inputCls} resize-none min-h-[80px]`} placeholder={placeholder} />
+      ) : (
+        <input type="text" value={value} onChange={(e) => onChange(e.target.value)} className={inputCls} placeholder={placeholder} />
+      )}
+    </div>
+  )
+}
 
-const emptySettings = (): SiteSettings => ({
-  general: {
-    orgName: '',
-    tagline: '',
-    description: '',
-    foundedYear: '',
-    copyrightYear: '',
-  },
-  contact: {
-    phone1: '',
-    phone2: '',
-    email1: '',
-    email2: '',
-    address1: '',
-    address2: '',
-    officeHours1: '',
-    officeHours2: '',
-    mediaEmail: '',
-  },
-  social: {
-    facebook: '',
-    twitter: '',
-    instagram: '',
-    youtube: '',
-    linkedin: '',
-  },
-  impactStats: {
-    kicker: '',
-    heading: '',
-    description: '',
-    stats: [],
-  },
-  donations: {
-    presetAmounts: [],
-    allocation: [],
-    taxInfo: '',
-  },
-});
+function ArrayField({ items, onAdd, onRemove, onUpdate, fields }: {
+  items: Record<string, string>[]
+  onAdd: () => void
+  onRemove: (i: number) => void
+  onUpdate: (i: number, key: string, val: string) => void
+  fields: { key: string; label: string; textarea?: boolean }[]
+}) {
+  return (
+    <div className="space-y-3">
+      {items.map((item, i) => (
+        <div key={i} className="flex gap-2 items-start">
+          <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {fields.map((f) => (
+              <div key={f.key}>
+                <label className={labelCls}>{f.label}</label>
+                {f.textarea ? (
+                  <textarea value={item[f.key] || ''} onChange={(e) => onUpdate(i, f.key, e.target.value)} className={`${inputCls} resize-none min-h-[60px]`} />
+                ) : (
+                  <input type="text" value={item[f.key] || ''} onChange={(e) => onUpdate(i, f.key, e.target.value)} className={inputCls} />
+                )}
+              </div>
+            ))}
+          </div>
+          <button onClick={() => onRemove(i)} className="mt-7 w-9 h-9 rounded-xl bg-red-50 flex items-center justify-center text-red-400 hover:bg-red-100 transition-colors flex-shrink-0">
+            <PiTrash className="w-4 h-4" />
+          </button>
+        </div>
+      ))}
+      <button onClick={onAdd} className="flex items-center gap-2 text-sm text-dark/60 hover:text-dark mt-2">
+        <PiPlus className="w-4 h-4" /> Add Item
+      </button>
+    </div>
+  )
+}
+
+const defaultSettings = () => ({
+  general: { orgName: 'Rescue Mission Orphanage', tagline: 'Give Hope To Children In Need', description: 'A dedicated charity organization focused on creating sustainable solutions for those in need.', foundedYear: '2008', copyrightYear: '2024' },
+  contact: { phone1: '+233 24 567 890', phone2: '+233 20 567 891', email1: 'info@rescuemission.org', email2: 'donate@rescuemission.org', address1: '123 Hope Street', address2: 'Accra, Ghana', officeHours1: 'Mon - Fri: 9:00 AM - 5:00 PM', officeHours2: 'Sat: 9:00 AM - 1:00 PM', mediaEmail: 'media@rescuemission.org' },
+  social: { facebook: 'https://facebook.com/rescuemission', twitter: 'https://twitter.com/rescuemission', instagram: 'https://instagram.com/rescuemission', youtube: 'https://youtube.com/rescuemission', linkedin: 'https://linkedin.com/company/rescuemission' },
+  homeHero: { heading: 'Every child deserves a childhood.', description: 'Rescue Mission Orphanage provides shelter, education, and care to children who need it most.', cta1Text: 'Donate Now', cta2Text: 'Explore Our Work', imageUrl: '', imageAlt: '' },
+  cta: { kicker: 'Give Hope a Home', heading: 'Your kindness becomes a child\'s breakthrough', description: 'Every donation, every volunteer hour, every share — it all adds up to education, healthcare, and a safe home for a child in need.' },
+  impactStats: { kicker: 'Our Impact', heading: 'Making a Real Difference', description: 'Measurable, lasting change — from classrooms to clinics.', stats: [
+    { value: '2,500+', label: 'Children Educated', description: 'Through our learning programs' },
+    { value: '500+', label: 'Families Supported', description: 'With emergency relief' },
+    { value: '15+', label: 'Communities', description: 'Across multiple regions' },
+    { value: 'GH₵2.5M', label: 'Funds Raised', description: 'From generous donors' },
+  ]},
+  about: { storyHeading: 'A Journey of Hope Since 2008', storyParagraphs: ['', '', ''], missionStatement: '', visionStatement: '', values: [
+    { title: 'Compassion', description: 'Empathy at the heart of everything we do.' },
+    { title: 'Integrity', description: 'Transparency and accountability in all operations.' },
+    { title: 'Impact', description: 'Sustainable solutions creating lasting change.' },
+    { title: 'Collaboration', description: 'Partnerships amplifying our collective impact.' },
+  ], team: [
+    { name: 'Grace Mwangi', role: 'Executive Director', bio: '20+ years in nonprofit leadership', avatar: '' },
+    { name: 'David Okonkwo', role: 'Programs Director', bio: 'Expert in child development programs', avatar: '' },
+    { name: 'Sarah Williams', role: 'Development Manager', bio: 'Passionate about community engagement', avatar: '' },
+    { name: 'James Chen', role: 'Finance Director', bio: 'Ensuring transparent financial stewardship', avatar: '' },
+  ], milestones: [
+    { year: '2008', title: 'Founded', description: 'Established with a vision to help orphaned children.' },
+    { year: '2012', title: 'First 100 Children', description: 'Reached milestone of supporting 100 children.' },
+    { year: '2016', title: 'New Facility', description: 'Opened a new facility to serve more children.' },
+    { year: '2020', title: 'Global Expansion', description: 'Extended reach to 5 countries in Africa and Asia.' },
+    { year: '2024', title: '5,000+ Children', description: 'Celebrated supporting over 5,000 children.' },
+  ]},
+  testimonials: [
+    { quote: 'Supporting Rescue Mission has been one of the most rewarding experiences of my life.', author: 'Sarah Johnson', role: 'Monthly Donor', avatar: '' },
+    { quote: 'Volunteering here changed my perspective on life.', author: 'Michael Chen', role: 'Volunteer', avatar: '' },
+    { quote: 'As a corporate partner, we have seen firsthand how Rescue Mission transforms communities.', author: 'Emily Rodriguez', role: 'Corporate Partner', avatar: '' },
+  ],
+  volunteerRoles: [
+    { title: 'Teaching Assistant', commitment: '4 hours/week', description: 'Help children with their studies.' },
+    { title: 'Mentor', commitment: '2 hours/week', description: 'Guide and support a child.' },
+    { title: 'Event Coordinator', commitment: 'Flexible', description: 'Help organize fundraising events.' },
+    { title: 'Skilled Volunteer', commitment: 'Project-based', description: 'Share your professional skills.' },
+  ],
+  sponsorship: { monthlyAmount: '50', benefits: ['Monthly updates and photos', 'Direct correspondence through letters', 'Annual progress reports', 'Invitation to visit', 'Tax-deductible donation receipt'] },
+  corporate: { tiers: [
+    { tier: 'Bronze', amount: 'GH₵5,000/year', benefits: 'Logo on website, social media mentions' },
+    { tier: 'Silver', amount: 'GH₵15,000/year', benefits: 'All Bronze + event sponsorship' },
+    { tier: 'Gold', amount: 'GH₵30,000/year', benefits: 'All Silver + naming rights' },
+  ], benefits: ['Brand visibility', 'Employee engagement opportunities', 'Tax benefits', 'CSR reporting support', 'Partnership certificates'] },
+  donations: { presetAmounts: [
+    { amount: '25', impact: 'School supplies for a month' },
+    { amount: '50', impact: 'Nutritious meals for a week' },
+    { amount: '100', impact: 'Medical care checkup' },
+    { amount: '250', impact: 'Safe shelter for a month' },
+    { amount: '500', impact: 'Education for a year' },
+    { amount: '1000', impact: 'Complete care package' },
+  ], allocation: [
+    { label: 'Programs & Services', percentage: '85' },
+    { label: 'Administration', percentage: '10' },
+    { label: 'Fundraising', percentage: '5' },
+  ], taxInfo: 'Rescue Mission Orphanage is a registered nonprofit organization. All donations are tax-deductible.' },
+  faq: [
+    { question: 'How can I volunteer?', answer: 'Visit our Get Involved page or contact us directly.' },
+    { question: 'Are donations tax-deductible?', answer: 'Yes! We are a registered nonprofit organization.' },
+    { question: 'How do I sponsor a child?', answer: 'Contact us or visit our Donate page.' },
+  ],
+  partners: [{ name: 'ZenZap' }, { name: 'sparkle' }, { name: 'Lum Labs' }, { name: 'Pulse' }, { name: 'swift' }, { name: 'innovio' }],
+})
 
 export default function SettingsPage() {
-  const [settings, setSettings] = useState<SiteSettings>(emptySettings());
-  const [toast, setToast] = useState(false);
-  const [toastMessage, setToastMessage] = useState('Settings saved successfully!');
-  const [toastError, setToastError] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-
-  const loadSettings = () => {
-    fetch('/api/settings')
-      .then((res) => {
-        if (!res.ok) throw new Error('Failed to load settings');
-        return res.json();
-      })
-      .then((data) => {
-        setSettings({
-          ...emptySettings(),
-          ...data,
-          general: { ...emptySettings().general, ...data.general },
-          contact: { ...emptySettings().contact, ...data.contact },
-          social: { ...emptySettings().social, ...data.social },
-          impactStats: { ...emptySettings().impactStats, ...data.impactStats },
-          donations: { ...emptySettings().donations, ...data.donations },
-        });
-      })
-      .catch(() => {
-        setToastMessage('Could not load settings.');
-        setToastError(true);
-        setToast(true);
-        setTimeout(() => setToast(false), 3000);
-      })
-      .finally(() => setLoading(false));
-  };
+  const [settings, setSettings] = useState(defaultSettings)
+  const [activeTab, setActiveTab] = useState('general')
+  const [saved, setSaved] = useState(false)
 
   useEffect(() => {
-    loadSettings();
-  }, []);
+    fetch('/api/settings').then(r => r.json()).then(data => {
+      if (data && Object.keys(data).length > 0) {
+        setSettings((prev: any) => {
+          const merged: any = { ...prev }
+          for (const key of Object.keys(data) as string[]) {
+            if (typeof data[key] === 'object' && data[key] !== null && !Array.isArray(data[key])) {
+              merged[key] = { ...prev[key], ...data[key] }
+            } else {
+              merged[key] = data[key]
+            }
+          }
+          return merged
+        })
+      }
+    }).catch(() => {})
+  }, [])
 
-  const showToast = (message: string, isError = false) => {
-    setToastMessage(message);
-    setToastError(isError);
-    setToast(true);
-    setTimeout(() => setToast(false), 3000);
-  };
+  const update = (path: string, value: string) => {
+    setSettings(prev => {
+      const keys = path.split('.')
+      const next = JSON.parse(JSON.stringify(prev))
+      let obj = next
+      for (let i = 0; i < keys.length - 1; i++) obj = obj[keys[i]]
+      obj[keys[keys.length - 1]] = value
+      return next
+    })
+  }
 
-  const updateGeneral = (field: keyof SiteSettings['general'], value: string) =>
-    setSettings((prev) => ({ ...prev, general: { ...prev.general, [field]: value } }));
+  const updateArrayItem = (path: string, index: number, key: string, value: string) => {
+    setSettings(prev => {
+      const keys = path.split('.')
+      const next = JSON.parse(JSON.stringify(prev))
+      let obj = next
+      for (const k of keys) obj = obj[k]
+      obj[index][key] = value
+      return next
+    })
+  }
 
-  const updateContact = (field: keyof SiteSettings['contact'], value: string) =>
-    setSettings((prev) => ({ ...prev, contact: { ...prev.contact, [field]: value } }));
+  const addArrayItem = (path: string, template: Record<string, string>) => {
+    setSettings(prev => {
+      const keys = path.split('.')
+      const next = JSON.parse(JSON.stringify(prev))
+      let obj = next
+      for (const k of keys) obj = obj[k]
+      obj.push({ ...template })
+      return next
+    })
+  }
 
-  const updateSocial = (field: keyof SiteSettings['social'], value: string) =>
-    setSettings((prev) => ({ ...prev, social: { ...prev.social, [field]: value } }));
+  const removeArrayItem = (path: string, index: number) => {
+    setSettings(prev => {
+      const keys = path.split('.')
+      const next = JSON.parse(JSON.stringify(prev))
+      let obj = next
+      for (const k of keys) obj = obj[k]
+      obj.splice(index, 1)
+      return next
+    })
+  }
 
-  const updateImpact = (field: 'kicker' | 'heading' | 'description', value: string) =>
-    setSettings((prev) => ({
-      ...prev,
-      impactStats: { ...prev.impactStats, [field]: value },
-    }));
+  const updateListItem = (path: string, index: number, value: string) => {
+    setSettings(prev => {
+      const keys = path.split('.')
+      const next = JSON.parse(JSON.stringify(prev))
+      let obj = next
+      for (const k of keys) obj = obj[k]
+      obj[index] = value
+      return next
+    })
+  }
 
-  const updateStat = (index: number, field: 'value' | 'label' | 'description', value: string) =>
-    setSettings((prev) => ({
-      ...prev,
-      impactStats: {
-        ...prev.impactStats,
-        stats: prev.impactStats.stats.map((s, i) => (i === index ? { ...s, [field]: value } : s)),
-      },
-    }));
+  const addListItem = (path: string, template: string) => {
+    setSettings(prev => {
+      const keys = path.split('.')
+      const next = JSON.parse(JSON.stringify(prev))
+      let obj = next
+      for (const k of keys) obj = obj[k]
+      obj.push(template)
+      return next
+    })
+  }
 
-  const addStat = () =>
-    setSettings((prev) => ({
-      ...prev,
-      impactStats: {
-        ...prev.impactStats,
-        stats: [...prev.impactStats.stats, { value: '', label: '', description: '' }],
-      },
-    }));
-
-  const removeStat = (index: number) =>
-    setSettings((prev) => ({
-      ...prev,
-      impactStats: {
-        ...prev.impactStats,
-        stats: prev.impactStats.stats.filter((_, i) => i !== index),
-      },
-    }));
-
-  const updatePreset = (index: number, field: 'amount' | 'impact', value: string) =>
-    setSettings((prev) => ({
-      ...prev,
-      donations: {
-        ...prev.donations,
-        presetAmounts: prev.donations.presetAmounts.map((p, i) =>
-          i === index
-            ? field === 'amount'
-              ? { ...p, amount: Number(value) || 0 }
-              : { ...p, impact: value }
-            : p
-        ),
-      },
-    }));
-
-  const addPreset = () =>
-    setSettings((prev) => ({
-      ...prev,
-      donations: {
-        ...prev.donations,
-        presetAmounts: [...prev.donations.presetAmounts, { amount: 0, impact: '' }],
-      },
-    }));
-
-  const removePreset = (index: number) =>
-    setSettings((prev) => ({
-      ...prev,
-      donations: {
-        ...prev.donations,
-        presetAmounts: prev.donations.presetAmounts.filter((_, i) => i !== index),
-      },
-    }));
-
-  const updateAllocation = (index: number, field: 'label' | 'percentage', value: string) =>
-    setSettings((prev) => ({
-      ...prev,
-      donations: {
-        ...prev.donations,
-        allocation: prev.donations.allocation.map((a, i) =>
-          i === index
-            ? field === 'percentage'
-              ? { ...a, percentage: Number(value) || 0 }
-              : { ...a, label: value }
-            : a
-        ),
-      },
-    }));
-
-  const addAllocation = () =>
-    setSettings((prev) => ({
-      ...prev,
-      donations: {
-        ...prev.donations,
-        allocation: [...prev.donations.allocation, { label: '', percentage: 0 }],
-      },
-    }));
-
-  const removeAllocation = (index: number) =>
-    setSettings((prev) => ({
-      ...prev,
-      donations: {
-        ...prev.donations,
-        allocation: prev.donations.allocation.filter((_, i) => i !== index),
-      },
-    }));
+  const removeListItem = (path: string, index: number) => {
+    setSettings(prev => {
+      const keys = path.split('.')
+      const next = JSON.parse(JSON.stringify(prev))
+      let obj = next
+      for (const k of keys) obj = obj[k]
+      obj.splice(index, 1)
+      return next
+    })
+  }
 
   const handleSave = async () => {
-    setSaving(true);
-    try {
-      const res = await fetch('/api/settings', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(settings),
-      });
-      if (!res.ok) throw new Error();
-      showToast('Settings saved successfully!');
-    } catch {
-      showToast('Failed to save settings. Please try again.', true);
-    } finally {
-      setSaving(false);
-    }
-  };
+    await fetch('/api/settings', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(settings) })
+    setSaved(true)
+    setTimeout(() => setSaved(false), 3000)
+  }
 
-  const handleReset = async () => {
-    setLoading(true);
-    await loadSettings();
-    showToast('Settings reset to saved values.');
-  };
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-[#f8fbf6] p-6 md:p-10 flex items-center justify-center">
-        <PiSpinner className="animate-spin text-3xl text-[#0e3b2b]/30" />
-      </div>
-    );
+  const handleReset = () => {
+    setSettings(defaultSettings())
   }
 
   return (
-    <div className="min-h-screen bg-[#f8fbf6] p-6 md:p-10">
-      {toast && (
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -20 }}
-          className={`fixed top-6 right-6 z-50 flex items-center gap-2 rounded-full px-5 py-3 text-sm font-semibold shadow-lg ${
-            toastError ? 'bg-red-500 text-white' : 'bg-[#7ed957] text-[#0e3b2b]'
-          }`}
-        >
-          {toastError ? null : <PiCheck className="text-lg" />}
-          {toastMessage}
-        </motion.div>
-      )}
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-serif text-dark">Site Settings</h1>
+          <p className="text-dark/50 text-sm mt-1">Manage your website content and details</p>
+        </div>
+      </div>
 
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="mx-auto max-w-4xl"
-      >
-        <div className="mb-8">
-          <h1 className="text-2xl font-extrabold text-[#0e3b2b]">Site Settings</h1>
-          <p className="mt-1 text-sm text-dark/60">
-            Manage your website content and details
-          </p>
+      <AnimatePresence>
+        {saved && (
+          <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="fixed top-4 right-4 z-50 bg-lime text-dark px-6 py-3 rounded-xl font-semibold shadow-lg flex items-center gap-2">
+            <PiCheck className="w-5 h-5" /> Settings saved successfully!
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <div className="flex flex-col lg:flex-row gap-6">
+        {/* Tabs */}
+        <div className="lg:w-56 flex lg:flex-col gap-1 overflow-x-auto lg:overflow-x-visible pb-2 lg:pb-0 flex-shrink-0">
+          {tabs.map((tab) => (
+            <button key={tab.id} onClick={() => setActiveTab(tab.id)}
+              className={`flex items-center gap-3 px-4 py-3 rounded-xl text-left text-sm font-medium whitespace-nowrap transition-all ${
+                activeTab === tab.id ? 'bg-dark text-white' : 'text-dark/60 hover:bg-dark/5'
+              }`}>
+              <tab.icon className="w-5 h-5" />
+              {tab.label}
+            </button>
+          ))}
         </div>
 
-        <div className="space-y-6">
-          {/* General */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4, delay: 0.1 }}
-            className="rounded-2xl border border-dark/10 bg-white p-6"
-          >
-            <div className="mb-5 flex items-center gap-3">
-              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#0e3b2b]/10 text-[#0e3b2b]">
-                <PiGear className="text-lg" />
-              </div>
-              <h2 className="text-base font-bold text-[#0e3b2b]">General</h2>
-            </div>
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div>
-                <label className={labelClasses}>Organization Name</label>
-                <input
-                  className={inputClasses}
-                  value={settings.general.orgName}
-                  onChange={(e) => updateGeneral('orgName', e.target.value)}
-                />
-              </div>
-              <div>
-                <label className={labelClasses}>Tagline</label>
-                <input
-                  className={inputClasses}
-                  value={settings.general.tagline}
-                  onChange={(e) => updateGeneral('tagline', e.target.value)}
-                />
-              </div>
-              <div className="sm:col-span-2">
-                <label className={labelClasses}>Description</label>
-                <textarea
-                  className={inputClasses}
-                  rows={3}
-                  value={settings.general.description}
-                  onChange={(e) => updateGeneral('description', e.target.value)}
-                />
-              </div>
-              <div>
-                <label className={labelClasses}>Founded Year</label>
-                <input
-                  className={inputClasses}
-                  value={settings.general.foundedYear}
-                  onChange={(e) => updateGeneral('foundedYear', e.target.value)}
-                />
-              </div>
-              <div>
-                <label className={labelClasses}>Copyright Year</label>
-                <input
-                  className={inputClasses}
-                  value={settings.general.copyrightYear}
-                  onChange={(e) => updateGeneral('copyrightYear', e.target.value)}
-                />
-              </div>
-            </div>
-          </motion.div>
+        {/* Content */}
+        <div className="flex-1 min-w-0">
+          <AnimatePresence mode="wait">
+            <motion.div key={activeTab} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.2 }}>
 
-          {/* Contact */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4, delay: 0.2 }}
-            className="rounded-2xl border border-dark/10 bg-white p-6"
-          >
-            <div className="mb-5 flex items-center gap-3">
-              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#0e3b2b]/10 text-[#0e3b2b]">
-                <PiPhone className="text-lg" />
-              </div>
-              <h2 className="text-base font-bold text-[#0e3b2b]">Contact</h2>
-            </div>
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div>
-                <label className={labelClasses}>Phone 1</label>
-                <input
-                  className={inputClasses}
-                  value={settings.contact.phone1}
-                  onChange={(e) => updateContact('phone1', e.target.value)}
-                />
-              </div>
-              <div>
-                <label className={labelClasses}>Phone 2</label>
-                <input
-                  className={inputClasses}
-                  value={settings.contact.phone2}
-                  onChange={(e) => updateContact('phone2', e.target.value)}
-                />
-              </div>
-              <div>
-                <label className={labelClasses}>Email 1</label>
-                <input
-                  className={inputClasses}
-                  value={settings.contact.email1}
-                  onChange={(e) => updateContact('email1', e.target.value)}
-                />
-              </div>
-              <div>
-                <label className={labelClasses}>Email 2</label>
-                <input
-                  className={inputClasses}
-                  value={settings.contact.email2}
-                  onChange={(e) => updateContact('email2', e.target.value)}
-                />
-              </div>
-              <div>
-                <label className={labelClasses}>Media Email</label>
-                <input
-                  className={inputClasses}
-                  value={settings.contact.mediaEmail}
-                  onChange={(e) => updateContact('mediaEmail', e.target.value)}
-                />
-              </div>
-              <div>
-                <label className={labelClasses}>Address Line 1</label>
-                <input
-                  className={inputClasses}
-                  value={settings.contact.address1}
-                  onChange={(e) => updateContact('address1', e.target.value)}
-                />
-              </div>
-              <div>
-                <label className={labelClasses}>Address Line 2</label>
-                <input
-                  className={inputClasses}
-                  value={settings.contact.address2}
-                  onChange={(e) => updateContact('address2', e.target.value)}
-                />
-              </div>
-              <div>
-                <label className={labelClasses}>Office Hours 1</label>
-                <input
-                  className={inputClasses}
-                  value={settings.contact.officeHours1}
-                  onChange={(e) => updateContact('officeHours1', e.target.value)}
-                />
-              </div>
-              <div>
-                <label className={labelClasses}>Office Hours 2</label>
-                <input
-                  className={inputClasses}
-                  value={settings.contact.officeHours2}
-                  onChange={(e) => updateContact('officeHours2', e.target.value)}
-                />
-              </div>
-            </div>
-          </motion.div>
-
-          {/* Social Media */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4, delay: 0.3 }}
-            className="rounded-2xl border border-dark/10 bg-white p-6"
-          >
-            <div className="mb-5 flex items-center gap-3">
-              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#0e3b2b]/10 text-[#0e3b2b]">
-                <PiShareNetwork className="text-lg" />
-              </div>
-              <h2 className="text-base font-bold text-[#0e3b2b]">Social Media</h2>
-            </div>
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div>
-                <label className={labelClasses}>Facebook</label>
-                <input
-                  className={inputClasses}
-                  value={settings.social.facebook}
-                  onChange={(e) => updateSocial('facebook', e.target.value)}
-                />
-              </div>
-              <div>
-                <label className={labelClasses}>Twitter</label>
-                <input
-                  className={inputClasses}
-                  value={settings.social.twitter}
-                  onChange={(e) => updateSocial('twitter', e.target.value)}
-                />
-              </div>
-              <div>
-                <label className={labelClasses}>Instagram</label>
-                <input
-                  className={inputClasses}
-                  value={settings.social.instagram}
-                  onChange={(e) => updateSocial('instagram', e.target.value)}
-                />
-              </div>
-              <div>
-                <label className={labelClasses}>YouTube</label>
-                <input
-                  className={inputClasses}
-                  value={settings.social.youtube}
-                  onChange={(e) => updateSocial('youtube', e.target.value)}
-                />
-              </div>
-              <div>
-                <label className={labelClasses}>LinkedIn</label>
-                <input
-                  className={inputClasses}
-                  value={settings.social.linkedin}
-                  onChange={(e) => updateSocial('linkedin', e.target.value)}
-                />
-              </div>
-            </div>
-          </motion.div>
-
-          {/* Impact Stats */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4, delay: 0.4 }}
-            className="rounded-2xl border border-dark/10 bg-white p-6"
-          >
-            <div className="mb-5 flex items-center gap-3">
-              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#0e3b2b]/10 text-[#0e3b2b]">
-                <PiGlobe className="text-lg" />
-              </div>
-              <h2 className="text-base font-bold text-[#0e3b2b]">Impact Stats</h2>
-            </div>
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div>
-                <label className={labelClasses}>Kicker</label>
-                <input
-                  className={inputClasses}
-                  value={settings.impactStats.kicker}
-                  onChange={(e) => updateImpact('kicker', e.target.value)}
-                />
-              </div>
-              <div>
-                <label className={labelClasses}>Heading</label>
-                <input
-                  className={inputClasses}
-                  value={settings.impactStats.heading}
-                  onChange={(e) => updateImpact('heading', e.target.value)}
-                />
-              </div>
-              <div className="sm:col-span-2">
-                <label className={labelClasses}>Description</label>
-                <textarea
-                  className={inputClasses}
-                  rows={2}
-                  value={settings.impactStats.description}
-                  onChange={(e) => updateImpact('description', e.target.value)}
-                />
-              </div>
-            </div>
-            <div className="mt-4 space-y-3">
-              {settings.impactStats.stats.map((stat, i) => (
-                <div key={i} className="grid gap-3 sm:grid-cols-[1fr_1fr_2fr_auto] items-center">
-                  <input
-                    className={inputClasses}
-                    placeholder="Value (e.g. 2,500+)"
-                    value={stat.value}
-                    onChange={(e) => updateStat(i, 'value', e.target.value)}
-                  />
-                  <input
-                    className={inputClasses}
-                    placeholder="Label (e.g. Children Educated)"
-                    value={stat.label}
-                    onChange={(e) => updateStat(i, 'label', e.target.value)}
-                  />
-                  <input
-                    className={inputClasses}
-                    placeholder="Description"
-                    value={stat.description}
-                    onChange={(e) => updateStat(i, 'description', e.target.value)}
-                  />
-                  <button
-                    onClick={() => removeStat(i)}
-                    className="flex h-10 w-10 items-center justify-center rounded-xl border border-dark/15 text-dark/50 transition-colors hover:border-red-300 hover:text-red-500"
-                  >
-                    <PiTrash />
-                  </button>
-                </div>
-              ))}
-              <button
-                onClick={addStat}
-                className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#0e3b2b] underline underline-offset-2 transition-colors hover:text-[#7ed957]"
-              >
-                <PiPlus className="text-base" /> Add Stat
-              </button>
-            </div>
-          </motion.div>
-
-          {/* Donations */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4, delay: 0.5 }}
-            className="rounded-2xl border border-dark/10 bg-white p-6"
-          >
-            <div className="mb-5 flex items-center gap-3">
-              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#0e3b2b]/10 text-[#0e3b2b]">
-                <PiCurrencyCircleDollar className="text-lg" />
-              </div>
-              <h2 className="text-base font-bold text-[#0e3b2b]">Donations</h2>
-            </div>
-
-            <label className={labelClasses}>Preset Amounts</label>
-            <div className="space-y-3">
-              {settings.donations.presetAmounts.map((preset, i) => (
-                <div key={i} className="grid gap-3 sm:grid-cols-[1fr_2fr_auto] items-center">
-                  <input
-                    className={inputClasses}
-                    type="number"
-                    placeholder="Amount (GH₵)"
-                    value={preset.amount}
-                    onChange={(e) => updatePreset(i, 'amount', e.target.value)}
-                  />
-                  <input
-                    className={inputClasses}
-                    placeholder="Impact (e.g. School supplies for a month)"
-                    value={preset.impact}
-                    onChange={(e) => updatePreset(i, 'impact', e.target.value)}
-                  />
-                  <button
-                    onClick={() => removePreset(i)}
-                    className="flex h-10 w-10 items-center justify-center rounded-xl border border-dark/15 text-dark/50 transition-colors hover:border-red-300 hover:text-red-500"
-                  >
-                    <PiTrash />
-                  </button>
-                </div>
-              ))}
-              <button
-                onClick={addPreset}
-                className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#0e3b2b] underline underline-offset-2 transition-colors hover:text-[#7ed957]"
-              >
-                <PiPlus className="text-base" /> Add Preset
-              </button>
-            </div>
-
-            <label className={`${labelClasses} mt-6`}>Fund Allocation</label>
-            <div className="space-y-3">
-              {settings.donations.allocation.map((item, i) => (
-                <div key={i} className="grid gap-3 sm:grid-cols-[2fr_1fr_auto] items-center">
-                  <input
-                    className={inputClasses}
-                    placeholder="Label (e.g. Programs & Services)"
-                    value={item.label}
-                    onChange={(e) => updateAllocation(i, 'label', e.target.value)}
-                  />
-                  <div className="relative">
-                    <input
-                      className={inputClasses}
-                      type="number"
-                      min="0"
-                      max="100"
-                      placeholder="%"
-                      value={item.percentage}
-                      onChange={(e) => updateAllocation(i, 'percentage', e.target.value)}
-                    />
-                    <span className="absolute right-4 top-1/2 -translate-y-1/2 text-dark/40 text-sm">%</span>
+              {activeTab === 'general' && (
+                <div className={sectionCls}>
+                  <h2 className="text-lg font-serif text-dark mb-4 flex items-center gap-2"><PiGear className="text-lg" /> General Information</h2>
+                  <div className="grid sm:grid-cols-2 gap-4">
+                    <Field label="Organization Name" value={settings.general.orgName} onChange={(v) => update('general.orgName', v)} />
+                    <Field label="Tagline" value={settings.general.tagline} onChange={(v) => update('general.tagline', v)} />
+                    <Field label="Founded Year" value={settings.general.foundedYear} onChange={(v) => update('general.foundedYear', v)} />
+                    <Field label="Copyright Year" value={settings.general.copyrightYear} onChange={(v) => update('general.copyrightYear', v)} />
                   </div>
-                  <button
-                    onClick={() => removeAllocation(i)}
-                    className="flex h-10 w-10 items-center justify-center rounded-xl border border-dark/15 text-dark/50 transition-colors hover:border-red-300 hover:text-red-500"
-                  >
-                    <PiTrash />
-                  </button>
+                  <div className="mt-4"><Field label="Description" value={settings.general.description} onChange={(v) => update('general.description', v)} textarea /></div>
                 </div>
-              ))}
-              <button
-                onClick={addAllocation}
-                className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#0e3b2b] underline underline-offset-2 transition-colors hover:text-[#7ed957]"
-              >
-                <PiPlus className="text-base" /> Add Allocation
-              </button>
-            </div>
+              )}
 
-            <div className="mt-6">
-              <label className={labelClasses}>Tax Information</label>
-              <textarea
-                className={inputClasses}
-                rows={3}
-                value={settings.donations.taxInfo}
-                onChange={(e) =>
-                  setSettings((prev) => ({
-                    ...prev,
-                    donations: { ...prev.donations, taxInfo: e.target.value },
-                  }))
-                }
-              />
-            </div>
-          </motion.div>
+              {activeTab === 'contact' && (
+                <div className={sectionCls}>
+                  <h2 className="text-lg font-serif text-dark mb-4 flex items-center gap-2"><PiPhone className="text-lg" /> Contact Information</h2>
+                  <div className="grid sm:grid-cols-2 gap-4">
+                    <Field label="Phone 1" value={settings.contact.phone1} onChange={(v) => update('contact.phone1', v)} />
+                    <Field label="Phone 2" value={settings.contact.phone2} onChange={(v) => update('contact.phone2', v)} />
+                    <Field label="Email 1" value={settings.contact.email1} onChange={(v) => update('contact.email1', v)} />
+                    <Field label="Email 2" value={settings.contact.email2} onChange={(v) => update('contact.email2', v)} />
+                    <Field label="Address Line 1" value={settings.contact.address1} onChange={(v) => update('contact.address1', v)} />
+                    <Field label="Address Line 2" value={settings.contact.address2} onChange={(v) => update('contact.address2', v)} />
+                    <Field label="Office Hours 1" value={settings.contact.officeHours1} onChange={(v) => update('contact.officeHours1', v)} />
+                    <Field label="Office Hours 2" value={settings.contact.officeHours2} onChange={(v) => update('contact.officeHours2', v)} />
+                    <Field label="Media Email" value={settings.contact.mediaEmail} onChange={(v) => update('contact.mediaEmail', v)} />
+                  </div>
+                </div>
+              )}
+
+              {activeTab === 'social' && (
+                <div className={sectionCls}>
+                  <h2 className="text-lg font-serif text-dark mb-4 flex items-center gap-2"><PiShareNetwork className="text-lg" /> Social Media Links</h2>
+                  <div className="grid sm:grid-cols-2 gap-4">
+                    <Field label="Facebook" value={settings.social.facebook} onChange={(v) => update('social.facebook', v)} placeholder="https://facebook.com/..." />
+                    <Field label="Twitter / X" value={settings.social.twitter} onChange={(v) => update('social.twitter', v)} placeholder="https://twitter.com/..." />
+                    <Field label="Instagram" value={settings.social.instagram} onChange={(v) => update('social.instagram', v)} placeholder="https://instagram.com/..." />
+                    <Field label="YouTube" value={settings.social.youtube} onChange={(v) => update('social.youtube', v)} placeholder="https://youtube.com/..." />
+                    <Field label="LinkedIn" value={settings.social.linkedin} onChange={(v) => update('social.linkedin', v)} placeholder="https://linkedin.com/..." />
+                  </div>
+                </div>
+              )}
+
+              {activeTab === 'home' && (
+                <>
+                  <div className={sectionCls}>
+                    <h2 className="text-lg font-serif text-dark mb-4 flex items-center gap-2"><PiGlobe className="text-lg" /> Hero Section</h2>
+                    <div className="space-y-4">
+                      <Field label="Heading" value={settings.homeHero.heading} onChange={(v) => update('homeHero.heading', v)} />
+                      <Field label="Description" value={settings.homeHero.description} onChange={(v) => update('homeHero.description', v)} textarea />
+                      <div className="grid sm:grid-cols-2 gap-4">
+                        <Field label="CTA 1 Text" value={settings.homeHero.cta1Text} onChange={(v) => update('homeHero.cta1Text', v)} />
+                        <Field label="CTA 2 Text" value={settings.homeHero.cta2Text} onChange={(v) => update('homeHero.cta2Text', v)} />
+                      </div>
+                    </div>
+                  </div>
+                  <div className={sectionCls}>
+                    <h2 className="text-lg font-serif text-dark mb-4">Call To Action Section</h2>
+                    <div className="space-y-4">
+                      <Field label="Kicker" value={settings.cta.kicker} onChange={(v) => update('cta.kicker', v)} />
+                      <Field label="Heading" value={settings.cta.heading} onChange={(v) => update('cta.heading', v)} />
+                      <Field label="Description" value={settings.cta.description} onChange={(v) => update('cta.description', v)} textarea />
+                    </div>
+                  </div>
+                </>
+              )}
+
+              {activeTab === 'impact' && (
+                <div className={sectionCls}>
+                  <h2 className="text-lg font-serif text-dark mb-4 flex items-center gap-2"><PiTrendUp className="text-lg" /> Impact Statistics</h2>
+                  <div className="space-y-4">
+                    <div className="grid sm:grid-cols-2 gap-4">
+                      <Field label="Kicker" value={settings.impactStats.kicker} onChange={(v) => update('impactStats.kicker', v)} />
+                      <Field label="Heading" value={settings.impactStats.heading} onChange={(v) => update('impactStats.heading', v)} />
+                    </div>
+                    <Field label="Description" value={settings.impactStats.description} onChange={(v) => update('impactStats.description', v)} textarea />
+                    <div className="mt-4">
+                      <h3 className="font-semibold text-dark mb-3">Stats</h3>
+                      <ArrayField items={settings.impactStats.stats} onAdd={() => addArrayItem('impactStats.stats', { value: '', label: '', description: '' })} onRemove={(i) => removeArrayItem('impactStats.stats', i)} onUpdate={(i, k, v) => updateArrayItem('impactStats.stats', i, k, v)} fields={[{ key: 'value', label: 'Value' }, { key: 'label', label: 'Label' }, { key: 'description', label: 'Description' }]} />
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {activeTab === 'about' && (
+                <>
+                  <div className={sectionCls}>
+                    <h2 className="text-lg font-serif text-dark mb-4">Story Section</h2>
+                    <div className="space-y-4">
+                      <Field label="Story Heading" value={settings.about.storyHeading} onChange={(v) => update('about.storyHeading', v)} />
+                      {settings.about.storyParagraphs.map((p: string, i: number) => (
+                        <Field key={i} label={`Paragraph ${i + 1}`} value={p} onChange={(v) => updateListItem('about.storyParagraphs', i, v)} textarea />
+                      ))}
+                    </div>
+                  </div>
+                  <div className={sectionCls}>
+                    <h2 className="text-lg font-serif text-dark mb-4">Mission & Vision</h2>
+                    <div className="space-y-4">
+                      <Field label="Mission Statement" value={settings.about.missionStatement} onChange={(v) => update('about.missionStatement', v)} textarea />
+                      <Field label="Vision Statement" value={settings.about.visionStatement} onChange={(v) => update('about.visionStatement', v)} textarea />
+                    </div>
+                  </div>
+                  <div className={sectionCls}>
+                    <h2 className="text-lg font-serif text-dark mb-4">Values</h2>
+                    <ArrayField items={settings.about.values} onAdd={() => addArrayItem('about.values', { title: '', description: '' })} onRemove={(i) => removeArrayItem('about.values', i)} onUpdate={(i, k, v) => updateArrayItem('about.values', i, k, v)} fields={[{ key: 'title', label: 'Title' }, { key: 'description', label: 'Description', textarea: true }]} />
+                  </div>
+                  <div className={sectionCls}>
+                    <h2 className="text-lg font-serif text-dark mb-4">Team Members</h2>
+                    <ArrayField items={settings.about.team} onAdd={() => addArrayItem('about.team', { name: '', role: '', bio: '', avatar: '' })} onRemove={(i) => removeArrayItem('about.team', i)} onUpdate={(i, k, v) => updateArrayItem('about.team', i, k, v)} fields={[{ key: 'name', label: 'Name' }, { key: 'role', label: 'Role' }, { key: 'bio', label: 'Bio' }, { key: 'avatar', label: 'Avatar URL' }]} />
+                  </div>
+                  <div className={sectionCls}>
+                    <h2 className="text-lg font-serif text-dark mb-4">Milestones</h2>
+                    <ArrayField items={settings.about.milestones} onAdd={() => addArrayItem('about.milestones', { year: '', title: '', description: '' })} onRemove={(i) => removeArrayItem('about.milestones', i)} onUpdate={(i, k, v) => updateArrayItem('about.milestones', i, k, v)} fields={[{ key: 'year', label: 'Year' }, { key: 'title', label: 'Title' }, { key: 'description', label: 'Description', textarea: true }]} />
+                  </div>
+                </>
+              )}
+
+              {activeTab === 'testimonials' && (
+                <div className={sectionCls}>
+                  <h2 className="text-lg font-serif text-dark mb-4">Testimonials</h2>
+                  <ArrayField items={settings.testimonials} onAdd={() => addArrayItem('testimonials', { quote: '', author: '', role: '', avatar: '' })} onRemove={(i) => removeArrayItem('testimonials', i)} onUpdate={(i, k, v) => updateArrayItem('testimonials', i, k, v)} fields={[{ key: 'quote', label: 'Quote', textarea: true }, { key: 'author', label: 'Author Name' }, { key: 'role', label: 'Role' }, { key: 'avatar', label: 'Avatar URL' }]} />
+                </div>
+              )}
+
+              {activeTab === 'volunteer' && (
+                <>
+                  <div className={sectionCls}>
+                    <h2 className="text-lg font-serif text-dark mb-4">Volunteer Roles</h2>
+                    <ArrayField items={settings.volunteerRoles} onAdd={() => addArrayItem('volunteerRoles', { title: '', commitment: '', description: '' })} onRemove={(i) => removeArrayItem('volunteerRoles', i)} onUpdate={(i, k, v) => updateArrayItem('volunteerRoles', i, k, v)} fields={[{ key: 'title', label: 'Title' }, { key: 'commitment', label: 'Commitment' }, { key: 'description', label: 'Description' }]} />
+                  </div>
+                  <div className={sectionCls}>
+                    <h2 className="text-lg font-serif text-dark mb-4">Sponsorship</h2>
+                    <div className="space-y-4">
+                      <Field label="Monthly Amount (GH₵)" value={settings.sponsorship.monthlyAmount} onChange={(v) => update('sponsorship.monthlyAmount', v)} />
+                      <div>
+                        <label className={labelCls}>Benefits</label>
+                        {settings.sponsorship.benefits.map((b: string, i: number) => (
+                          <div key={i} className="flex gap-2 mb-2">
+                            <input type="text" value={b} onChange={(e) => updateListItem('sponsorship.benefits', i, e.target.value)} className={inputCls} />
+                            <button onClick={() => removeListItem('sponsorship.benefits', i)} className="w-9 h-9 rounded-xl bg-red-50 flex items-center justify-center text-red-400 hover:bg-red-100 flex-shrink-0"><PiTrash className="w-4 h-4" /></button>
+                          </div>
+                        ))}
+                        <button onClick={() => addListItem('sponsorship.benefits', '')} className="flex items-center gap-2 text-sm text-dark/60 hover:text-dark mt-2"><PiPlus className="w-4 h-4" /> Add Benefit</button>
+                      </div>
+                    </div>
+                  </div>
+                </>
+              )}
+
+              {activeTab === 'corporate' && (
+                <>
+                  <div className={sectionCls}>
+                    <h2 className="text-lg font-serif text-dark mb-4">Partnership Tiers</h2>
+                    <ArrayField items={settings.corporate.tiers} onAdd={() => addArrayItem('corporate.tiers', { tier: '', amount: '', benefits: '' })} onRemove={(i) => removeArrayItem('corporate.tiers', i)} onUpdate={(i, k, v) => updateArrayItem('corporate.tiers', i, k, v)} fields={[{ key: 'tier', label: 'Tier Name' }, { key: 'amount', label: 'Amount' }, { key: 'benefits', label: 'Benefits', textarea: true }]} />
+                  </div>
+                  <div className={sectionCls}>
+                    <h2 className="text-lg font-serif text-dark mb-4">Partner Benefits</h2>
+                    {settings.corporate.benefits.map((b: string, i: number) => (
+                      <div key={i} className="flex gap-2 mb-2">
+                        <input type="text" value={b} onChange={(e) => updateListItem('corporate.benefits', i, e.target.value)} className={inputCls} />
+                        <button onClick={() => removeListItem('corporate.benefits', i)} className="w-9 h-9 rounded-xl bg-red-50 flex items-center justify-center text-red-400 hover:bg-red-100 flex-shrink-0"><PiTrash className="w-4 h-4" /></button>
+                      </div>
+                    ))}
+                    <button onClick={() => addListItem('corporate.benefits', '')} className="flex items-center gap-2 text-sm text-dark/60 hover:text-dark mt-2"><PiPlus className="w-4 h-4" /> Add Benefit</button>
+                  </div>
+                </>
+              )}
+
+              {activeTab === 'donations' && (
+                <>
+                  <div className={sectionCls}>
+                    <h2 className="text-lg font-serif text-dark mb-4">Preset Amounts</h2>
+                    <ArrayField items={settings.donations.presetAmounts} onAdd={() => addArrayItem('donations.presetAmounts', { amount: '', impact: '' })} onRemove={(i) => removeArrayItem('donations.presetAmounts', i)} onUpdate={(i, k, v) => updateArrayItem('donations.presetAmounts', i, k, v)} fields={[{ key: 'amount', label: 'Amount (GH₵)' }, { key: 'impact', label: 'Impact Description' }]} />
+                  </div>
+                  <div className={sectionCls}>
+                    <h2 className="text-lg font-serif text-dark mb-4">Allocation Breakdown</h2>
+                    <ArrayField items={settings.donations.allocation} onAdd={() => addArrayItem('donations.allocation', { label: '', percentage: '' })} onRemove={(i) => removeArrayItem('donations.allocation', i)} onUpdate={(i, k, v) => updateArrayItem('donations.allocation', i, k, v)} fields={[{ key: 'label', label: 'Label' }, { key: 'percentage', label: 'Percentage' }]} />
+                  </div>
+                  <div className={sectionCls}>
+                    <h2 className="text-lg font-serif text-dark mb-4">Tax Information</h2>
+                    <Field label="Tax Info" value={settings.donations.taxInfo} onChange={(v) => update('donations.taxInfo', v)} textarea />
+                  </div>
+                </>
+              )}
+
+              {activeTab === 'faq' && (
+                <>
+                  <div className={sectionCls}>
+                    <h2 className="text-lg font-serif text-dark mb-4">FAQ</h2>
+                    <ArrayField items={settings.faq} onAdd={() => addArrayItem('faq', { question: '', answer: '' })} onRemove={(i) => removeArrayItem('faq', i)} onUpdate={(i, k, v) => updateArrayItem('faq', i, k, v)} fields={[{ key: 'question', label: 'Question' }, { key: 'answer', label: 'Answer', textarea: true }]} />
+                  </div>
+                  <div className={sectionCls}>
+                    <h2 className="text-lg font-serif text-dark mb-4">Partners</h2>
+                    {settings.partners.map((p: { name: string }, i: number) => (
+                      <div key={i} className="flex gap-2 mb-2">
+                        <input type="text" value={p.name} onChange={(e) => updateArrayItem('partners', i, 'name', e.target.value)} className={inputCls} />
+                        <button onClick={() => removeArrayItem('partners', i)} className="w-9 h-9 rounded-xl bg-red-50 flex items-center justify-center text-red-400 hover:bg-red-100 flex-shrink-0"><PiTrash className="w-4 h-4" /></button>
+                      </div>
+                    ))}
+                    <button onClick={() => addArrayItem('partners', { name: '' })} className="flex items-center gap-2 text-sm text-dark/60 hover:text-dark mt-2"><PiPlus className="w-4 h-4" /> Add Partner</button>
+                  </div>
+                </>
+              )}
+
+            </motion.div>
+          </AnimatePresence>
+
+          {/* Actions */}
+          <div className="flex items-center gap-4 mt-6">
+            <button onClick={handleSave} className="inline-flex items-center gap-2 px-8 py-3.5 rounded-full bg-dark text-white font-extrabold text-sm tracking-wide hover:bg-dark-50 transition-colors">
+              <PiFloppyDisk className="w-4 h-4" /> Save Changes
+            </button>
+            <button onClick={handleReset} className="inline-flex items-center gap-2 px-6 py-3.5 rounded-full border-2 border-dark/20 text-dark font-extrabold text-sm tracking-wide hover:border-dark/40 transition-colors">
+              <PiArrowCounterClockwise className="w-4 h-4" /> Reset to Defaults
+            </button>
+          </div>
         </div>
-
-        {/* Actions */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, delay: 0.6 }}
-          className="mt-8 flex flex-wrap items-center gap-4"
-        >
-          <button
-            onClick={handleSave}
-            disabled={saving}
-            className="rounded-full bg-[#0e3b2b] px-8 py-3.5 text-sm font-extrabold text-white transition-opacity hover:opacity-90 disabled:opacity-60"
-          >
-            {saving ? 'Saving...' : 'Save Changes'}
-          </button>
-          <button
-            onClick={handleReset}
-            className="flex items-center gap-2 rounded-full border border-dark/15 px-6 py-3.5 text-sm font-bold text-dark transition-colors hover:bg-dark/5"
-          >
-            <PiArrowCounterClockwise className="text-base" />
-            Reset to Saved
-          </button>
-        </motion.div>
-      </motion.div>
+      </div>
     </div>
-  );
+  )
 }
