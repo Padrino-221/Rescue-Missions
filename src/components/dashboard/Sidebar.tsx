@@ -11,6 +11,7 @@ import {
   PiBooks,
   PiChatsCircle,
   PiCurrencyCircleDollar,
+  PiGear,
   PiList,
   PiX,
   PiHeartFill,
@@ -23,6 +24,7 @@ const navItems = [
   { label: 'Programs', href: '/mission-control/programs', icon: PiBooks },
   { label: 'Contacts', href: '/mission-control/contacts', icon: PiChatsCircle },
   { label: 'Donations', href: '/mission-control/donations', icon: PiCurrencyCircleDollar },
+  { label: 'Settings', href: '/mission-control/settings', icon: PiGear },
 ]
 
 export default function DashboardSidebar() {
