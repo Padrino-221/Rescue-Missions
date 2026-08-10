@@ -11,6 +11,7 @@ import {
   PiBooks,
   PiChatsCircle,
   PiCurrencyCircleDollar,
+  PiCalendar,
   PiGear,
   PiList,
   PiX,
@@ -20,6 +21,7 @@ import {
 const navItems = [
   { label: 'Overview', href: '/mission-control', icon: PiHouseLine },
   { label: 'Stories', href: '/mission-control/stories', icon: PiNewspaper },
+  { label: 'Events', href: '/mission-control/events', icon: PiCalendar },
   { label: 'Gallery', href: '/mission-control/gallery', icon: PiImages },
   { label: 'Programs', href: '/mission-control/programs', icon: PiBooks },
   { label: 'Contacts', href: '/mission-control/contacts', icon: PiChatsCircle },

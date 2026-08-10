@@ -26,7 +26,7 @@
   },
   "homeHero": {
     "heading": "Every child deserves a childhood.",
-    "description": "Rescue Mission Orphanage provides shelter, education, and care to children who need it most turning hardship into hope, one child at a time.",
+    "description": "Rescue Mission Orphanage provides shelter, education, and care to children who need it most — turning hardship into hope, one child at a time.",
     "cta1Text": "Donate Now",
     "cta2Text": "Explore Our Work",
     "imageUrl": "https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?auto=format&fit=crop&w=900&q=80",
@@ -35,12 +35,12 @@
   "cta": {
     "kicker": "Give Hope a Home",
     "heading": "Your kindness becomes a child's breakthrough",
-    "description": "Every donation, every volunteer hour, every share it all adds up to education, healthcare, and a safe home for a child in need."
+    "description": "Every donation, every volunteer hour, every share — it all adds up to education, healthcare, and a safe home for a child in need."
   },
   "impactStats": {
     "kicker": "Our Impact",
     "heading": "Making a Real Difference",
-    "description": "Measurable, lasting change from classrooms to clinics, every program is built to lift children out of hardship.",
+    "description": "Measurable, lasting change — from classrooms to clinics, every program is built to lift children out of hardship.",
     "stats": [
       {
         "value": "2,500+",
@@ -58,7 +58,7 @@
         "description": "Across multiple regions"
       },
       {
-        "value": "GHC2.5M",
+        "value": "GH₵2.5M",
         "label": "Funds Raised",
         "description": "From generous donors"
       }
@@ -187,17 +187,17 @@
     "tiers": [
       {
         "tier": "Bronze",
-        "amount": "GH?5,000/year",
+        "amount": "GH₵5,000/year",
         "benefits": "Logo on website, social media mentions"
       },
       {
         "tier": "Silver",
-        "amount": "GH?15,000/year",
+        "amount": "GH₵15,000/year",
         "benefits": "All Bronze + event sponsorship, employee volunteer days"
       },
       {
         "tier": "Gold",
-        "amount": "GH?30,000/year",
+        "amount": "GH₵30,000/year",
         "benefits": "All Silver + naming rights, board observer seat"
       }
     ],

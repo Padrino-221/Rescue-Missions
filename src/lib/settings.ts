@@ -80,6 +80,31 @@ export function getSettings(): SiteSettings {
   return {} as SiteSettings
 }
 
+/**
+ * Repair mojibake left behind by bad encoding round-trips so corrupted
+ * characters are never persisted back into settings.json.
+ */
+function sanitizeString(value: string): string {
+  return value
+    // Cedi sign (₵) mangled into a literal "?" or "C" (or a replacement char) after "GH".
+    // Require a following digit so prose like an acronym or a question is never touched.
+    .replace(/GH[?C\uFFFD](?=\d)/g, 'GH₵')
+    // Any remaining U+FFFD was an em-dash in this content
+    .replace(/\uFFFD/g, '—')
+}
+
+function sanitizeValue(value: unknown): unknown {
+  if (typeof value === 'string') return sanitizeString(value)
+  if (Array.isArray(value)) return value.map(sanitizeValue)
+  if (value !== null && typeof value === 'object') {
+    return Object.fromEntries(
+      Object.entries(value as Record<string, unknown>).map(([key, val]) => [key, sanitizeValue(val)])
+    )
+  }
+  return value
+}
+
 export function saveSettings(settings: SiteSettings): void {
-  writeFileSync(SETTINGS_PATH, JSON.stringify(settings, null, 2))
+  const cleaned = sanitizeValue(settings) as SiteSettings
+  writeFileSync(SETTINGS_PATH, JSON.stringify(cleaned, null, 2))
 }

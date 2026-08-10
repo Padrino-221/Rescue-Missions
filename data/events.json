@@ -1,0 +1,57 @@
+[
+  {
+    "id": 1,
+    "title": "Annual Fundraising Gala 2026",
+    "description": "Join us for an evening of inspiration, music, and generosity. All proceeds go directly to supporting orphaned children with education, healthcare, and shelter.",
+    "date": "2026-09-15",
+    "time": "6:00 PM - 10:00 PM",
+    "location": "Golden Tulip Hotel, Accra",
+    "category": "Fundraiser",
+    "status": "upcoming",
+    "imageUrl": "https://images.unsplash.com/photo-1511578314322-379afb476865?auto=format&fit=crop&w=900&q=80"
+  },
+  {
+    "id": 2,
+    "title": "Back-to-School Drive",
+    "description": "Help us provide school supplies, uniforms, and textbooks to over 500 children heading back to school. Donate or volunteer to make a difference.",
+    "date": "2026-08-20",
+    "time": "9:00 AM - 3:00 PM",
+    "location": "Rescue Mission Campus, East Legon",
+    "category": "Community",
+    "status": "upcoming",
+    "imageUrl": "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?auto=format&fit=crop&w=900&q=80"
+  },
+  {
+    "id": 3,
+    "title": "Volunteer Orientation Day",
+    "description": "New to volunteering? Join our orientation session to learn about our programs, meet the team, and discover how you can help change lives.",
+    "date": "2026-08-05",
+    "time": "10:00 AM - 1:00 PM",
+    "location": "Rescue Mission Office, Cantonments",
+    "category": "Volunteer",
+    "status": "upcoming",
+    "imageUrl": "https://images.unsplash.com/photo-1559027615-cd4628902d4a?auto=format&fit=crop&w=900&q=80"
+  },
+  {
+    "id": 4,
+    "title": "World Children's Day Celebration",
+    "description": "A day of fun, games, and activities for the children at the orphanage. Community members are welcome to join and celebrate with us.",
+    "date": "2026-11-20",
+    "time": "8:00 AM - 4:00 PM",
+    "location": "Rescue Mission Campus, East Legon",
+    "category": "Celebration",
+    "status": "upcoming",
+    "imageUrl": "https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?auto=format&fit=crop&w=900&q=80"
+  },
+  {
+    "id": 5,
+    "title": "Health Screening Outreach",
+    "description": "Free health screening for children and families in surrounding communities. Partnered with local medical professionals.",
+    "date": "2026-07-10",
+    "time": "8:00 AM - 2:00 PM",
+    "location": "Osu Community Centre",
+    "category": "Healthcare",
+    "status": "completed",
+    "imageUrl": "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=900&q=80"
+  }
+]
