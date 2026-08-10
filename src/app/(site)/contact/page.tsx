@@ -6,6 +6,7 @@ import { PiPhone, PiEnvelope, PiMapPin, PiClock, PiPaperPlaneTilt, PiFacebookLog
 import Input from '@/components/ui/Input'
 import Select from '@/components/ui/Select'
 import Textarea from '@/components/ui/Textarea'
+import { useSettings } from '@/lib/useSettings'
 
 const defaultContactInfo = [
   {
@@ -47,6 +48,7 @@ export default function ContactPage() {
   const [contactInfo, setContactInfo] = useState(defaultContactInfo)
   const [faqs, setFaqs] = useState(defaultFaqs)
   const [socialLinks, setSocialLinks] = useState(defaultSocialLinks)
+  const { settings } = useSettings()
 
   const [formData, setFormData] = useState({
     name: '',
@@ -56,51 +58,47 @@ export default function ContactPage() {
   })
 
   useEffect(() => {
-    fetch('/api/settings')
-      .then((res) => res.json())
-      .then((data) => {
-        const contact = data?.contact
-        if (contact) {
-          setContactInfo([
-            {
-              icon: PiPhone,
-              title: 'Phone',
-              details: [contact.phone1 || '+1 (234) 567-890', contact.phone2 || '+1 (234) 567-891'],
-            },
-            {
-              icon: PiEnvelope,
-              title: 'Email',
-              details: [contact.email1 || 'info@rescuemission.org', contact.email2 || 'donate@rescuemission.org'],
-            },
-            {
-              icon: PiMapPin,
-              title: 'Address',
-              details: [contact.address1 || '123 Hope Street', contact.address2 || 'City, State 12345'],
-            },
-            {
-              icon: PiClock,
-              title: 'Office Hours',
-              details: [contact.officeHours1 || 'Mon - Fri: 9:00 AM - 5:00 PM', contact.officeHours2 || 'Sat: 9:00 AM - 1:00 PM'],
-            },
-          ])
-        }
+    if (!settings) return
+    const contact = settings?.contact
+    if (contact) {
+      setContactInfo([
+        {
+          icon: PiPhone,
+          title: 'Phone',
+          details: [contact.phone1 || '+1 (234) 567-890', contact.phone2 || '+1 (234) 567-891'],
+        },
+        {
+          icon: PiEnvelope,
+          title: 'Email',
+          details: [contact.email1 || 'info@rescuemission.org', contact.email2 || 'donate@rescuemission.org'],
+        },
+        {
+          icon: PiMapPin,
+          title: 'Address',
+          details: [contact.address1 || '123 Hope Street', contact.address2 || 'City, State 12345'],
+        },
+        {
+          icon: PiClock,
+          title: 'Office Hours',
+          details: [contact.officeHours1 || 'Mon - Fri: 9:00 AM - 5:00 PM', contact.officeHours2 || 'Sat: 9:00 AM - 1:00 PM'],
+        },
+      ])
+    }
 
-        const social = data?.social
-        if (social) {
-          setSocialLinks([
-            { icon: PiFacebookLogo, href: social.facebook || '#' },
-            { icon: PiTwitterLogo, href: social.twitter || '#' },
-            { icon: PiInstagramLogo, href: social.instagram || '#' },
-            { icon: PiYoutubeLogo, href: social.youtube || '#' },
-          ])
-        }
+    const social = settings?.social
+    if (social) {
+      setSocialLinks([
+        { icon: PiFacebookLogo, href: social.facebook || '#' },
+        { icon: PiTwitterLogo, href: social.twitter || '#' },
+        { icon: PiInstagramLogo, href: social.instagram || '#' },
+        { icon: PiYoutubeLogo, href: social.youtube || '#' },
+      ])
+    }
 
-        if (data?.faq?.length) {
-          setFaqs(data.faq)
-        }
-      })
-      .catch(() => {})
-  }, [])
+    if (settings?.faq?.length) {
+      setFaqs(settings.faq)
+    }
+  }, [settings])
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()

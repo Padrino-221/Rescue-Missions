@@ -1,8 +1,8 @@
 'use client'
 
-import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { PiHeartFill, PiEnvelope, PiPhone, PiMapPin, PiFacebookLogo, PiTwitterLogo, PiInstagramLogo, PiYoutubeLogo, PiLinkedinLogo } from 'react-icons/pi'
+import { useSettings } from '@/lib/useSettings'
 
 const footerLinks = [
   { name: 'Our Story', href: '/about' },
@@ -13,37 +13,8 @@ const footerLinks = [
   { name: 'Gallery', href: '/gallery' },
 ]
 
-interface Settings {
-  general?: {
-    orgName?: string
-    description?: string
-    tagline?: string
-    copyrightYear?: string
-  }
-  contact?: {
-    phone1?: string
-    email1?: string
-    address1?: string
-    address2?: string
-  }
-  social?: {
-    facebook?: string
-    twitter?: string
-    instagram?: string
-    youtube?: string
-    linkedin?: string
-  }
-}
-
 export default function Footer() {
-  const [settings, setSettings] = useState<Settings | null>(null)
-
-  useEffect(() => {
-    fetch('/api/settings')
-      .then((res) => res.json())
-      .then((data) => setSettings(data))
-      .catch(() => setSettings(null))
-  }, [])
+  const { settings } = useSettings()
 
   const orgName = settings?.general?.orgName || 'Rescue Mission'
   const tagline = settings?.general?.tagline || ''

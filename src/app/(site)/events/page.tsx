@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Image from 'next/image'
+import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { PiCalendar, PiClock, PiMapPin, PiArrowRight, PiMagnifyingGlass } from 'react-icons/pi'
 
@@ -147,10 +148,10 @@ export default function EventsPage() {
                       </span>
                     </div>
                     <div className="mt-auto pt-4">
-                      <span className="inline-flex items-center gap-2 text-dark font-medium group cursor-pointer">
+                      <Link href={`/events/${event.id}`} className="inline-flex items-center gap-2 text-dark font-medium group">
                         {event.status === 'upcoming' ? 'Learn More' : 'View Recap'}
                         <PiArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                      </span>
+                      </Link>
                     </div>
                   </div>
                 </div>

@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import Image from 'next/image'
 import { PiImageFill, PiPlayFill, PiX } from 'react-icons/pi'
+import { useSettings } from '@/lib/useSettings'
 
 const categories = ['All', 'Events', 'Programs', 'Facilities', 'Children']
 
@@ -26,15 +27,11 @@ export default function GalleryPage() {
   const [activeCategory, setActiveCategory] = useState('All')
   const [selectedItem, setSelectedItem] = useState<number | null>(null)
   const [mediaEmail, setMediaEmail] = useState('media@rescuemission.org')
+  const { settings } = useSettings()
 
   useEffect(() => {
-    fetch('/api/settings')
-      .then((res) => res.json())
-      .then((data) => {
-        if (data?.contact?.mediaEmail) setMediaEmail(data.contact.mediaEmail)
-      })
-      .catch(() => {})
-  }, [])
+    if (settings?.contact?.mediaEmail) setMediaEmail(settings.contact.mediaEmail)
+  }, [settings])
 
   const filteredItems = activeCategory === 'All' 
     ? galleryItems 

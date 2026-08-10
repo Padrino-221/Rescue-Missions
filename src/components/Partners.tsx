@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useSettings } from '@/lib/useSettings'
 
 const defaultPartners = [
   { name: 'ZenZap' },
@@ -13,15 +14,11 @@ const defaultPartners = [
 
 export default function Partners() {
   const [partners, setPartners] = useState(defaultPartners)
+  const { settings } = useSettings()
 
   useEffect(() => {
-    fetch('/api/settings')
-      .then((res) => res.json())
-      .then((data) => {
-        if (data?.partners?.length) setPartners(data.partners)
-      })
-      .catch(() => {})
-  }, [])
+    if (settings?.partners?.length) setPartners(settings.partners)
+  }, [settings])
 
   return (
     <section className="py-16 bg-cream border-y border-dark/10">

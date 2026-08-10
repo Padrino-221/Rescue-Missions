@@ -7,6 +7,7 @@ import Input from '@/components/ui/Input'
 import Select from '@/components/ui/Select'
 import Textarea from '@/components/ui/Textarea'
 import Link from 'next/link'
+import { useSettings } from '@/lib/useSettings'
 
 const defaultVolunteerRoles = [
   { title: 'Teaching Assistant', commitment: '4 hours/week', description: 'Help children with their studies and homework.' },
@@ -50,22 +51,20 @@ export default function GetInvolvedPage() {
   const [corporate, setCorporate] = useState(defaultCorporate)
   const [donationAmounts, setDonationAmounts] = useState<number[]>(defaultDonationAmounts)
 
+  const { settings } = useSettings()
+
   useEffect(() => {
-    fetch('/api/settings')
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.volunteerRoles) setVolunteerRoles(data.volunteerRoles)
-        if (data.sponsorship) setSponsorship(data.sponsorship)
-        if (data.corporate) setCorporate(data.corporate)
-        if (data.donations?.presetAmounts?.length) {
-          const parsed = data.donations.presetAmounts
-            .map((item: { amount: number | string }) => Number(item.amount))
-            .filter((n: number) => !Number.isNaN(n) && n > 0)
-          if (parsed.length) setDonationAmounts(parsed)
-        }
-      })
-      .catch(() => {})
-  }, [])
+    if (!settings) return
+    if (settings.volunteerRoles) setVolunteerRoles(settings.volunteerRoles)
+    if (settings.sponsorship) setSponsorship(settings.sponsorship)
+    if (settings.corporate) setCorporate(settings.corporate)
+    if (settings.donations?.presetAmounts?.length) {
+      const parsed = settings.donations.presetAmounts
+        .map((item: { amount: number | string }) => Number(item.amount))
+        .filter((n: number) => !Number.isNaN(n) && n > 0)
+      if (parsed.length) setDonationAmounts(parsed)
+    }
+  }, [settings])
 
   return (
     <>

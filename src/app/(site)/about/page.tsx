@@ -5,6 +5,7 @@ import { motion } from 'framer-motion'
 import Image from 'next/image'
 import { PiHeartFill, PiEye, PiShieldCheck, PiGlobe, PiUsers, PiArrowRight, PiHandHeart } from 'react-icons/pi'
 import Link from 'next/link'
+import { useSettings } from '@/lib/useSettings'
 
 const defaultValues = [
   { icon: PiHeartFill, title: 'Compassion', description: 'Empathy at the heart of everything we do.' },
@@ -60,33 +61,30 @@ export default function AboutPage() {
   const [foundedYear, setFoundedYear] = useState('2008')
   const [storyImageUrl, setStoryImageUrl] = useState(defaultStoryImage)
 
-  useEffect(() => {
-    fetch('/api/settings')
-      .then((res) => res.json())
-      .then((data) => {
-        const about = data?.about
-        if (!about) return
+  const { settings } = useSettings()
 
-        if (about.storyHeading) setStoryHeading(about.storyHeading)
-        if (about.storyParagraphs?.length) setStoryParagraphs(about.storyParagraphs)
-        if (about.missionStatement) setMissionStatement(about.missionStatement)
-        if (about.visionStatement) setVisionStatement(about.visionStatement)
-        if (about.storyImageUrl) setStoryImageUrl(about.storyImageUrl)
-        if (data?.general?.foundedYear) setFoundedYear(data.general.foundedYear)
-        if (about.values?.length) {
-          setValues(
-            about.values.map((v: { title: string; description: string }) => ({
-              icon: iconMap[v.title] || PiHeartFill,
-              title: v.title,
-              description: v.description,
-            }))
-          )
-        }
-        if (about.team?.length) setTeam(about.team)
-        if (about.milestones?.length) setMilestones(about.milestones)
-      })
-      .catch(() => {})
-  }, [])
+  useEffect(() => {
+    const about = settings?.about
+    if (!about) return
+
+    if (about.storyHeading) setStoryHeading(about.storyHeading)
+    if (about.storyParagraphs?.length) setStoryParagraphs(about.storyParagraphs)
+    if (about.missionStatement) setMissionStatement(about.missionStatement)
+    if (about.visionStatement) setVisionStatement(about.visionStatement)
+    if (about.storyImageUrl) setStoryImageUrl(about.storyImageUrl)
+    if (settings?.general?.foundedYear) setFoundedYear(settings.general.foundedYear)
+    if (about.values?.length) {
+      setValues(
+        about.values.map((v: { title: string; description: string }) => ({
+          icon: iconMap[v.title] || PiHeartFill,
+          title: v.title,
+          description: v.description,
+        }))
+      )
+    }
+    if (about.team?.length) setTeam(about.team)
+    if (about.milestones?.length) setMilestones(about.milestones)
+  }, [settings])
 
   return (
     <>

@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { PiHeartFill, PiCheck, PiShieldCheck, PiBook, PiBowlFood, PiPill, PiHouse, PiGraduationCap, PiGift } from 'react-icons/pi'
+import { useSettings } from '@/lib/useSettings'
 
 const icons = [PiBook, PiBowlFood, PiPill, PiHouse, PiGraduationCap, PiGift]
 
@@ -37,34 +38,26 @@ export default function DonatePage() {
   const [allocation, setAllocation] = useState(defaultAllocation)
   const [taxInfo, setTaxInfo] = useState(defaultTaxInfo)
 
+  const { settings } = useSettings()
+
   useEffect(() => {
-    const fetchSettings = async () => {
-      try {
-        const response = await fetch('/api/settings')
-        if (!response.ok) throw new Error('Failed to fetch settings')
-        const data = await response.json()
+    if (!settings?.donations) return
 
-        if (data.donations?.presetAmounts?.length) {
-          setDonationAmounts(data.donations.presetAmounts.map((item: { amount: number; impact: string }, index: number) => ({
-            ...item,
-            icon: icons[index % icons.length]
-          })))
-        }
-
-        if (data.donations?.allocation?.length) {
-          setAllocation(data.donations.allocation)
-        }
-
-        if (data.donations?.taxInfo) {
-          setTaxInfo(data.donations.taxInfo)
-        }
-      } catch (error) {
-        console.error('Error fetching settings:', error)
-      }
+    if (settings.donations.presetAmounts?.length) {
+      setDonationAmounts(settings.donations.presetAmounts.map((item, index) => ({
+        ...item,
+        icon: icons[index % icons.length]
+      })))
     }
 
-    fetchSettings()
-  }, [])
+    if (settings.donations.allocation?.length) {
+      setAllocation(settings.donations.allocation)
+    }
+
+    if (settings.donations.taxInfo) {
+      setTaxInfo(settings.donations.taxInfo)
+    }
+  }, [settings])
 
   return (
     <>

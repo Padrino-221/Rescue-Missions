@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import Image from 'next/image'
 import { motion } from 'framer-motion'
 import { PiStarFill } from 'react-icons/pi'
+import { useSettings } from '@/lib/useSettings'
 
 const defaultTestimonials = [
   {
@@ -37,31 +38,20 @@ const defaultTestimonials = [
 
 export default function Testimonials() {
   const [testimonials, setTestimonials] = useState(defaultTestimonials)
+  const { settings } = useSettings()
 
   useEffect(() => {
-    async function fetchSettings() {
-      try {
-        const res = await fetch('/api/settings')
-        if (!res.ok) throw new Error('Failed to fetch settings')
-        const data = await res.json()
-        if (data.testimonials && Array.isArray(data.testimonials)) {
-          // Map to ensure each has rating (default to 5)
-          const mapped = data.testimonials.map((t: { quote?: string; author?: string; role?: string; avatar?: string; rating?: number }) => ({
-            quote: t.quote || '',
-            author: t.author || '',
-            role: t.role || '',
-            avatar: t.avatar || '',
-            rating: t.rating || 5,
-          }))
-          setTestimonials(mapped)
-        }
-      } catch (error) {
-        console.error('Error fetching testimonials:', error)
-        // Keep default testimonials
-      }
+    if (settings?.testimonials && Array.isArray(settings.testimonials)) {
+      const mapped = settings.testimonials.map((t) => ({
+        quote: t.quote || '',
+        author: t.author || '',
+        role: t.role || '',
+        avatar: t.avatar || '',
+        rating: (t as { rating?: number }).rating || 5,
+      }))
+      setTestimonials(mapped)
     }
-    fetchSettings()
-  }, [])
+  }, [settings])
 
   return (
     <section className="section-padding bg-white">

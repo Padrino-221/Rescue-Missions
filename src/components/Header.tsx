@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { PiList, PiX, PiArrowUpRight, PiHeartFill } from 'react-icons/pi'
+import { useSettings } from '@/lib/useSettings'
 
 const navigation = [
   { name: 'Home', href: '/' },
@@ -18,15 +19,11 @@ export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
   const [orgName, setOrgName] = useState('Rescue Mission')
+  const { settings } = useSettings()
 
   useEffect(() => {
-    fetch('/api/settings')
-      .then((res) => res.json())
-      .then((data) => {
-        if (data?.general?.orgName) setOrgName(data.general.orgName)
-      })
-      .catch(() => {})
-  }, [])
+    if (settings?.general?.orgName) setOrgName(settings.general.orgName)
+  }, [settings])
 
   useEffect(() => {
     const handleScroll = () => {

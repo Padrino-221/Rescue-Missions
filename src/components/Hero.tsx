@@ -5,6 +5,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { motion } from 'framer-motion'
 import { PiArrowRight, PiHeartFill, PiSun } from 'react-icons/pi'
+import { useSettings } from '@/lib/useSettings'
 
 interface HeroSettings {
   heading: string
@@ -28,24 +29,20 @@ const defaults: HeroSettings = {
 
 export default function Hero() {
   const [hero, setHero] = useState<HeroSettings>(defaults)
+  const { settings } = useSettings()
 
   useEffect(() => {
-    fetch('/api/settings')
-      .then((res) => res.json())
-      .then((data) => {
-        if (data?.homeHero) {
-          setHero({
-            heading: data.homeHero.heading || defaults.heading,
-            description: data.homeHero.description || defaults.description,
-            cta1Text: data.homeHero.cta1Text || defaults.cta1Text,
-            cta2Text: data.homeHero.cta2Text || defaults.cta2Text,
-            imageUrl: data.homeHero.imageUrl || defaults.imageUrl,
-            imageAlt: data.homeHero.imageAlt || defaults.imageAlt,
-          })
-        }
-      })
-      .catch(() => {})
-  }, [])
+    const homeHero = settings?.homeHero
+    if (!homeHero) return
+    setHero({
+      heading: homeHero.heading || defaults.heading,
+      description: homeHero.description || defaults.description,
+      cta1Text: homeHero.cta1Text || defaults.cta1Text,
+      cta2Text: homeHero.cta2Text || defaults.cta2Text,
+      imageUrl: homeHero.imageUrl || defaults.imageUrl,
+      imageAlt: homeHero.imageAlt || defaults.imageAlt,
+    })
+  }, [settings])
 
   const [firstPart, lastWord] = splitHeading(hero.heading)
 

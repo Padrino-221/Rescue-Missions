@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useSettings } from '@/lib/useSettings'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   PiGear,
@@ -157,26 +158,25 @@ export default function SettingsPage() {
   const [settings, setSettings] = useState(defaultSettings)
   const [activeTab, setActiveTab] = useState('general')
   const [saved, setSaved] = useState(false)
+  const { settings: serverSettings } = useSettings()
 
+  // Merge server data over defaults once it arrives
   useEffect(() => {
-    fetch('/api/settings').then(r => r.json()).then(data => {
-      const incoming = data as Record<string, unknown> | null
-      if (incoming && Object.keys(incoming).length > 0) {
-        setSettings(prev => {
-          const merged: Record<string, unknown> = { ...prev }
-          for (const key of Object.keys(incoming)) {
-            const value = incoming[key]
-            if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
-              merged[key] = { ...(merged[key] as Record<string, unknown>), ...(value as Record<string, unknown>) }
-            } else if (value !== undefined) {
-              merged[key] = value
-            }
-          }
-          return merged as typeof prev
-        })
+    if (!serverSettings) return
+    setSettings(prev => {
+      const merged: Record<string, unknown> = { ...prev }
+      const incoming = serverSettings as unknown as Record<string, unknown>
+      for (const key of Object.keys(incoming)) {
+        const value = incoming[key]
+        if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
+          merged[key] = { ...(merged[key] as Record<string, unknown>), ...(value as Record<string, unknown>) }
+        } else if (value !== undefined) {
+          merged[key] = value
+        }
       }
-    }).catch(() => {})
-  }, [])
+      return merged as typeof prev
+    })
+  }, [serverSettings])
 
   const update = (path: string, value: string) => {
     setSettings(prev => {
@@ -261,18 +261,14 @@ export default function SettingsPage() {
     setTimeout(() => setSaved(false), 3000)
   }
 
-  const handleReset = async () => {
+  const handleReset = () => {
     const fresh = defaultSettings()
-    // Preserve fields the UI can't edit so reset + save never wipes live content.
-    try {
-      const res = await fetch('/api/settings')
-      const data = await res.json()
-      if (data?.homeHero) {
-        fresh.homeHero.imageUrl = data.homeHero.imageUrl || fresh.homeHero.imageUrl
-        fresh.homeHero.imageAlt = data.homeHero.imageAlt || fresh.homeHero.imageAlt
-      }
-      if (data?.about?.storyImageUrl) fresh.about.storyImageUrl = data.about.storyImageUrl
-    } catch {}
+    // Preserve fields that aren't in the default object so reset + save never wipes live content.
+    if (serverSettings?.homeHero) {
+      fresh.homeHero.imageUrl = serverSettings.homeHero.imageUrl || fresh.homeHero.imageUrl
+      fresh.homeHero.imageAlt = serverSettings.homeHero.imageAlt || fresh.homeHero.imageAlt
+    }
+    if (serverSettings?.about?.storyImageUrl) fresh.about.storyImageUrl = serverSettings.about.storyImageUrl
     setSettings(fresh)
   }
 

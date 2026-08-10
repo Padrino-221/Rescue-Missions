@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { PiHeartFill, PiArrowUpRight } from 'react-icons/pi'
+import { useSettings } from '@/lib/useSettings'
 
 const defaults = {
   kicker: 'Give Hope a Home',
@@ -14,21 +15,17 @@ const defaults = {
 
 export default function CallToAction() {
   const [cta, setCta] = useState(defaults)
+  const { settings } = useSettings()
 
   useEffect(() => {
-    fetch('/api/settings')
-      .then((res) => res.json())
-      .then((data) => {
-        if (data?.cta) {
-          setCta({
-            kicker: data.cta.kicker || defaults.kicker,
-            heading: data.cta.heading || defaults.heading,
-            description: data.cta.description || defaults.description,
-          })
-        }
+    if (settings?.cta) {
+      setCta({
+        kicker: settings.cta.kicker || defaults.kicker,
+        heading: settings.cta.heading || defaults.heading,
+        description: settings.cta.description || defaults.description,
       })
-      .catch(() => {})
-  }, [])
+    }
+  }, [settings])
 
   return (
     <section className="section-padding bg-cream overflow-hidden">

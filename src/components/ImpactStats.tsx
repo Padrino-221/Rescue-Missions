@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { PiGraduationCap, PiUsers, PiMapPin, PiCurrencyCircleDollar } from 'react-icons/pi'
+import { useSettings } from '@/lib/useSettings'
 
 const iconMap = [PiGraduationCap, PiUsers, PiMapPin, PiCurrencyCircleDollar]
 
@@ -13,20 +14,6 @@ const defaultStats = [
   { value: 'GH₵2.5M', label: 'Funds Raised', description: 'From generous donors' },
 ]
 
-interface StatItem {
-  value: string
-  label: string
-  description: string
-  icon?: string
-}
-
-interface ImpactStatsData {
-  kicker?: string
-  heading?: string
-  description?: string
-  stats?: StatItem[]
-}
-
 export default function ImpactStats() {
   const [stats, setStats] = useState(defaultStats)
   const [kicker, setKicker] = useState('Our Impact')
@@ -34,34 +21,25 @@ export default function ImpactStats() {
   const [description, setDescription] = useState(
     'Measurable, lasting change — from classrooms to clinics, every program is built to lift children out of hardship.'
   )
+  const { settings } = useSettings()
 
   useEffect(() => {
-    async function fetchSettings() {
-      try {
-        const res = await fetch('/api/settings')
-        if (!res.ok) return
-        const data = await res.json()
-        const impact = data?.impactStats as ImpactStatsData | undefined
-        if (!impact) return
+    const impact = settings?.impactStats
+    if (!impact) return
 
-        if (impact.kicker) setKicker(impact.kicker)
-        if (impact.heading) setHeading(impact.heading)
-        if (impact.description) setDescription(impact.description)
-        if (impact.stats && impact.stats.length > 0) {
-          setStats(
-            impact.stats.map((s: StatItem) => ({
-              value: s.value,
-              label: s.label,
-              description: s.description,
-            }))
-          )
-        }
-      } catch {
-        // Keep defaults on failure
-      }
+    if (impact.kicker) setKicker(impact.kicker)
+    if (impact.heading) setHeading(impact.heading)
+    if (impact.description) setDescription(impact.description)
+    if (impact.stats && impact.stats.length > 0) {
+      setStats(
+        impact.stats.map((s) => ({
+          value: s.value,
+          label: s.label,
+          description: s.description,
+        }))
+      )
     }
-    fetchSettings()
-  }, [])
+  }, [settings])
 
   return (
     <section className="bg-dark section-padding relative overflow-hidden">
