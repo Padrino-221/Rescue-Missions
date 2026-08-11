@@ -1,7 +1,4 @@
-import { readFileSync, writeFileSync, existsSync } from 'fs'
-import { join } from 'path'
-
-const SETTINGS_PATH = join(process.cwd(), 'data', 'settings.json')
+import { pool } from './db'
 
 export interface SiteSettings {
   general: {
@@ -83,26 +80,9 @@ export interface SiteSettings {
   cta: { kicker: string; heading: string; description: string }
 }
 
-export function getSettings(): SiteSettings {
-  try {
-    if (existsSync(SETTINGS_PATH)) {
-      const raw = readFileSync(SETTINGS_PATH, 'utf-8')
-      return JSON.parse(raw)
-    }
-  } catch {}
-  return {} as SiteSettings
-}
-
-/**
- * Repair mojibake left behind by bad encoding round-trips so corrupted
- * characters are never persisted back into settings.json.
- */
 function sanitizeString(value: string): string {
   return value
-    // Cedi sign (₵) mangled into a literal "?" or "C" (or a replacement char) after "GH".
-    // Require a following digit so prose like an acronym or a question is never touched.
     .replace(/GH[?C\uFFFD](?=\d)/g, 'GH₵')
-    // Any remaining U+FFFD was an em-dash in this content
     .replace(/\uFFFD/g, '—')
 }
 
@@ -117,7 +97,22 @@ function sanitizeValue(value: unknown): unknown {
   return value
 }
 
-export function saveSettings(settings: SiteSettings): void {
+export async function getSettings(): Promise<SiteSettings> {
+  try {
+    const rows = await pool.query('SELECT data FROM settings WHERE id = 1')
+    if (rows.rows.length > 0 && rows.rows[0].data) {
+      return rows.rows[0].data as SiteSettings
+    }
+  } catch {}
+  return {} as SiteSettings
+}
+
+export async function saveSettings(settings: SiteSettings): Promise<void> {
   const cleaned = sanitizeValue(settings) as SiteSettings
-  writeFileSync(SETTINGS_PATH, JSON.stringify(cleaned, null, 2))
+  const json = JSON.stringify(cleaned)
+  await pool.query(
+    `INSERT INTO settings (id, data) VALUES (1, $1)
+     ON CONFLICT (id) DO UPDATE SET data = $1`,
+    [json]
+  )
 }
