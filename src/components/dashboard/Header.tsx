@@ -82,7 +82,7 @@ export default function DashboardHeader({ session }: { session: Session }) {
             </button>
 
             {open && (
-              <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-white rounded-2xl border border-dark/10 shadow-xl z-50 overflow-hidden">
+              <div className="absolute right-0 mt-2 w-[calc(100vw-2rem)] sm:w-96 max-w-96 bg-white rounded-2xl border border-dark/10 shadow-xl z-50 overflow-hidden">
                 <div className="flex items-center justify-between px-4 py-3 border-b border-dark/10">
                   <h3 className="font-semibold text-dark text-sm">Notifications</h3>
                   {unreadCount > 0 && (
@@ -110,10 +110,10 @@ export default function DashboardHeader({ session }: { session: Session }) {
                           <span className="mt-1.5 w-2 h-2 bg-lime rounded-full flex-shrink-0" />
                         )}
                         <div className="flex-1 min-w-0">
-                          <p className={`text-sm ${!n.read ? 'text-dark font-medium' : 'text-dark/60'}`}>
+                          <p className={`text-xs sm:text-sm leading-snug ${!n.read ? 'text-dark font-medium' : 'text-dark/60'}`}>
                             {n.text}
                           </p>
-                          <p className="text-xs text-dark/40 mt-0.5">{n.time}</p>
+                          <p className="text-[10px] sm:text-xs text-dark/40 mt-0.5">{n.time}</p>
                         </div>
                         <div className="flex items-center gap-1 flex-shrink-0">
                           {!n.read && (

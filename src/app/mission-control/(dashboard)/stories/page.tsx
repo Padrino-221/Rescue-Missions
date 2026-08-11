@@ -140,7 +140,8 @@ export default function StoriesPage() {
     setForm((prev) => ({ ...prev, [field]: value }))
 
   return (
-    <div className="space-y-6">
+    <div className="min-h-screen bg-cream">
+      <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <motion.h1
           initial={{ opacity: 0, y: -10 }}
@@ -524,6 +525,7 @@ export default function StoriesPage() {
           </div>
         )}
       </Modal>
+      </div>
     </div>
   )
 }
