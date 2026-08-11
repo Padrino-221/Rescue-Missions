@@ -307,13 +307,13 @@ export default function SettingsPage() {
 
       <div className="flex flex-col lg:flex-row gap-6">
         {/* Tabs */}
-        <div className="lg:w-56 flex lg:flex-col gap-1 overflow-x-auto lg:overflow-x-visible pb-2 lg:pb-0 flex-shrink-0">
+        <div className="grid grid-cols-2 sm:flex sm:flex-wrap lg:flex-col lg:w-56 gap-1 lg:overflow-x-visible pb-2 lg:pb-0 flex-shrink-0">
           {tabs.map((tab) => (
             <button key={tab.id} onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-3 px-4 py-3 rounded-xl text-left text-sm font-medium whitespace-nowrap transition-all ${
+              className={`flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl text-left text-xs sm:text-sm font-medium whitespace-nowrap transition-all ${
                 activeTab === tab.id ? 'bg-dark text-white' : 'text-dark/60 hover:bg-dark/5'
               }`}>
-              <tab.icon className="w-5 h-5" />
+              <tab.icon className="w-4 h-4 sm:w-5 sm:h-5" />
               {tab.label}
             </button>
           ))}

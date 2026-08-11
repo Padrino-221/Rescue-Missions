@@ -36,8 +36,8 @@ export default function Modal({
         transition={{ duration: 0.2, ease: 'easeOut' }}
         className={`relative w-full ${maxWidth} max-h-[90vh] overflow-y-auto rounded-2xl bg-white shadow-2xl`}
       >
-        <div className="sticky top-0 z-10 flex items-center justify-between border-b border-dark/10 bg-white px-6 py-4 rounded-t-2xl">
-          <h2 className="font-serif text-lg font-bold text-dark">{title}</h2>
+        <div className="sticky top-0 z-10 flex items-center justify-between border-b border-dark/10 bg-white px-4 sm:px-6 py-3 sm:py-4 rounded-t-2xl">
+          <h2 className="font-serif text-base sm:text-lg font-bold text-dark truncate pr-2">{title}</h2>
           <button
             onClick={onClose}
             className="rounded-lg p-2 text-dark/50 transition-colors hover:bg-dark/5 hover:text-dark"
@@ -45,7 +45,7 @@ export default function Modal({
             <PiX className="text-xl" />
           </button>
         </div>
-        <div className="p-6">{children}</div>
+        <div className="p-4 sm:p-6">{children}</div>
       </motion.div>
     </div>
   )

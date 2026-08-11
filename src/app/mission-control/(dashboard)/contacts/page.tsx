@@ -144,7 +144,7 @@ export default function ContactsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#f8fbf6] p-6 lg:p-8">
+    <div className="min-h-screen bg-[#f8fbf6] p-4 md:p-6 lg:p-8">
       <div className="max-w-7xl mx-auto">
         <motion.div
           initial={{ opacity: 0, y: -20 }}
