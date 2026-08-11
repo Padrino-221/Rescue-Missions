@@ -86,7 +86,7 @@ export default function DashboardHeader({ session }: { session: Session }) {
             </button>
 
             {open && (
-              <div className="absolute right-0 mt-2 w-[calc(100vw-2rem)] sm:w-96 max-w-96 bg-white rounded-2xl border border-dark/10 shadow-xl z-50 overflow-hidden">
+              <div className="absolute left-1/2 -translate-x-1/2 sm:left-auto sm:translate-x-0 sm:right-0 mt-2 w-[calc(100vw-2rem)] sm:w-96 max-w-96 bg-white rounded-2xl border border-dark/10 shadow-xl z-50 overflow-hidden">
                 <div className="flex items-center justify-between px-4 py-3 border-b border-dark/10">
                   <h3 className="font-semibold text-dark text-sm">Notifications</h3>
                   {unreadCount > 0 && (

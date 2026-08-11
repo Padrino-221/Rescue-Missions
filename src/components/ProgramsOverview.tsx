@@ -48,12 +48,14 @@ const defaultExploreOurWork = {
 const iconList = [PiBuildings, PiHandshake, PiBookOpen]
 
 export default function ProgramsOverview() {
-  const { settings } = useSettings()
+  const { settings, loading } = useSettings()
 
   const data = useMemo(() => {
     if (settings?.exploreOurWork) return settings.exploreOurWork
     return defaultExploreOurWork
   }, [settings])
+
+  if (loading) return null
 
   return (
     <section className="section-padding bg-cream">

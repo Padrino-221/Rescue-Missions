@@ -37,7 +37,7 @@ const defaultTestimonials = [
 ]
 
 export default function Testimonials() {
-  const { settings } = useSettings()
+  const { settings, loading } = useSettings()
 
   const testimonials = useMemo(() => {
     if (!settings?.testimonials?.length) return defaultTestimonials
@@ -49,6 +49,8 @@ export default function Testimonials() {
       rating: (t as { rating?: number }).rating || 5,
     }))
   }, [settings])
+
+  if (loading) return null
 
   return (
     <section className="section-padding bg-white">

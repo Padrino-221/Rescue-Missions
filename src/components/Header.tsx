@@ -18,7 +18,7 @@ const navigation = [
 export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
-  const { settings } = useSettings()
+  const { settings, loading } = useSettings()
   const orgName = settings?.general?.orgName || 'Rescue Mission'
 
   useEffect(() => {
@@ -40,7 +40,7 @@ export default function Header() {
               <PiHeartFill className="w-5 h-5 text-dark" />
             </div>
             <span className="text-lg font-serif font-semibold tracking-tight">
-              {orgName}
+              {loading ? <span className="inline-block w-32 h-5 bg-dark/10 rounded animate-pulse" /> : orgName}
             </span>
           </Link>
 

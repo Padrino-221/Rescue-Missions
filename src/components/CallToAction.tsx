@@ -14,7 +14,7 @@ const defaults = {
 }
 
 export default function CallToAction() {
-  const { settings } = useSettings()
+  const { settings, loading } = useSettings()
 
   const cta = useMemo(() => {
     if (!settings?.cta) return defaults
@@ -24,6 +24,8 @@ export default function CallToAction() {
       description: settings.cta.description || defaults.description,
     }
   }, [settings])
+
+  if (loading) return null
 
   return (
     <section className="section-padding bg-cream overflow-hidden">

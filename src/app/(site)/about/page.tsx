@@ -50,7 +50,7 @@ const defaultStoryImage =
   'https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?auto=format&fit=crop&w=900&q=80'
 
 export default function AboutPage() {
-  const { settings } = useSettings()
+  const { settings, loading } = useSettings()
 
   const about = settings?.about
   const storyHeading = about?.storyHeading || defaultStory.storyHeading
@@ -64,6 +64,8 @@ export default function AboutPage() {
     : defaultValues
   const team = about?.team?.length ? about.team : defaultTeam
   const milestones = about?.milestones?.length ? about.milestones : defaultMilestones
+
+  if (loading) return null
 
   return (
     <>

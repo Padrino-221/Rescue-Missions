@@ -26,12 +26,14 @@ const galleryItems = [
 export default function GalleryPage() {
   const [activeCategory, setActiveCategory] = useState('All')
   const [selectedItem, setSelectedItem] = useState<number | null>(null)
-  const { settings } = useSettings()
+  const { settings, loading } = useSettings()
   const mediaEmail = settings?.contact?.mediaEmail || 'media@rescuemission.org'
 
   const filteredItems = activeCategory === 'All' 
     ? galleryItems 
     : galleryItems.filter(item => item.category === activeCategory)
+
+  if (loading) return null
 
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {

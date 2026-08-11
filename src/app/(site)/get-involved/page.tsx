@@ -44,11 +44,13 @@ const defaultCorporate = {
 
 export default function GetInvolvedPage() {
   const [activeTab, setActiveTab] = useState('volunteer')
-  const { settings } = useSettings()
+  const { settings, loading } = useSettings()
 
   const volunteerRoles = settings?.volunteerRoles || defaultVolunteerRoles
   const sponsorship = settings?.sponsorship || defaultSponsorship
   const corporate = settings?.corporate || defaultCorporate
+
+  if (loading) return null
 
   return (
     <>

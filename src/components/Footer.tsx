@@ -14,7 +14,7 @@ const footerLinks = [
 ]
 
 export default function Footer() {
-  const { settings } = useSettings()
+  const { settings, loading } = useSettings()
 
   const orgName = settings?.general?.orgName || 'Rescue Mission'
   const tagline = settings?.general?.tagline || ''
@@ -33,6 +33,8 @@ export default function Footer() {
     { name: 'YouTube', icon: PiYoutubeLogo, href: settings?.social?.youtube || '#' },
     { name: 'LinkedIn', icon: PiLinkedinLogo, href: settings?.social?.linkedin || '#' },
   ]
+
+  if (loading) return null
 
   return (
     <footer className="bg-dark">

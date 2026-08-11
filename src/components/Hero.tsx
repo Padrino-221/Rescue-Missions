@@ -28,7 +28,7 @@ const defaults: HeroSettings = {
 }
 
 export default function Hero() {
-  const { settings } = useSettings()
+  const { settings, loading } = useSettings()
 
   const hero = useMemo((): HeroSettings => {
     const h = settings?.homeHero
@@ -42,6 +42,8 @@ export default function Hero() {
       imageAlt: h.imageAlt || defaults.imageAlt,
     }
   }, [settings])
+
+  if (loading) return null
 
   const [firstPart, lastWord] = splitHeading(hero.heading)
 

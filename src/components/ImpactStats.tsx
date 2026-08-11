@@ -14,13 +14,15 @@ const defaultStats = [
 ]
 
 export default function ImpactStats() {
-  const { settings } = useSettings()
+  const { settings, loading } = useSettings()
 
   const impact = settings?.impactStats
   const kicker = impact?.kicker || 'Our Impact'
   const heading = impact?.heading || 'Making a Real Difference'
   const description = impact?.description || 'Measurable, lasting change — from classrooms to clinics, every program is built to lift children out of hardship.'
   const stats = impact?.stats?.length ? impact.stats : defaultStats
+
+  if (loading) return null
 
   return (
     <section className="bg-dark section-padding relative overflow-hidden">

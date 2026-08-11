@@ -210,7 +210,7 @@ export default function StoriesPage() {
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2 }}
-        className="bg-white rounded-2xl border border-dark/10 overflow-hidden"
+        className="bg-white rounded-2xl border border-dark/10 overflow-hidden overflow-x-hidden"
       >
         {/* Desktop Table */}
         <div className="hidden md:block">

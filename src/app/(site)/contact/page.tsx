@@ -45,7 +45,7 @@ const defaultSocialLinks = [
 ]
 
 export default function ContactPage() {
-  const { settings } = useSettings()
+  const { settings, loading } = useSettings()
 
   const [formData, setFormData] = useState({
     name: '',
@@ -75,6 +75,8 @@ export default function ContactPage() {
     : defaultSocialLinks
 
   const faqs = settings?.faq?.length ? settings.faq : defaultFaqs
+
+  if (loading) return null
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()

@@ -13,12 +13,14 @@ const defaultPartners = [
 ]
 
 export default function Partners() {
-  const { settings } = useSettings()
+  const { settings, loading } = useSettings()
 
   const partners = useMemo(() => {
     if (settings?.partners?.length) return settings.partners
     return defaultPartners
   }, [settings])
+
+  if (loading) return null
 
   return (
     <section className="py-16 bg-cream border-y border-dark/10">
