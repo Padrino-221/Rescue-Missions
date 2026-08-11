@@ -21,6 +21,7 @@ import {
   PiTrash,
 } from 'react-icons/pi'
 import ImageUpload from '@/components/ui/ImageUpload'
+import { useToast } from '@/components/ui/Toast'
 
 const tabs = [
   { id: 'general', label: 'General', icon: PiGear },
@@ -177,6 +178,7 @@ export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState('general')
   const [saved, setSaved] = useState(false)
   const { settings: serverSettings } = useSettings()
+  const { toast } = useToast()
 
   // Merge server data over defaults once it arrives
   useEffect(() => {
@@ -277,9 +279,15 @@ export default function SettingsPage() {
   }
 
   const handleSave = async () => {
-    await fetch('/api/settings', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(settings) })
-    setSaved(true)
-    setTimeout(() => setSaved(false), 3000)
+    try {
+      const res = await fetch('/api/settings', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(settings) })
+      if (!res.ok) throw new Error('Save failed')
+      setSaved(true)
+      setTimeout(() => setSaved(false), 3000)
+    } catch (err) {
+      console.error('Save error:', err)
+      toast('Failed to save settings', 'error')
+    }
   }
 
   const handleReset = () => {

@@ -14,7 +14,7 @@ export function useSettings() {
   const [settings, setSettings] = useState<SiteSettings | null>(null)
 
   const reload = useCallback(() => {
-    fetch('/api/settings')
+    fetch('/api/settings', { cache: 'no-store' })
       .then((res) => {
         if (!res.ok) throw new Error(`Failed to load settings (${res.status})`)
         return res.json()

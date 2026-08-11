@@ -99,7 +99,7 @@ function sanitizeValue(value: unknown): unknown {
 
 export async function getSettings(): Promise<SiteSettings> {
   try {
-    const rows = await pool.query('SELECT data FROM settings WHERE id = 1')
+    const rows = await pool.query('SELECT data FROM site_settings WHERE key = $1', ['main'])
     if (rows.rows.length > 0 && rows.rows[0].data) {
       return rows.rows[0].data as SiteSettings
     }
@@ -111,8 +111,8 @@ export async function saveSettings(settings: SiteSettings): Promise<void> {
   const cleaned = sanitizeValue(settings) as SiteSettings
   const json = JSON.stringify(cleaned)
   await pool.query(
-    `INSERT INTO settings (id, data) VALUES (1, $1)
-     ON CONFLICT (id) DO UPDATE SET data = $1`,
+    `INSERT INTO site_settings (key, data) VALUES ('main', $1)
+     ON CONFLICT (key) DO UPDATE SET data = $1`,
     [json]
   )
 }
