@@ -142,7 +142,7 @@ export default function EventDetailPage() {
               alt={event.title}
               fill
               sizes="(min-width: 1024px) 80vw, 100vw"
-              className="object-cover"
+              className="object-cover object-top"
             />
           </motion.div>
         </div>

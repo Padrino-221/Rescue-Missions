@@ -148,7 +148,7 @@ export default function ProgramsPage() {
                       alt={`${program.title} program at Rescue Mission Orphanage`}
                       fill
                       sizes="(min-width: 1024px) 45vw, 100vw"
-                      className="object-cover"
+                      className="object-cover object-top"
                     />
                   </div>
                 </div>

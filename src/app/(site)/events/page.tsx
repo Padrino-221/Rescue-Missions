@@ -117,7 +117,7 @@ export default function EventsPage() {
                       alt={event.title}
                       fill
                       sizes="(min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw"
-                      className="object-cover"
+                      className="object-cover object-top"
                     />
                     <span
                       className={`absolute top-3 right-3 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide ${

@@ -89,7 +89,7 @@ export default function ProgramsOverview() {
                         alt={`${item.title} — Rescue Mission Orphanage`}
                         fill
                         sizes="(min-width: 768px) 33vw, 100vw"
-                        className="object-cover transition-transform duration-700 group-hover:scale-105"
+                        className="object-cover object-top transition-transform duration-700 group-hover:scale-105"
                       />
                     </div>
 

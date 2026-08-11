@@ -160,7 +160,7 @@ export default function GalleryPage() {
                 src={galleryItems.find(item => item.id === selectedItem)?.image ?? ''}
                 alt={galleryItems.find(item => item.id === selectedItem)?.alt ?? ''}
                 fill
-                className="object-cover"
+                className="object-cover object-top"
               />
               {galleryItems.find(item => item.id === selectedItem)?.type === 'video' && (
                 <div className="absolute inset-0 flex items-center justify-center bg-dark/30">
