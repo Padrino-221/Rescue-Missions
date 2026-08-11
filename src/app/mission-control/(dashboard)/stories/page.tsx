@@ -322,13 +322,13 @@ export default function StoriesPage() {
                 transition={{ delay: 0.05 * index }}
                 className="p-4 space-y-3 overflow-hidden"
               >
-                <div className="space-y-2">
-                  <div className="flex items-start gap-3">
+                <div className="space-y-2 overflow-hidden">
+                  <div className="flex items-start gap-3 min-w-0">
                     <div className="w-12 h-12 rounded-lg bg-dark/5 overflow-hidden flex-shrink-0">
                       <Image src={story.image} alt={story.title} width={48} height={48} className="w-full h-full object-cover" />
                     </div>
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-2">
+                    <div className="min-w-0 flex-1 overflow-hidden">
+                      <div className="flex items-center gap-2 min-w-0">
                         <p className="font-semibold text-dark text-sm truncate">{story.title}</p>
                         <span
                           className={`inline-flex px-2 py-0.5 rounded-full text-[10px] font-medium flex-shrink-0 ${
