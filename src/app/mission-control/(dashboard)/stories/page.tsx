@@ -156,7 +156,7 @@ export default function StoriesPage() {
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
           onClick={openNew}
-          className="btn-primary inline-flex items-center gap-2 px-4 py-2 bg-lime text-dark font-semibold rounded-xl hover:bg-lime/90 transition-colors"
+          className="btn-primary inline-flex items-center gap-2 px-4 py-2 bg-lime text-dark font-semibold rounded-xl hover:bg-lime/90 transition-colors self-start"
         >
           <PiPlus className="text-lg" />
           New Story
@@ -320,7 +320,7 @@ export default function StoriesPage() {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.05 * index }}
-                className="p-4 space-y-3"
+                className="p-4 space-y-3 overflow-hidden"
               >
                 <div className="space-y-2">
                   <div className="flex items-start gap-3">
