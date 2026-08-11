@@ -69,8 +69,8 @@ export default function AboutPage() {
     <>
       {/* Hero */}
       <section className="bg-cream pt-40 pb-8 lg:pt-48 lg:pb-10 overflow-hidden relative">
-        <div className="absolute top-24 right-0 w-72 h-72 bg-lime/15 rounded-full blur-3xl" />
-        <div className="absolute bottom-0 left-0 w-48 h-48 bg-coral/10 rounded-full blur-3xl" />
+        <div className="absolute top-24 right-0 w-72 h-72 bg-lime/15 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute bottom-0 left-0 w-48 h-48 bg-coral/10 rounded-full blur-3xl pointer-events-none" />
         <div className="container-premium">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -311,8 +311,8 @@ export default function AboutPage() {
       <section className="section-padding bg-cream">
         <div className="container-premium">
           <div className="bg-dark rounded-[2.5rem] px-8 md:px-16 py-16 md:py-20 text-center relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-80 h-80 bg-lime/10 rounded-full blur-3xl" />
-            <div className="absolute bottom-0 left-0 w-64 h-64 bg-coral/10 rounded-full blur-3xl" />
+            <div className="absolute top-0 right-0 w-80 h-80 bg-lime/10 rounded-full blur-3xl pointer-events-none" />
+            <div className="absolute bottom-0 left-0 w-64 h-64 bg-coral/10 rounded-full blur-3xl pointer-events-none" />
             <PiHandHeart className="w-10 h-10 text-lime mx-auto mb-4" />
             <h2 className="text-3xl md:text-4xl font-serif text-cream">Want to Support Our Mission?</h2>
             <p className="mt-3 text-cream/50 max-w-lg mx-auto">Contact us to learn how you can support our mission.</p>

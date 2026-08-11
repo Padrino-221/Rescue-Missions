@@ -73,7 +73,7 @@ export default function ProgramsPage() {
     <>
 {/* Hero */}
       <section className="bg-cream pt-40 pb-6 lg:pt-48 lg:pb-8 overflow-hidden relative">
-        <div className="absolute top-24 right-0 w-64 h-64 bg-lime/15 rounded-full blur-3xl" />
+        <div className="absolute top-24 right-0 w-64 h-64 bg-lime/15 rounded-full blur-3xl pointer-events-none" />
         <div className="container-premium">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -162,8 +162,8 @@ export default function ProgramsPage() {
       <section className="section-padding bg-cream">
         <div className="container-premium">
           <div className="bg-dark rounded-[2.5rem] px-8 md:px-16 py-16 md:py-20 text-center relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-80 h-80 bg-lime/10 rounded-full blur-3xl" />
-            <div className="absolute bottom-0 left-0 w-64 h-64 bg-coral/10 rounded-full blur-3xl" />
+            <div className="absolute top-0 right-0 w-80 h-80 bg-lime/10 rounded-full blur-3xl pointer-events-none" />
+            <div className="absolute bottom-0 left-0 w-64 h-64 bg-coral/10 rounded-full blur-3xl pointer-events-none" />
             <h2 className="text-3xl md:text-4xl font-serif text-cream">Want to Support Our Programs?</h2>
             <p className="mt-3 text-cream/50 max-w-lg mx-auto">Contact us to learn how you can support our programs.</p>
             <div className="mt-7 flex flex-wrap justify-center gap-3">

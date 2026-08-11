@@ -47,9 +47,9 @@ export default function Hero() {
 
   return (
     <section className="relative bg-cream overflow-hidden">
-      <div className="absolute top-24 left-10 w-72 h-72 bg-sky/25 rounded-full blur-3xl" />
-      <div className="absolute bottom-10 right-10 w-80 h-80 bg-coral/20 rounded-full blur-3xl" />
-      <div className="absolute top-1/2 right-1/3 w-56 h-56 bg-lime/25 rounded-full blur-3xl" />
+      <div className="absolute top-24 left-10 w-72 h-72 bg-sky/25 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute bottom-10 right-10 w-80 h-80 bg-coral/20 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute top-1/2 right-1/3 w-56 h-56 bg-lime/25 rounded-full blur-3xl pointer-events-none" />
 
       <div className="container-premium pt-36 lg:pt-44 pb-12 lg:pb-16">
         <div className="grid lg:grid-cols-12 gap-12 lg:gap-8 items-center">

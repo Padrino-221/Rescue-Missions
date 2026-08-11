@@ -4,8 +4,8 @@ import { PiHouse, PiArrowRight } from 'react-icons/pi'
 export default function NotFound() {
   return (
     <section className="bg-cream min-h-[70vh] flex items-center relative overflow-hidden">
-      <div className="absolute top-20 right-10 w-72 h-72 bg-lime/15 rounded-full blur-3xl" />
-      <div className="absolute bottom-10 left-10 w-56 h-56 bg-coral/10 rounded-full blur-3xl" />
+      <div className="absolute top-20 right-10 w-72 h-72 bg-lime/15 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute bottom-10 left-10 w-56 h-56 bg-coral/10 rounded-full blur-3xl pointer-events-none" />
 
       <div className="container-premium py-20 text-center relative">
         <p className="text-8xl md:text-9xl font-serif font-bold text-dark/8 leading-none mb-6">

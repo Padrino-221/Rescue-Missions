@@ -24,8 +24,8 @@ export default function ImpactStats() {
 
   return (
     <section className="bg-dark section-padding relative overflow-hidden">
-      <div className="absolute -top-20 -right-20 w-72 h-72 bg-sky/20 rounded-full blur-3xl" />
-      <div className="absolute -bottom-24 -left-16 w-80 h-80 bg-coral/20 rounded-full blur-3xl" />
+      <div className="absolute -top-20 -right-20 w-72 h-72 bg-sky/20 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute -bottom-24 -left-16 w-80 h-80 bg-coral/20 rounded-full blur-3xl pointer-events-none" />
 
       <div className="container-premium relative">
         <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 mb-10">
