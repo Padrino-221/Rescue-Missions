@@ -181,7 +181,7 @@ export default function EventsPage() {
           </div>
           <button
             onClick={openCreateModal}
-            className="flex items-center gap-2 px-5 py-3 bg-[#7ed957] text-[#0e3b2b] font-semibold rounded-xl hover:bg-[#6bc748] transition-colors"
+            className="flex items-center gap-2 px-5 py-3 bg-[#7ed957] text-[#0e3b2b] font-semibold rounded-xl hover:bg-[#6bc748] transition-colors self-start"
           >
             <PiPlus size={20} />
             New Event

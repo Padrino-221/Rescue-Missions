@@ -137,7 +137,7 @@ export default function ProgramsPage() {
           </div>
           <button
             onClick={openNew}
-            className="inline-flex items-center gap-2 rounded-xl bg-[#0e3b2b] px-5 py-2.5 text-sm font-medium text-[#f8fbf6] transition-colors hover:bg-[#0e3b2b]/90"
+            className="inline-flex items-center gap-2 rounded-xl bg-[#0e3b2b] px-5 py-2.5 text-sm font-medium text-[#f8fbf6] transition-colors hover:bg-[#0e3b2b]/90 self-start"
           >
             <PiPlus className="text-lg" />
             Add Program

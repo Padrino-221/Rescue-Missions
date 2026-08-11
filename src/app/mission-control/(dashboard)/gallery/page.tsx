@@ -139,7 +139,7 @@ export default function GalleryPage() {
           <h1 className="text-3xl font-bold text-[#0e3b2b]">Gallery</h1>
           <button
             onClick={() => setFormOpen(true)}
-            className="flex items-center gap-2 bg-[#7ed957] text-[#0e3b2b] font-semibold px-5 py-2.5 rounded-xl hover:bg-[#6bc945] transition-colors"
+            className="flex items-center gap-2 bg-[#7ed957] text-[#0e3b2b] font-semibold px-5 py-2.5 rounded-xl hover:bg-[#6bc945] transition-colors self-start"
           >
             <PiPlus className="w-5 h-5" />
             Upload
