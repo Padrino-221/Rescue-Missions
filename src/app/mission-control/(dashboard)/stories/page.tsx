@@ -308,9 +308,9 @@ export default function StoriesPage() {
         </div>
 
         {/* Mobile Cards */}
-        <div className="md:hidden divide-y divide-dark/5">
+        <div className="md:hidden space-y-4">
           {loading ? (
-            <div className="p-12 text-center">
+            <div className="bg-white rounded-2xl border border-dark/10 p-12 text-center">
               <PiSpinner className="mx-auto animate-spin text-2xl text-dark/30" />
             </div>
           ) : (
@@ -320,61 +320,67 @@ export default function StoriesPage() {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.05 * index }}
-                className="p-4 space-y-3 overflow-hidden"
+                className="bg-white rounded-2xl border border-dark/10 p-5"
               >
-                <div className="space-y-2 overflow-hidden">
-                  <div className="flex items-start gap-3 min-w-0">
-                    <div className="w-12 h-12 rounded-lg bg-dark/5 overflow-hidden flex-shrink-0">
-                      <Image src={story.image} alt={story.title} width={48} height={48} className="w-full h-full object-cover" />
+                <div className="flex items-start gap-3 mb-3">
+                  <div className="w-12 h-12 rounded-lg bg-dark/5 overflow-hidden flex-shrink-0">
+                    <Image src={story.image} alt={story.title} width={48} height={48} className="w-full h-full object-cover" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-start justify-between gap-2">
+                      <h3 className="font-semibold text-dark text-sm">{story.title}</h3>
+                      <span
+                        className={`px-2 py-0.5 rounded-full text-[10px] font-medium flex-shrink-0 ${
+                          story.featured ? 'bg-lime/20 text-dark' : 'bg-dark/10 text-dark/60'
+                        }`}
+                      >
+                        {story.featured ? 'Published' : 'Draft'}
+                      </span>
                     </div>
-                    <div className="min-w-0 flex-1 overflow-hidden">
-                      <div className="flex items-center gap-2 min-w-0">
-                        <p className="font-semibold text-dark text-sm truncate">{story.title}</p>
-                        <span
-                          className={`inline-flex px-2 py-0.5 rounded-full text-[10px] font-medium flex-shrink-0 ${
-                            story.featured ? 'bg-lime/20 text-dark' : 'bg-dark/10 text-dark/60'
-                          }`}
-                        >
-                          {story.featured ? 'Published' : 'Draft'}
-                        </span>
-                      </div>
-                      <p className="text-xs text-dark/50 line-clamp-2 mt-1">{story.excerpt}</p>
-                      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-dark/50 mt-1">
-                        <span>{story.category}</span>
-                        <span>{story.author}</span>
-                        <span>{story.date}</span>
-                      </div>
-                    </div>
+                    <p className="text-xs text-dark/50 line-clamp-2 mt-1">{story.excerpt}</p>
                   </div>
                 </div>
-
-                <div className="flex items-center gap-2 pt-1">
-                  <button
-                    onClick={() => setViewing(story)}
-                    className="p-2 text-dark/40 hover:text-dark hover:bg-dark/5 rounded-lg transition-colors"
-                    title="View"
+                <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-dark/50 mb-4">
+                  <span>{story.category}</span>
+                  <span>{story.author}</span>
+                  <span>{story.date}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span
+                    className={`px-3 py-1 rounded-lg text-xs font-medium ${
+                      story.featured ? 'bg-lime/15 text-dark' : 'bg-dark/10 text-dark/60'
+                    }`}
                   >
-                    <PiEye className="text-lg" />
-                  </button>
-                  <button
-                    onClick={() => openEdit(story)}
-                    className="p-2 text-dark/40 hover:text-lime hover:bg-lime/10 rounded-lg transition-colors"
-                    title="Edit"
-                  >
-                    <PiPencilSimple className="text-lg" />
-                  </button>
-                  <button
-                    onClick={() => handleDelete(story)}
-                    disabled={busyId === story.id}
-                    className="p-2 text-dark/40 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50"
-                    title="Delete"
-                  >
-                    {busyId === story.id ? (
-                      <PiSpinner className="text-lg animate-spin" />
-                    ) : (
-                      <PiTrash className="text-lg" />
-                    )}
-                  </button>
+                    {story.featured ? 'Published' : 'Draft'}
+                  </span>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => setViewing(story)}
+                      className="p-2 text-dark/40 hover:text-dark hover:bg-dark/5 rounded-lg transition-colors"
+                      title="View"
+                    >
+                      <PiEye className="text-lg" />
+                    </button>
+                    <button
+                      onClick={() => openEdit(story)}
+                      className="p-2 text-dark/40 hover:text-lime hover:bg-lime/10 rounded-lg transition-colors"
+                      title="Edit"
+                    >
+                      <PiPencilSimple className="text-lg" />
+                    </button>
+                    <button
+                      onClick={() => handleDelete(story)}
+                      disabled={busyId === story.id}
+                      className="p-2 text-dark/40 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50"
+                      title="Delete"
+                    >
+                      {busyId === story.id ? (
+                        <PiSpinner className="text-lg animate-spin" />
+                      ) : (
+                        <PiTrash className="text-lg" />
+                      )}
+                    </button>
+                  </div>
                 </div>
               </motion.div>
             ))
