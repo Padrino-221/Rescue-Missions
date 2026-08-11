@@ -58,7 +58,7 @@ export default function DashboardHeader({ session }: { session: Session }) {
   }
 
   return (
-    <header className="bg-white/80 backdrop-blur-md border-b border-dark/10 px-4 sm:px-6 lg:px-8 py-4">
+    <header className="bg-white/80 backdrop-blur-md border-b border-dark/10 px-4 sm:px-6 lg:px-8 py-4 relative z-40">
       <div className="flex items-center justify-between">
         <div className="lg:hidden w-11" />
         <div className="hidden lg:block">
