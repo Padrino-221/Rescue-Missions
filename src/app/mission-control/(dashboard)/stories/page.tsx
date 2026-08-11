@@ -323,26 +323,28 @@ export default function StoriesPage() {
                 className="p-4 space-y-3"
               >
                 <div className="space-y-2">
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-start gap-3">
                     <div className="w-12 h-12 rounded-lg bg-dark/5 overflow-hidden flex-shrink-0">
                       <Image src={story.image} alt={story.title} width={48} height={48} className="w-full h-full object-cover" />
                     </div>
                     <div className="min-w-0 flex-1">
-                      <p className="font-semibold text-dark text-sm truncate">{story.title}</p>
+                      <div className="flex items-center gap-2">
+                        <p className="font-semibold text-dark text-sm truncate">{story.title}</p>
+                        <span
+                          className={`inline-flex px-2 py-0.5 rounded-full text-[10px] font-medium flex-shrink-0 ${
+                            story.featured ? 'bg-lime/20 text-dark' : 'bg-dark/10 text-dark/60'
+                          }`}
+                        >
+                          {story.featured ? 'Published' : 'Draft'}
+                        </span>
+                      </div>
+                      <p className="text-xs text-dark/50 line-clamp-2 mt-1">{story.excerpt}</p>
+                      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-dark/50 mt-1">
+                        <span>{story.category}</span>
+                        <span>{story.author}</span>
+                        <span>{story.date}</span>
+                      </div>
                     </div>
-                    <span
-                      className={`inline-flex px-2 py-0.5 rounded-full text-[10px] font-medium flex-shrink-0 ${
-                        story.featured ? 'bg-lime/20 text-dark' : 'bg-dark/10 text-dark/60'
-                      }`}
-                    >
-                      {story.featured ? 'Published' : 'Draft'}
-                    </span>
-                  </div>
-                  <p className="text-xs text-dark/50 line-clamp-2 pl-15">{story.excerpt}</p>
-                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-dark/50 pl-15">
-                    <span>{story.category}</span>
-                    <span>{story.author}</span>
-                    <span>{story.date}</span>
                   </div>
                 </div>
 
