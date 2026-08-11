@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { PiHeartFill, PiUsers, PiBuilding, PiGift, PiCheck } from 'react-icons/pi'
+import { PiHeartFill, PiUsers, PiBuilding, PiCheck } from 'react-icons/pi'
 import Input from '@/components/ui/Input'
 import Select from '@/components/ui/Select'
 import Textarea from '@/components/ui/Textarea'
@@ -42,8 +42,6 @@ const defaultCorporate = {
   ],
 }
 
-const defaultDonationAmounts = [25, 50, 100, 250, 500, 1000]
-
 export default function GetInvolvedPage() {
   const [activeTab, setActiveTab] = useState('volunteer')
   const { settings } = useSettings()
@@ -51,15 +49,6 @@ export default function GetInvolvedPage() {
   const volunteerRoles = settings?.volunteerRoles || defaultVolunteerRoles
   const sponsorship = settings?.sponsorship || defaultSponsorship
   const corporate = settings?.corporate || defaultCorporate
-  const donationAmounts = (() => {
-    if (settings?.donations?.presetAmounts?.length) {
-      const parsed = settings.donations.presetAmounts
-        .map((item: { amount: number | string }) => Number(item.amount))
-        .filter((n: number) => !Number.isNaN(n) && n > 0)
-      if (parsed.length) return parsed
-    }
-    return defaultDonationAmounts
-  })()
 
   return (
     <>
@@ -93,7 +82,6 @@ export default function GetInvolvedPage() {
               { icon: PiUsers, title: 'Volunteer', tab: 'volunteer' },
               { icon: PiHeartFill, title: 'Sponsor', tab: 'sponsor' },
               { icon: PiBuilding, title: 'Corporate', tab: 'corporate' },
-              { icon: PiGift, title: 'Donate', tab: 'donate' },
             ].map((item, index) => (
               <motion.button
                 key={item.title}
@@ -215,7 +203,7 @@ export default function GetInvolvedPage() {
                   </ul>
                 </div>
                 
-                <Link href="/donate" className="btn-lime w-full">
+                <Link href="/contact" className="btn-lime w-full">
                   <PiHeartFill className="w-5 h-5" />
                   Start Sponsoring Today
                 </Link>
@@ -231,7 +219,7 @@ export default function GetInvolvedPage() {
                         <p className="font-semibold text-dark">Child {i}</p>
                         <p className="text-dark/60 text-sm">Age {6 + i} • Needs sponsorship</p>
                       </div>
-                      <Link href="/donate" className="text-dark font-semibold text-sm hover:text-dark-100">
+                      <Link href="/contact" className="text-dark font-semibold text-sm hover:text-dark-100">
                         Sponsor →
                       </Link>
                     </div>
@@ -292,37 +280,6 @@ export default function GetInvolvedPage() {
                     Contact Us
                   </Link>
                 </div>
-              </div>
-            </motion.div>
-          )}
-
-          {/* Donate Section */}
-          {activeTab === 'donate' && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="text-center max-w-2xl mx-auto"
-            >
-              <h2 className="text-3xl font-serif text-dark mb-6">Make a Donation</h2>
-              <p className="text-dark/60 mb-8">
-                Your generous donation helps us provide education, healthcare, and shelter to orphaned children.
-              </p>
-              <div className="card-premium p-8">
-                <p className="text-dark/60 mb-6">Choose an amount or enter a custom donation:</p>
-                <div className="grid grid-cols-3 gap-4 mb-6">
-                  {donationAmounts.map((amount, index) => (
-                    <Link
-                      key={`${amount}-${index}`}
-                      href="/donate"
-                      className="py-3 rounded-2xl border border-dark text-dark font-semibold hover:bg-dark hover:text-white transition-all duration-300 text-center"
-                    >
-                       GH₵{amount}
-                    </Link>
-                  ))}
-                </div>
-                <Link href="/donate" className="btn-lime inline-flex">
-                  Go to Donation Page
-                </Link>
               </div>
             </motion.div>
           )}

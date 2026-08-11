@@ -20,7 +20,7 @@ const defaults: HeroSettings = {
   heading: 'Every child deserves a childhood.',
   description:
     'Rescue Mission Orphanage provides shelter, education, and care to children who need it most — turning hardship into hope, one child at a time.',
-  cta1Text: 'Donate Now',
+  cta1Text: 'Contact Us',
   cta2Text: 'Explore Our Work',
   imageUrl:
     'https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?auto=format&fit=crop&w=1200&q=80',
@@ -73,7 +73,7 @@ export default function Hero() {
             </p>
 
             <div className="mt-10 flex flex-wrap gap-3 sm:gap-4">
-              <Link href="/donate" className="btn-lime !px-6 !py-3 sm:!px-8 sm:!py-4 text-sm sm:text-base group">
+              <Link href="/contact" className="btn-lime !px-6 !py-3 sm:!px-8 sm:!py-4 text-sm sm:text-base group">
                 <PiHeartFill className="w-4 h-4 sm:w-5 sm:h-5" />
                 {hero.cta1Text}
                 <PiArrowRight className="w-4 h-4 sm:w-5 sm:h-5 group-hover:translate-x-1 transition-transform" />

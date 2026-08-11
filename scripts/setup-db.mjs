@@ -47,16 +47,6 @@ CREATE TABLE IF NOT EXISTS contacts (
   read BOOLEAN NOT NULL DEFAULT FALSE
 );
 
-CREATE TABLE IF NOT EXISTS donations (
-  id SERIAL PRIMARY KEY,
-  donor_name TEXT NOT NULL,
-  email TEXT NOT NULL,
-  amount NUMERIC(12,2) NOT NULL,
-  type TEXT NOT NULL,
-  date TEXT NOT NULL,
-  status TEXT NOT NULL DEFAULT 'Pending'
-);
-
 CREATE TABLE IF NOT EXISTS programs (
   id SERIAL PRIMARY KEY,
   title TEXT NOT NULL,
@@ -94,8 +84,7 @@ CREATE TABLE IF NOT EXISTS settings (
   children_served TEXT NOT NULL DEFAULT '',
   countries_active TEXT NOT NULL DEFAULT '',
   volunteers_active TEXT NOT NULL DEFAULT '',
-  funds_raised TEXT NOT NULL DEFAULT '',
-  donation_presets JSONB NOT NULL DEFAULT '[25,50,100,250,500,1000]'::jsonb
+  funds_raised TEXT NOT NULL DEFAULT ''
 );
 `
 
@@ -260,24 +249,6 @@ const contacts = [
   { name: 'Thomas Wright', email: 't.wright@email.com', subject: 'Media Inquiry', message: 'I am creating a documentary. Would you be interested in participating?', date: '2026-07-28', read: false },
 ]
 
-const donations = [
-  { donorName: 'Kwame Mensah', email: 'kwame.mensah@gmail.com', amount: 2500, type: 'One-time', date: '2026-08-01', status: 'Completed' },
-  { donorName: 'Ama Osei', email: 'ama.osei@yahoo.com', amount: 1500, type: 'Monthly', date: '2026-08-02', status: 'Completed' },
-  { donorName: 'Kofi Asante', email: 'kofi.asante@outlook.com', amount: 5000, type: 'Sponsorship', date: '2026-08-03', status: 'Pending' },
-  { donorName: 'Abena Boateng', email: 'abena.boateng@gmail.com', amount: 500, type: 'One-time', date: '2026-08-04', status: 'Completed' },
-  { donorName: 'Kwadwo Appiah', email: 'kwadwo.appiah@gmail.com', amount: 750, type: 'Monthly', date: '2026-08-05', status: 'Failed' },
-  { donorName: 'Akosua Frimpong', email: 'akosua.frimpong@yahoo.com', amount: 3000, type: 'Sponsorship', date: '2026-08-06', status: 'Completed' },
-  { donorName: 'Yaw Boateng', email: 'yaw.boateng@gmail.com', amount: 200, type: 'One-time', date: '2026-08-07', status: 'Pending' },
-  { donorName: 'Efua Mensah', email: 'efua.mensah@outlook.com', amount: 1800, type: 'Monthly', date: '2026-08-07', status: 'Completed' },
-  { donorName: 'Kojo Adjei', email: 'kojo.adjei@gmail.com', amount: 1200, type: 'One-time', date: '2026-08-08', status: 'Failed' },
-  { donorName: 'Ama Serwaa', email: 'ama.serwaa@yahoo.com', amount: 4500, type: 'Sponsorship', date: '2026-08-08', status: 'Completed' },
-  { donorName: 'Nana Osei-Bonsu', email: 'nana.oseibonsu@gmail.com', amount: 800, type: 'One-time', date: '2026-08-09', status: 'Pending' },
-  { donorName: 'Adwoa Korankye', email: 'adwoa.korankye@outlook.com', amount: 2200, type: 'Monthly', date: '2026-08-09', status: 'Completed' },
-  { donorName: 'Kwesi Amoako', email: 'kwesi.amoako@gmail.com', amount: 50, type: 'One-time', date: '2026-08-09', status: 'Completed' },
-  { donorName: 'Esi Ackah', email: 'esi.ackah@yahoo.com', amount: 3500, type: 'Sponsorship', date: '2026-08-10', status: 'Pending' },
-  { donorName: 'Kofi Mensah', email: 'kofi.mensah@gmail.com', amount: 950, type: 'One-time', date: '2026-08-10', status: 'Completed' },
-]
-
 const programs = [
   { title: 'Education', subtitle: 'Quality learning for all', icon: 'graduation-cap', description: 'Comprehensive education programs from primary to vocational training, empowering children with knowledge and skills for a brighter future.', status: 'active', beneficiaries: '2500+' },
   { title: 'Healthcare', subtitle: 'Caring for well-being', icon: 'heart', description: 'Holistic healthcare services including medical checkups, dental care, mental health support, and emergency treatments.', status: 'active', beneficiaries: '3000+' },
@@ -322,7 +293,6 @@ const settings = {
   countriesActive: '5',
   volunteersActive: '186',
   fundsRaised: 'GH₵2.5M',
-  donationPresets: [25, 50, 100, 250, 500, 1000],
 }
 
 async function main() {
@@ -345,7 +315,7 @@ async function main() {
   console.log('Schema ready.')
 
   // 3. Seed data
-  await db.query('TRUNCATE stories, contacts, donations, programs, gallery_items, settings RESTART IDENTITY CASCADE')
+  await db.query('TRUNCATE stories, contacts, programs, gallery_items, settings RESTART IDENTITY CASCADE')
 
   for (const s of stories) {
     await db.query(
@@ -359,13 +329,6 @@ async function main() {
     await db.query(
       `INSERT INTO contacts (name, email, subject, message, date, read) VALUES ($1,$2,$3,$4,$5,$6)`,
       [c.name, c.email, c.subject, c.message, c.date, c.read]
-    )
-  }
-
-  for (const d of donations) {
-    await db.query(
-      `INSERT INTO donations (donor_name, email, amount, type, date, status) VALUES ($1,$2,$3,$4,$5,$6)`,
-      [d.donorName, d.email, d.amount, d.type, d.date, d.status]
     )
   }
 
@@ -387,14 +350,14 @@ async function main() {
     `INSERT INTO settings (
        id, org_name, tagline, description, founded_year, phone1, phone2, email1, email2,
        address, office_hours, facebook, twitter, instagram, youtube, children_served,
-       countries_active, volunteers_active, funds_raised, donation_presets
-     ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20::jsonb)`,
+       countries_active, volunteers_active, funds_raised
+     ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19)`,
     [
       1, settings.orgName, settings.tagline, settings.description, settings.foundedYear,
       settings.phone1, settings.phone2, settings.email1, settings.email2, settings.address,
       settings.officeHours, settings.facebook, settings.twitter, settings.instagram,
       settings.youtube, settings.childrenServed, settings.countriesActive,
-      settings.volunteersActive, settings.fundsRaised, JSON.stringify(settings.donationPresets),
+      settings.volunteersActive, settings.fundsRaised,
     ]
   )
 
@@ -402,7 +365,6 @@ async function main() {
     `SELECT
        (SELECT count(*) FROM stories) AS stories,
        (SELECT count(*) FROM contacts) AS contacts,
-       (SELECT count(*) FROM donations) AS donations,
        (SELECT count(*) FROM programs) AS programs,
        (SELECT count(*) FROM gallery_items) AS gallery`
   )

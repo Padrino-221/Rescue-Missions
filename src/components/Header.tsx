@@ -58,8 +58,8 @@ export default function Header() {
           </div>
 
           <div className="hidden lg:flex items-center gap-4">
-            <Link href="/donate" className="btn-lime !py-3 group">
-              Donate
+            <Link href="/contact" className="btn-lime !py-3 group">
+              Contact Us
               <PiArrowUpRight className="w-4 h-4 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
             </Link>
           </div>
@@ -92,11 +92,11 @@ export default function Header() {
                 </Link>
               ))}
               <Link
-                href="/donate"
+                href="/contact"
                 className="mt-4 btn-lime justify-center"
                 onClick={() => setMobileMenuOpen(false)}
               >
-                Donate
+                Contact Us
                 <PiArrowUpRight className="w-4 h-4" />
               </Link>
             </div>

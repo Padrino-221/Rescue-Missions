@@ -6,11 +6,10 @@ import { PiSignOut, PiBell, PiCheck, PiX } from 'react-icons/pi'
 import type { Session } from 'next-auth'
 
 const defaultNotifications = [
-  { id: 1, text: 'New donation of GH₵500 received from Kwame Mensah', time: '2 min ago', read: false },
-  { id: 2, text: 'New story "Hope for the Future" published', time: '1 hour ago', read: false },
-  { id: 3, text: 'Contact form submitted by Partnership Ltd', time: '3 hours ago', read: false },
-  { id: 4, text: '5 new photos uploaded to gallery', time: '1 day ago', read: true },
-  { id: 5, text: 'New volunteer signup: Ama Osei', time: '2 days ago', read: true },
+  { id: 1, text: 'New story "Hope for the Future" published', time: '1 hour ago', read: false },
+  { id: 2, text: 'Contact form submitted by Partnership Ltd', time: '3 hours ago', read: false },
+  { id: 3, text: '5 new photos uploaded to gallery', time: '1 day ago', read: true },
+  { id: 4, text: 'New volunteer signup: Ama Osei', time: '2 days ago', read: true },
 ]
 
 function getGreeting() {

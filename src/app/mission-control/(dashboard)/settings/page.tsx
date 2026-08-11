@@ -33,7 +33,6 @@ const tabs = [
   { id: 'testimonials', label: 'Testimonials', icon: PiNewspaper },
   { id: 'volunteer', label: 'Volunteer & Sponsor', icon: PiUsers },
   { id: 'corporate', label: 'Corporate', icon: PiCurrencyCircleDollar },
-  { id: 'donations', label: 'Donations', icon: PiCurrencyCircleDollar },
   { id: 'faq', label: 'FAQ & Partners', icon: PiEnvelope },
 ]
 
@@ -98,7 +97,7 @@ function ArrayField({ items, onAdd, onRemove, onUpdate, fields, folder }: {
 
 const defaultSettings = () => ({
   general: { orgName: 'Rescue Mission Orphanage', tagline: 'Give Hope To Children In Need', description: 'A dedicated charity organization focused on creating sustainable solutions for those in need. Join us in our mission to provide education, healthcare, and shelter to orphaned children.', foundedYear: '2025', copyrightYear: '2025' },
-  contact: { phone1: '+233 24 567 890', phone2: '+233 20 567 891', email1: 'info@rescuemission.org', email2: 'donate@rescuemission.org', address1: '123 Hope Street', address2: 'Accra, Ghana', officeHours1: 'Mon - Fri: 9:00 AM - 5:00 PM', officeHours2: 'Sat: 9:00 AM - 1:00 PM', mediaEmail: 'media@rescuemission.org' },
+  contact: { phone1: '+233 24 567 890', phone2: '+233 20 567 891', email1: 'info@rescuemission.org', email2: 'sponsorship@rescuemission.org', address1: '123 Hope Street', address2: 'Accra, Ghana', officeHours1: 'Mon - Fri: 9:00 AM - 5:00 PM', officeHours2: 'Sat: 9:00 AM - 1:00 PM', mediaEmail: 'media@rescuemission.org' },
   social: { facebook: 'https://facebook.com/rescuemission', twitter: 'https://twitter.com/rescuemission', instagram: 'https://instagram.com/rescuemission', youtube: 'https://youtube.com/rescuemission', linkedin: 'https://linkedin.com/company/rescuemission' },
   homeHero: { heading: 'Every child deserves a childhood.', description: 'Rescue Mission Orphanage provides shelter, education, and care to children who need it most — turning hardship into hope, one child at a time.', cta1Text: 'Donate Now', cta2Text: 'Explore Our Work', imageUrl: 'https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?auto=format&fit=crop&w=900&q=80', imageAlt: 'Children playing at Rescue Mission Orphanage' },
   exploreOurWork: {
@@ -153,22 +152,10 @@ const defaultSettings = () => ({
     { tier: 'Silver', amount: 'GH₵15,000/year', benefits: 'All Bronze + event sponsorship, employee volunteer days' },
     { tier: 'Gold', amount: 'GH₵30,000/year', benefits: 'All Silver + naming rights, board observer seat' },
   ], benefits: ['Brand visibility on our website and events', 'Employee engagement opportunities', 'Tax benefits for corporate donations', 'CSR reporting support', 'Partnership certificates'] },
-  donations: { presetAmounts: [
-    { amount: 25, impact: 'School supplies for a month' },
-    { amount: 50, impact: 'Nutritious meals for a week' },
-    { amount: 100, impact: 'Medical care checkup' },
-    { amount: 250, impact: 'Safe shelter for a month' },
-    { amount: 500, impact: 'Education for a year' },
-    { amount: 1000, impact: 'Complete care package' },
-  ], allocation: [
-    { label: 'Programs & Services', percentage: 85 },
-    { label: 'Administration', percentage: 10 },
-    { label: 'Fundraising', percentage: 5 },
-  ], taxInfo: 'Rescue Mission Orphanage is a registered 501(c)(3) nonprofit organization. All donations are tax-deductible to the extent allowed by law.' },
   faq: [
     { question: 'How can I volunteer?', answer: 'Visit our Get Involved page or contact us directly to learn about volunteer opportunities.' },
-    { question: 'Are donations tax-deductible?', answer: 'Yes! We are a registered 501(c)(3) organization. All donations are tax-deductible.' },
-    { question: 'How do I sponsor a child?', answer: 'Contact us or visit our Donate page to learn about our sponsorship program.' },
+    { question: 'How do I support the organization?', answer: 'Contact us to learn about volunteering, sponsorship, and partnership opportunities.' },
+    { question: 'How do I sponsor a child?', answer: 'Contact us to learn about our sponsorship program and how you can make a difference.' },
   ],
   partners: [{ name: 'ZenZap' }, { name: 'sparkle' }, { name: 'Lum Labs' }, { name: 'Pulse' }, { name: 'swift' }, { name: 'innovio' }],
 })
@@ -520,23 +507,6 @@ export default function SettingsPage() {
                       </div>
                     ))}
                     <button onClick={() => addListItem('corporate.benefits', '')} className="flex items-center gap-2 text-sm text-dark/60 hover:text-dark mt-2"><PiPlus className="w-4 h-4" /> Add Benefit</button>
-                  </div>
-                </>
-              )}
-
-              {activeTab === 'donations' && (
-                <>
-                  <div className={sectionCls}>
-                    <h2 className="text-lg font-serif text-dark mb-4">Preset Amounts</h2>
-                    <ArrayField items={settings.donations.presetAmounts} onAdd={() => addArrayItem('donations.presetAmounts', { amount: '', impact: '' })} onRemove={(i) => removeArrayItem('donations.presetAmounts', i)} onUpdate={(i, k, v) => updateArrayItem('donations.presetAmounts', i, k, v)} fields={[{ key: 'amount', label: 'Amount (GH₵)' }, { key: 'impact', label: 'Impact Description' }]} />
-                  </div>
-                  <div className={sectionCls}>
-                    <h2 className="text-lg font-serif text-dark mb-4">Allocation Breakdown</h2>
-                    <ArrayField items={settings.donations.allocation} onAdd={() => addArrayItem('donations.allocation', { label: '', percentage: '' })} onRemove={(i) => removeArrayItem('donations.allocation', i)} onUpdate={(i, k, v) => updateArrayItem('donations.allocation', i, k, v)} fields={[{ key: 'label', label: 'Label' }, { key: 'percentage', label: 'Percentage' }]} />
-                  </div>
-                  <div className={sectionCls}>
-                    <h2 className="text-lg font-serif text-dark mb-4">Tax Information</h2>
-                    <Field label="Tax Info" value={settings.donations.taxInfo} onChange={(v) => update('donations.taxInfo', v)} textarea />
                   </div>
                 </>
               )}

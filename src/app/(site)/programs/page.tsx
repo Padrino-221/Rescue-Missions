@@ -165,10 +165,10 @@ export default function ProgramsPage() {
             <div className="absolute top-0 right-0 w-80 h-80 bg-lime/10 rounded-full blur-3xl" />
             <div className="absolute bottom-0 left-0 w-64 h-64 bg-coral/10 rounded-full blur-3xl" />
             <h2 className="text-3xl md:text-4xl font-serif text-cream">Want to Support Our Programs?</h2>
-            <p className="mt-3 text-cream/50 max-w-lg mx-auto">Your donation directly impacts the lives of children in need.</p>
+            <p className="mt-3 text-cream/50 max-w-lg mx-auto">Contact us to learn how you can support our programs.</p>
             <div className="mt-7 flex flex-wrap justify-center gap-3">
-              <Link href="/donate" className="btn-lime">
-                Donate Now
+              <Link href="/contact" className="btn-lime">
+                Contact Us
                 <PiArrowRight className="w-4 h-4" />
               </Link>
               <Link href="/get-involved" className="btn-secondary !border-white/30 !text-white hover:!bg-white hover:!text-dark">

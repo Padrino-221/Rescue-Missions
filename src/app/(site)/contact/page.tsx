@@ -33,8 +33,8 @@ const defaultContactInfo = [
 
 const defaultFaqs = [
   { question: 'How can I volunteer?', answer: 'Visit our Get Involved page or contact us directly to learn about volunteer opportunities.' },
-  { question: 'Are donations tax-deductible?', answer: 'Yes! We are a registered 501(c)(3) organization. All donations are tax-deductible.' },
-  { question: 'How do I sponsor a child?', answer: 'Contact us or visit our Donate page to learn about our sponsorship program.' },
+  { question: 'How do I support the organization?', answer: 'Contact us to learn about volunteering, sponsorship, and partnership opportunities.' },
+  { question: 'How do I sponsor a child?', answer: 'Contact us to learn about our sponsorship program and how you can make a difference.' },
 ]
 
 const defaultSocialLinks = [
@@ -144,7 +144,6 @@ export default function ContactPage() {
                   onChange={(val) => setFormData({ ...formData, subject: val })}
                   options={[
                     { label: 'General Inquiry', value: 'general' },
-                    { label: 'Donation Question', value: 'donation' },
                     { label: 'Volunteer Opportunity', value: 'volunteer' },
                     { label: 'Partnership', value: 'partnership' },
                     { label: 'Media Inquiry', value: 'media' },

@@ -9,15 +9,12 @@ import {
   PiImages,
   PiBooks,
   PiChatsCircle,
-  PiCurrencyCircleDollar,
   PiTrendUp,
   PiUsers,
   PiSpinner,
 } from 'react-icons/pi'
 
 type Stats = {
-  totalDonations: number
-  totalAmount: number
   unreadContacts: number
   totalContacts: number
   publishedStories: number
@@ -30,7 +27,6 @@ type Stats = {
 type Activity = { id: string; type: string; message: string }
 
 const activityIcons: Record<string, typeof PiNewspaper> = {
-  donation: PiCurrencyCircleDollar,
   story: PiNewspaper,
   contact: PiChatsCircle,
   gallery: PiImages,
@@ -42,7 +38,6 @@ const quickActions = [
   { label: 'Photo Gallery', icon: PiImages, href: '/mission-control/gallery', color: 'bg-dark' },
   { label: 'Programs', icon: PiBooks, href: '/mission-control/programs', color: 'bg-amber-500' },
   { label: 'Contacts', icon: PiChatsCircle, href: '/mission-control/contacts', color: 'bg-blue-500' },
-  { label: 'Donations', icon: PiCurrencyCircleDollar, href: '/mission-control/donations', color: 'bg-green-600' },
 ]
 
 const container = {
@@ -79,13 +74,6 @@ export default function MissionControlOverview() {
 
   const statCards = stats
     ? [
-        {
-          label: 'Total Donations',
-          value: `GH₵${Math.round(stats.totalAmount).toLocaleString()}`,
-          change: `${stats.totalDonations} donations`,
-          icon: PiCurrencyCircleDollar,
-          bgColor: 'bg-lime/10',
-        },
         {
           label: 'Active Programs',
           value: String(stats.activePrograms),

@@ -7,7 +7,7 @@ import { useSettings } from '@/lib/useSettings'
 const footerLinks = [
   { name: 'Our Story', href: '/about' },
   { name: 'Programs', href: '/programs' },
-  { name: 'Donate', href: '/donate' },
+  { name: 'Contact Us', href: '/contact' },
   { name: 'Get Involved', href: '/get-involved' },
   { name: 'Contact', href: '/contact' },
   { name: 'Gallery', href: '/gallery' },

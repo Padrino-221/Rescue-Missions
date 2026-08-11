@@ -27,7 +27,7 @@
   "homeHero": {
     "heading": "Every child deserves a childhood.",
     "description": "Rescue Mission Orphanage provides shelter, education, and care to children who need it most — turning hardship into hope, one child at a time.",
-    "cta1Text": "Donate Now",
+    "cta1Text": "Contact Us",
     "cta2Text": "Explore Our Work",
     "imageUrl": "https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?auto=format&fit=crop&w=900&q=80",
     "imageAlt": "Children playing at Rescue Mission Orphanage"
@@ -35,7 +35,7 @@
   "cta": {
     "kicker": "Give Hope a Home",
     "heading": "Your kindness becomes a child's breakthrough",
-    "description": "Every donation, every volunteer hour, every share — it all adds up to education, healthcare, and a safe home for a child in need."
+    "description": "Every volunteer hour, every share — it all adds up to education, healthcare, and a safe home for a child in need."
   },
   "impactStats": {
     "kicker": "Our Impact",
@@ -209,61 +209,18 @@
       "Partnership certificates"
     ]
   },
-  "donations": {
-    "presetAmounts": [
-      {
-        "amount": 25,
-        "impact": "School supplies for a month"
-      },
-      {
-        "amount": 50,
-        "impact": "Nutritious meals for a week"
-      },
-      {
-        "amount": 100,
-        "impact": "Medical care checkup"
-      },
-      {
-        "amount": 250,
-        "impact": "Safe shelter for a month"
-      },
-      {
-        "amount": 500,
-        "impact": "Education for a year"
-      },
-      {
-        "amount": 1000,
-        "impact": "Complete care package"
-      }
-    ],
-    "allocation": [
-      {
-        "label": "Programs & Services",
-        "percentage": 85
-      },
-      {
-        "label": "Administration",
-        "percentage": 10
-      },
-      {
-        "label": "Fundraising",
-        "percentage": 5
-      }
-    ],
-    "taxInfo": "Rescue Mission Orphanage is a registered 501(c)(3) nonprofit organization. All donations are tax-deductible to the extent allowed by law."
-  },
   "faq": [
     {
       "question": "How can I volunteer?",
       "answer": "Visit our Get Involved page or contact us directly to learn about volunteer opportunities."
     },
     {
-      "question": "Are donations tax-deductible?",
-      "answer": "Yes! We are a registered 501(c)(3) organization. All donations are tax-deductible."
+      "question": "How do I support the organization?",
+      "answer": "Contact us to learn about volunteering, sponsorship, and partnership opportunities."
     },
     {
       "question": "How do I sponsor a child?",
-      "answer": "Contact us or visit our Donate page to learn about our sponsorship program."
+      "answer": "Contact us to learn about our sponsorship program and how you can make a difference."
     }
   ],
   "partners": [

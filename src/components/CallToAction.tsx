@@ -10,7 +10,7 @@ const defaults = {
   kicker: 'Give Hope a Home',
   heading: 'Your kindness becomes a child\'s breakthrough',
   description:
-    'Every donation, every volunteer hour, every share — it all adds up to education, healthcare, and a safe home for a child in need.',
+    'Every volunteer hour, every share — it all adds up to education, healthcare, and a safe home for a child in need.',
 }
 
 export default function CallToAction() {
@@ -49,9 +49,9 @@ export default function CallToAction() {
           </p>
 
           <div className="mt-12 flex flex-wrap justify-center gap-4">
-            <Link href="/donate" className="btn-lime !px-8 !py-4 text-base group">
+            <Link href="/contact" className="btn-lime !px-8 !py-4 text-base group">
               <PiHeartFill className="w-5 h-5" />
-              Donate Now
+              Contact Us
               <PiArrowUpRight className="w-5 h-5 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
             </Link>
             <Link href="/get-involved" className="btn-white group !px-8 !py-4 text-base">

@@ -57,11 +57,6 @@ export interface SiteSettings {
     tiers: { tier: string; amount: string; benefits: string }[]
     benefits: string[]
   }
-  donations: {
-    presetAmounts: { amount: number; impact: string }[]
-    allocation: { label: string; percentage: number }[]
-    taxInfo: string
-  }
   faq: { question: string; answer: string }[]
   partners: { name: string }[]
   exploreOurWork: {
