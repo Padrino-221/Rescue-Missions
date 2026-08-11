@@ -5,6 +5,7 @@ import Image from 'next/image'
 import { motion } from 'framer-motion'
 import { PiStarFill } from 'react-icons/pi'
 import { useSettings } from '@/lib/useSettings'
+import type { SiteSettings } from '@/lib/settings'
 
 const defaultTestimonials = [
   {
@@ -36,8 +37,8 @@ const defaultTestimonials = [
   },
 ]
 
-export default function Testimonials() {
-  const { settings, loading } = useSettings()
+export default function Testimonials({ initialSettings }: { initialSettings?: SiteSettings | null }) {
+  const { settings, loading } = useSettings(initialSettings)
 
   const testimonials = useMemo(() => {
     if (!settings?.testimonials?.length) return defaultTestimonials

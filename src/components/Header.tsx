@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { PiList, PiX, PiArrowUpRight, PiHeartFill } from 'react-icons/pi'
 import { useSettings } from '@/lib/useSettings'
+import type { SiteSettings } from '@/lib/settings'
 
 const navigation = [
   { name: 'Home', href: '/' },
@@ -15,10 +16,10 @@ const navigation = [
   { name: 'Contact', href: '/contact' },
 ]
 
-export default function Header() {
+export default function Header({ initialSettings }: { initialSettings?: SiteSettings | null }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
-  const { settings, loading } = useSettings()
+  const { settings, loading } = useSettings(initialSettings)
   const orgName = settings?.general?.orgName || 'Rescue Mission'
 
   useEffect(() => {

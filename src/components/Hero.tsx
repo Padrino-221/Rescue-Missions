@@ -6,6 +6,7 @@ import Image from 'next/image'
 import { motion } from 'framer-motion'
 import { PiArrowRight, PiHeartFill, PiSun } from 'react-icons/pi'
 import { useSettings } from '@/lib/useSettings'
+import type { SiteSettings } from '@/lib/settings'
 
 interface HeroSettings {
   heading: string
@@ -27,8 +28,8 @@ const defaults: HeroSettings = {
   imageAlt: 'Children playing at Rescue Mission Orphanage',
 }
 
-export default function Hero() {
-  const { settings, loading } = useSettings()
+export default function Hero({ initialSettings }: { initialSettings?: SiteSettings | null }) {
+  const { settings, loading } = useSettings(initialSettings)
 
   const hero = useMemo((): HeroSettings => {
     const h = settings?.homeHero

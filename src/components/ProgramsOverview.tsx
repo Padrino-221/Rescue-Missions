@@ -6,6 +6,7 @@ import Image from 'next/image'
 import { motion } from 'framer-motion'
 import { PiArrowUpRight, PiBuildings, PiHandshake, PiBookOpen } from 'react-icons/pi'
 import { useSettings } from '@/lib/useSettings'
+import type { SiteSettings } from '@/lib/settings'
 
 const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   PiBuildings,
@@ -47,8 +48,8 @@ const defaultExploreOurWork = {
 
 const iconList = [PiBuildings, PiHandshake, PiBookOpen]
 
-export default function ProgramsOverview() {
-  const { settings, loading } = useSettings()
+export default function ProgramsOverview({ initialSettings }: { initialSettings?: SiteSettings | null }) {
+  const { settings, loading } = useSettings(initialSettings)
 
   const data = useMemo(() => {
     if (settings?.exploreOurWork) return settings.exploreOurWork

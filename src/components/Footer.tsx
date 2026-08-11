@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { PiHeartFill, PiEnvelope, PiPhone, PiMapPin, PiFacebookLogo, PiTwitterLogo, PiInstagramLogo, PiYoutubeLogo, PiLinkedinLogo } from 'react-icons/pi'
 import { useSettings } from '@/lib/useSettings'
+import type { SiteSettings } from '@/lib/settings'
 
 const footerLinks = [
   { name: 'Our Story', href: '/about' },
@@ -13,8 +14,8 @@ const footerLinks = [
   { name: 'Gallery', href: '/gallery' },
 ]
 
-export default function Footer() {
-  const { settings, loading } = useSettings()
+export default function Footer({ initialSettings }: { initialSettings?: SiteSettings | null }) {
+  const { settings, loading } = useSettings(initialSettings)
 
   const orgName = settings?.general?.orgName || 'Rescue Mission'
   const tagline = settings?.general?.tagline || ''

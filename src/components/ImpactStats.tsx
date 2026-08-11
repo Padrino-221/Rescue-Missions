@@ -3,6 +3,7 @@
 import { motion } from 'framer-motion'
 import { PiGraduationCap, PiUsers, PiMapPin, PiCurrencyCircleDollar } from 'react-icons/pi'
 import { useSettings } from '@/lib/useSettings'
+import type { SiteSettings } from '@/lib/settings'
 
 const iconMap = [PiGraduationCap, PiUsers, PiMapPin, PiCurrencyCircleDollar]
 
@@ -13,8 +14,8 @@ const defaultStats = [
   { value: 'GH₵2.5M', label: 'Funds Raised', description: 'From generous donors' },
 ]
 
-export default function ImpactStats() {
-  const { settings, loading } = useSettings()
+export default function ImpactStats({ initialSettings }: { initialSettings?: SiteSettings | null }) {
+  const { settings, loading } = useSettings(initialSettings)
 
   const impact = settings?.impactStats
   const kicker = impact?.kicker || 'Our Impact'

@@ -2,6 +2,7 @@
 
 import { useMemo } from 'react'
 import { useSettings } from '@/lib/useSettings'
+import type { SiteSettings } from '@/lib/settings'
 
 const defaultPartners = [
   { name: 'ZenZap' },
@@ -12,8 +13,8 @@ const defaultPartners = [
   { name: 'innovio' },
 ]
 
-export default function Partners() {
-  const { settings, loading } = useSettings()
+export default function Partners({ initialSettings }: { initialSettings?: SiteSettings | null }) {
+  const { settings, loading } = useSettings(initialSettings)
 
   const partners = useMemo(() => {
     if (settings?.partners?.length) return settings.partners
