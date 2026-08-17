@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import Link from 'next/link'
 import { PiList, PiX, PiArrowUpRight, PiHeartFill } from 'react-icons/pi'
 import { useSettings } from '@/lib/useSettings'
@@ -18,22 +18,11 @@ const navigation = [
 
 export default function Header({ initialSettings }: { initialSettings?: SiteSettings | null }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-  const [scrolled, setScrolled] = useState(false)
   const { settings, loading } = useSettings(initialSettings)
   const orgName = settings?.general?.orgName || 'Rescue Mission'
 
-  useEffect(() => {
-    const handleScroll = () => {
-      setScrolled(window.scrollY > 40)
-    }
-    window.addEventListener('scroll', handleScroll)
-    return () => window.removeEventListener('scroll', handleScroll)
-  }, [])
-
   return (
-    <header className={`sticky top-0 left-0 right-0 z-50 transition-all duration-500 ${
-      scrolled ? 'bg-cream/95 backdrop-blur-md py-3 border-b border-dark/10' : 'bg-cream py-5'
-    }`}>
+    <header className="sticky top-0 left-0 right-0 z-50 bg-cream py-5 transition-all duration-500">
       <nav className="container-premium">
         <div className="flex justify-between items-center">
           <Link href="/" className="flex items-center gap-3 group">
