@@ -80,8 +80,8 @@ export default function Header({ initialSettings }: { initialSettings?: SiteSett
         </div>
 
         {mobileMenuOpen && (
-          <div className="lg:hidden py-6 mt-4 bg-white rounded-2xl border-2 border-dark/10">
-            <div className="flex flex-col gap-1 px-4">
+          <div className="lg:hidden absolute top-full left-0 right-0 py-6 bg-white/95 backdrop-blur-md border-b border-dark/10 shadow-lg">
+            <div className="flex flex-col gap-1 px-4 container-premium">
               {navigation.map((item) => (
                 <Link
                   key={item.name}
