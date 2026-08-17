@@ -15,7 +15,7 @@ export const metadata: Metadata = {
     title: 'Rescue Mission Orphanage | Give Hope To Children In Need',
     description: 'Rescue Mission Orphanage provides shelter, education, healthcare, and care to orphaned children in Ghana.',
     url: 'https://rescuemissionsgh.org',
-    images: ['/favicon.svg'],
+    images: ['/og-image.png'],
   },
 }
 

@@ -26,18 +26,18 @@ export const metadata: Metadata = {
     description: 'A dedicated charity organization focused on creating sustainable solutions for those in need. Join us in our mission to provide education, healthcare, and shelter to orphaned children in Ghana.',
     images: [
       {
-        url: '/favicon.svg',
-        width: 48,
-        height: 48,
-        alt: 'Rescue Mission Orphanage Logo',
+        url: '/og-image.png',
+        width: 1200,
+        height: 630,
+        alt: 'Rescue Mission Orphanage - Give Hope To Children In Need',
       },
     ],
   },
   twitter: {
-    card: 'summary',
+    card: 'summary_large_image',
     title: 'Rescue Mission Orphanage | Give Hope To Children In Need',
     description: 'A dedicated charity organization focused on creating sustainable solutions for those in need.',
-    images: ['/favicon.svg'],
+    images: ['/og-image.png'],
   },
   icons: {
     icon: '/favicon.svg',
