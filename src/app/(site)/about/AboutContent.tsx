@@ -71,7 +71,7 @@ export default function AboutPage({ initialSettings }: { initialSettings?: SiteS
   return (
     <>
       {/* Hero */}
-      <section className="bg-cream pt-40 pb-8 lg:pt-48 lg:pb-10 overflow-hidden relative">
+      <section className="bg-cream pt-24 pb-8 lg:pt-28 lg:pb-10 overflow-hidden relative">
         <div className="absolute top-24 right-0 w-72 h-72 bg-lime/15 rounded-full blur-3xl pointer-events-none" />
         <div className="absolute bottom-0 left-0 w-48 h-48 bg-coral/10 rounded-full blur-3xl pointer-events-none" />
         <div className="container-premium">

@@ -55,7 +55,7 @@ export default function EventDetailPage() {
 
   if (loading) {
     return (
-      <section className="bg-cream pt-40 pb-8 lg:pt-48 lg:pb-10">
+      <section className="bg-cream pt-24 pb-8 lg:pt-28 lg:pb-10">
         <div className="container-premium">
           <div className="animate-pulse space-y-6">
             <div className="h-4 w-32 bg-dark/10 rounded-full" />
@@ -70,7 +70,7 @@ export default function EventDetailPage() {
 
   if (!event) {
     return (
-      <section className="bg-cream pt-40 pb-8 lg:pt-48 lg:pb-10">
+      <section className="bg-cream pt-24 pb-8 lg:pt-28 lg:pb-10">
         <div className="container-premium text-center py-20">
           <h1 className="text-4xl font-serif text-dark">Event not found</h1>
           <p className="mt-4 text-dark/60">

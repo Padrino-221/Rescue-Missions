@@ -54,7 +54,7 @@ export default function Hero({ initialSettings }: { initialSettings?: SiteSettin
       <div className="absolute bottom-10 right-10 w-80 h-80 bg-coral/20 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute top-1/2 right-1/3 w-56 h-56 bg-lime/25 rounded-full blur-3xl pointer-events-none" />
 
-      <div className="container-premium pt-36 lg:pt-44 pb-12 lg:pb-16">
+      <div className="container-premium pt-8 lg:pt-12 pb-12 lg:pb-16">
         <div className="grid lg:grid-cols-12 gap-12 lg:gap-8 items-center">
           {/* Left content */}
           <motion.div
