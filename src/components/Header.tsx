@@ -31,8 +31,8 @@ export default function Header({ initialSettings }: { initialSettings?: SiteSett
   }, [])
 
   return (
-    <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
-      scrolled ? 'bg-cream/95 backdrop-blur-md py-3 border-b border-dark/10' : 'bg-transparent py-5'
+    <header className={`sticky top-0 left-0 right-0 z-50 transition-all duration-500 ${
+      scrolled ? 'bg-cream/95 backdrop-blur-md py-3 border-b border-dark/10' : 'bg-cream py-5'
     }`}>
       <nav className="container-premium">
         <div className="flex justify-between items-center">
