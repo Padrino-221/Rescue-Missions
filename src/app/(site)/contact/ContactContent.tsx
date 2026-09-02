@@ -2,11 +2,12 @@
 
 import { useState, useMemo } from 'react'
 import { motion } from 'framer-motion'
-import { PiPhone, PiEnvelope, PiMapPin, PiClock, PiPaperPlaneTilt, PiFacebookLogo, PiTwitterLogo, PiInstagramLogo, PiYoutubeLogo } from 'react-icons/pi'
+import { PiPhone, PiEnvelope, PiMapPin, PiClock, PiPaperPlaneTilt } from 'react-icons/pi'
 import Input from '@/components/ui/Input'
 import Select from '@/components/ui/Select'
 import Textarea from '@/components/ui/Textarea'
 import { useSettings } from '@/lib/useSettings'
+import { getSocialIcon } from '@/lib/social-icons'
 import type { SiteSettings } from '@/lib/settings'
 
 const defaultContactInfo = [
@@ -38,13 +39,6 @@ const defaultFaqs = [
   { question: 'How do I sponsor a child?', answer: 'Contact us to learn about our sponsorship program and how you can make a difference.' },
 ]
 
-const defaultSocialLinks = [
-  { icon: PiFacebookLogo, href: '#' },
-  { icon: PiTwitterLogo, href: '#' },
-  { icon: PiInstagramLogo, href: '#' },
-  { icon: PiYoutubeLogo, href: '#' },
-]
-
 export default function ContactPage({ initialSettings }: { initialSettings?: SiteSettings | null }) {
   const { settings, loading } = useSettings(initialSettings)
 
@@ -66,14 +60,9 @@ export default function ContactPage({ initialSettings }: { initialSettings?: Sit
     : defaultContactInfo
 
   const social = settings?.social
-  const socialLinks = social
-    ? [
-        { icon: PiFacebookLogo, href: social.facebook || '#' },
-        { icon: PiTwitterLogo, href: social.twitter || '#' },
-        { icon: PiInstagramLogo, href: social.instagram || '#' },
-        { icon: PiYoutubeLogo, href: social.youtube || '#' },
-      ]
-    : defaultSocialLinks
+  const socialLinks = social?.items?.length
+    ? social.items.filter(s => s.url && s.name)
+    : []
 
   const faqs = settings?.faq?.length ? settings.faq : defaultFaqs
 
@@ -216,15 +205,21 @@ export default function ContactPage({ initialSettings }: { initialSettings?: Sit
               <div className="mt-8">
                 <h3 className="font-semibold text-dark mb-4">{contactPage.socialHeading}</h3>
                 <div className="flex gap-3">
-                  {socialLinks.map((social, i) => (
-                    <a
-                      key={i}
-                      href={social.href}
-                      className="w-11 h-11 rounded-xl border border-dark/20 flex items-center justify-center text-dark/60 hover:bg-dark hover:text-lime hover:border-dark transition-all duration-300"
-                    >
-                      <social.icon className="w-4 h-4" />
-                    </a>
-                  ))}
+                  {socialLinks.map((social, i) => {
+                    const Icon = getSocialIcon(social.name)
+                    return (
+                      <a
+                        key={i}
+                        href={social.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="w-11 h-11 rounded-xl border border-dark/20 flex items-center justify-center text-dark/60 hover:bg-dark hover:text-lime hover:border-dark transition-all duration-300"
+                        aria-label={social.name}
+                      >
+                        <Icon className="w-4 h-4" />
+                      </a>
+                    )
+                  })}
                 </div>
               </div>
             </motion.div>

@@ -39,7 +39,7 @@ export default async function Home() {
   const email1 = settings?.contact?.email1 || 'info@rescuemission.org'
   const address1 = settings?.contact?.address1 || 'Accra'
   const address2 = settings?.contact?.address2 || 'Ghana'
-  const social = settings?.social || {}
+  const socialItems = settings?.social?.items || []
 
   return (
     <>
@@ -74,13 +74,7 @@ export default async function Home() {
               contactType: 'customer service',
               email: email1,
             },
-            sameAs: [
-              social.facebook,
-              social.twitter,
-              social.instagram,
-              social.youtube,
-              social.linkedin,
-            ].filter(Boolean),
+            sameAs: socialItems.filter(s => s.url).map(s => s.url),
             nonprofitInfo: {
               '@type': 'NonprofitType',
               name: 'Orphanage',

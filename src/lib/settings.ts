@@ -21,11 +21,7 @@ export interface SiteSettings {
     mediaEmail: string
   }
   social: {
-    facebook: string
-    twitter: string
-    instagram: string
-    youtube: string
-    linkedin: string
+    items: { name: string; url: string }[]
   }
   homeHero: {
     heading: string

@@ -109,7 +109,13 @@ const defaultSettings = () => ({
   general: { orgName: 'Rescue Mission Orphanage', tagline: 'Give Hope To Children In Need', description: 'A dedicated charity organization focused on creating sustainable solutions for those in need. Join us in our mission to provide education, healthcare, and shelter to orphaned children.', foundedYear: '2025', copyrightYear: '2025' },
   siteUrl: 'https://rescuemissionsgh.org',
   contact: { phone1: '+233 24 567 890', phone2: '+233 20 567 891', email1: 'info@rescuemission.org', email2: 'sponsorship@rescuemission.org', address1: '123 Hope Street', address2: 'Accra, Ghana', officeHours1: 'Mon - Fri: 9:00 AM - 5:00 PM', officeHours2: 'Sat: 9:00 AM - 1:00 PM', mediaEmail: 'media@rescuemission.org' },
-  social: { facebook: 'https://facebook.com/rescuemission', twitter: 'https://twitter.com/rescuemission', instagram: 'https://instagram.com/rescuemission', youtube: 'https://youtube.com/rescuemission', linkedin: 'https://linkedin.com/company/rescuemission' },
+  social: { items: [
+    { name: 'Facebook', url: 'https://facebook.com/rescuemission' },
+    { name: 'Twitter', url: 'https://twitter.com/rescuemission' },
+    { name: 'Instagram', url: 'https://instagram.com/rescuemission' },
+    { name: 'YouTube', url: 'https://youtube.com/rescuemission' },
+    { name: 'LinkedIn', url: 'https://linkedin.com/company/rescuemission' },
+  ] },
   homeHero: { heading: 'Every child deserves a childhood.', description: 'Rescue Mission Orphanage provides shelter, education, and care to children who need it most — turning hardship into hope, one child at a time.', cta1Text: 'Donate Now', cta2Text: 'Explore Our Work', imageUrl: 'https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?auto=format&fit=crop&w=900&q=80', imageAlt: 'Children playing at Rescue Mission Orphanage' },
   exploreOurWork: {
     kicker: 'Explore Our Work',
@@ -474,13 +480,17 @@ export default function SettingsPage() {
               {activeTab === 'social' && (
                 <div className={sectionCls}>
                   <h2 className="text-lg font-serif text-dark mb-4 flex items-center gap-2"><PiShareNetwork className="text-lg" /> Social Media Links</h2>
-                  <div className="grid sm:grid-cols-2 gap-4">
-                    <Field label="Facebook" value={settings.social.facebook} onChange={(v) => update('social.facebook', v)} placeholder="https://facebook.com/..." />
-                    <Field label="Twitter / X" value={settings.social.twitter} onChange={(v) => update('social.twitter', v)} placeholder="https://twitter.com/..." />
-                    <Field label="Instagram" value={settings.social.instagram} onChange={(v) => update('social.instagram', v)} placeholder="https://instagram.com/..." />
-                    <Field label="YouTube" value={settings.social.youtube} onChange={(v) => update('social.youtube', v)} placeholder="https://youtube.com/..." />
-                    <Field label="LinkedIn" value={settings.social.linkedin} onChange={(v) => update('social.linkedin', v)} placeholder="https://linkedin.com/..." />
-                  </div>
+                  <p className="text-dark/50 text-sm mb-4">Add any social media platform. Use the name field for the platform (e.g. Facebook, Twitter, Instagram, TikTok, etc.).</p>
+                  <ArrayField
+                    items={settings.social.items}
+                    onAdd={() => addArrayItem('social.items', { name: '', url: '' })}
+                    onRemove={(i) => removeArrayItem('social.items', i)}
+                    onUpdate={(i, k, v) => updateArrayItem('social.items', i, k, v)}
+                    fields={[
+                      { key: 'name', label: 'Platform (e.g. Facebook, Twitter, TikTok)' },
+                      { key: 'url', label: 'URL (https://...)' },
+                    ]}
+                  />
                 </div>
               )}
 

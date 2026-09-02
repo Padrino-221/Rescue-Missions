@@ -1,8 +1,9 @@
 'use client'
 
 import Link from 'next/link'
-import { PiHeartFill, PiEnvelope, PiPhone, PiMapPin, PiFacebookLogo, PiTwitterLogo, PiInstagramLogo, PiYoutubeLogo, PiLinkedinLogo } from 'react-icons/pi'
+import { PiHeartFill, PiEnvelope, PiPhone, PiMapPin } from 'react-icons/pi'
 import { useSettings } from '@/lib/useSettings'
+import { getSocialIcon } from '@/lib/social-icons'
 import type { SiteSettings } from '@/lib/settings'
 
 const footerLinks = [
@@ -10,7 +11,6 @@ const footerLinks = [
   { name: 'Programs', href: '/programs' },
   { name: 'Contact Us', href: '/contact' },
   { name: 'Get Involved', href: '/get-involved' },
-  { name: 'Contact', href: '/contact' },
   { name: 'Gallery', href: '/gallery' },
 ]
 
@@ -27,13 +27,7 @@ export default function Footer({ initialSettings }: { initialSettings?: SiteSett
   const fullAddress = [address1, address2].filter(Boolean).join(', ') || '123 Hope Street, City, Country'
   const copyrightYear = settings?.general?.copyrightYear || '2024'
 
-  const socialLinks = [
-    { name: 'Facebook', icon: PiFacebookLogo, href: settings?.social?.facebook || '#' },
-    { name: 'Twitter', icon: PiTwitterLogo, href: settings?.social?.twitter || '#' },
-    { name: 'Instagram', icon: PiInstagramLogo, href: settings?.social?.instagram || '#' },
-    { name: 'YouTube', icon: PiYoutubeLogo, href: settings?.social?.youtube || '#' },
-    { name: 'LinkedIn', icon: PiLinkedinLogo, href: settings?.social?.linkedin || '#' },
-  ]
+  const socialLinks = (settings?.social?.items || []).filter(s => s.url && s.name)
 
   if (loading) return null
 
@@ -83,21 +77,28 @@ export default function Footer({ initialSettings }: { initialSettings?: SiteSett
           </div>
 
           {/* Socials */}
-          <div>
-            <h4 className="text-xs uppercase tracking-[0.2em] text-cream/35 font-semibold mb-4">Follow Us</h4>
-            <div className="flex flex-wrap gap-2.5">
-              {socialLinks.map((social) => (
-                <a
-                  key={social.name}
-                  href={social.href}
-                  className="w-9 h-9 rounded-lg border border-white/10 flex items-center justify-center text-cream/45 hover:bg-lime hover:text-dark hover:border-lime transition-all duration-300"
-                  aria-label={social.name}
-                >
-                  <social.icon className="w-4 h-4" />
-                </a>
-              ))}
+          {socialLinks.length > 0 && (
+            <div>
+              <h4 className="text-xs uppercase tracking-[0.2em] text-cream/35 font-semibold mb-4">Follow Us</h4>
+              <div className="flex flex-wrap gap-2.5">
+                {socialLinks.map((social) => {
+                  const Icon = getSocialIcon(social.name)
+                  return (
+                    <a
+                      key={social.name}
+                      href={social.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-9 h-9 rounded-lg border border-white/10 flex items-center justify-center text-cream/45 hover:bg-lime hover:text-dark hover:border-lime transition-all duration-300"
+                      aria-label={social.name}
+                    >
+                      <Icon className="w-4 h-4" />
+                    </a>
+                  )
+                })}
+              </div>
             </div>
-          </div>
+          )}
         </div>
       </div>
 
