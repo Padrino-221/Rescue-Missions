@@ -29,7 +29,9 @@ const tabs = [
   { id: 'general', label: 'General', icon: PiGear },
   { id: 'contact', label: 'Contact', icon: PiPhone },
   { id: 'social', label: 'Social Media', icon: PiShareNetwork },
-  { id: 'home', label: 'Home Page', icon: PiGlobe },
+  { id: 'home', label: 'Home Hero', icon: PiGlobe },
+  { id: 'explore', label: 'Explore Our Work', icon: PiGlobe },
+  { id: 'cta', label: 'Call To Action', icon: PiGlobe },
   { id: 'impact', label: 'Impact Stats', icon: PiTrendUp },
   { id: 'howwehelp', label: 'How We Help', icon: PiHeart },
   { id: 'featured', label: 'Featured Story', icon: PiNewspaper },
@@ -495,45 +497,49 @@ export default function SettingsPage() {
               )}
 
               {activeTab === 'home' && (
-                <>
-                  <div className={sectionCls}>
-                    <h2 className="text-lg font-serif text-dark mb-4 flex items-center gap-2"><PiGlobe className="text-lg" /> Hero Section</h2>
-                    <div className="space-y-4">
-                      <Field label="Heading" value={settings.homeHero.heading} onChange={(v) => update('homeHero.heading', v)} />
-                      <Field label="Description" value={settings.homeHero.description} onChange={(v) => update('homeHero.description', v)} textarea />
-                      <div className="grid sm:grid-cols-2 gap-4">
-                        <Field label="CTA 1 Text" value={settings.homeHero.cta1Text} onChange={(v) => update('homeHero.cta1Text', v)} />
-                        <Field label="CTA 2 Text" value={settings.homeHero.cta2Text} onChange={(v) => update('homeHero.cta2Text', v)} />
-                      </div>
-                      <div className="grid sm:grid-cols-2 gap-4">
-                        <Field label="Hero Image Alt Text" value={settings.homeHero.imageAlt} onChange={(v) => update('homeHero.imageAlt', v)} />
-                      </div>
-                      <ImageUpload value={settings.homeHero.imageUrl} onChange={(v) => update('homeHero.imageUrl', v)} folder="rescue-mission/hero" label="Hero Image" />
+                <div className={sectionCls}>
+                  <h2 className="text-lg font-serif text-dark mb-4 flex items-center gap-2"><PiGlobe className="text-lg" /> Hero Section</h2>
+                  <div className="space-y-4">
+                    <Field label="Heading" value={settings.homeHero.heading} onChange={(v) => update('homeHero.heading', v)} />
+                    <Field label="Description" value={settings.homeHero.description} onChange={(v) => update('homeHero.description', v)} textarea />
+                    <div className="grid sm:grid-cols-2 gap-4">
+                      <Field label="CTA 1 Text" value={settings.homeHero.cta1Text} onChange={(v) => update('homeHero.cta1Text', v)} />
+                      <Field label="CTA 2 Text" value={settings.homeHero.cta2Text} onChange={(v) => update('homeHero.cta2Text', v)} />
+                    </div>
+                    <div className="grid sm:grid-cols-2 gap-4">
+                      <Field label="Hero Image Alt Text" value={settings.homeHero.imageAlt} onChange={(v) => update('homeHero.imageAlt', v)} />
+                    </div>
+                    <ImageUpload value={settings.homeHero.imageUrl} onChange={(v) => update('homeHero.imageUrl', v)} folder="rescue-mission/hero" label="Hero Image" />
+                  </div>
+                </div>
+              )}
+
+              {activeTab === 'explore' && (
+                <div className={sectionCls}>
+                  <h2 className="text-lg font-serif text-dark mb-4">Explore Our Work Section</h2>
+                  <div className="space-y-4">
+                    <div className="grid sm:grid-cols-2 gap-4">
+                      <Field label="Kicker" value={settings.exploreOurWork.kicker} onChange={(v) => update('exploreOurWork.kicker', v)} />
+                      <Field label="Heading" value={settings.exploreOurWork.heading} onChange={(v) => update('exploreOurWork.heading', v)} />
+                    </div>
+                    <Field label="Description" value={settings.exploreOurWork.description} onChange={(v) => update('exploreOurWork.description', v)} textarea />
+                    <div className="mt-4">
+                      <h3 className="font-semibold text-dark mb-3">Items</h3>
+                      <ArrayField items={settings.exploreOurWork.items} onAdd={() => addArrayItem('exploreOurWork.items', { index: '', title: '', subtitle: '', description: '', href: '', imageUrl: '' })} onRemove={(i) => removeArrayItem('exploreOurWork.items', i)} onUpdate={(i, k, v) => updateArrayItem('exploreOurWork.items', i, k, v)} fields={[{ key: 'index', label: 'Index' }, { key: 'title', label: 'Title' }, { key: 'subtitle', label: 'Subtitle' }, { key: 'description', label: 'Description', textarea: true }, { key: 'href', label: 'Link URL' }, { key: 'imageUrl', label: 'Image', image: true }]} folder="rescue-mission/explore" />
                     </div>
                   </div>
-                  <div className={sectionCls}>
-                    <h2 className="text-lg font-serif text-dark mb-4">Call To Action Section</h2>
-                    <div className="space-y-4">
-                      <Field label="Kicker" value={settings.cta.kicker} onChange={(v) => update('cta.kicker', v)} />
-                      <Field label="Heading" value={settings.cta.heading} onChange={(v) => update('cta.heading', v)} />
-                      <Field label="Description" value={settings.cta.description} onChange={(v) => update('cta.description', v)} textarea />
-                    </div>
+                </div>
+              )}
+
+              {activeTab === 'cta' && (
+                <div className={sectionCls}>
+                  <h2 className="text-lg font-serif text-dark mb-4">Call To Action Section</h2>
+                  <div className="space-y-4">
+                    <Field label="Kicker" value={settings.cta.kicker} onChange={(v) => update('cta.kicker', v)} />
+                    <Field label="Heading" value={settings.cta.heading} onChange={(v) => update('cta.heading', v)} />
+                    <Field label="Description" value={settings.cta.description} onChange={(v) => update('cta.description', v)} textarea />
                   </div>
-                  <div className={sectionCls}>
-                    <h2 className="text-lg font-serif text-dark mb-4">Explore Our Work Section</h2>
-                    <div className="space-y-4">
-                      <div className="grid sm:grid-cols-2 gap-4">
-                        <Field label="Kicker" value={settings.exploreOurWork.kicker} onChange={(v) => update('exploreOurWork.kicker', v)} />
-                        <Field label="Heading" value={settings.exploreOurWork.heading} onChange={(v) => update('exploreOurWork.heading', v)} />
-                      </div>
-                      <Field label="Description" value={settings.exploreOurWork.description} onChange={(v) => update('exploreOurWork.description', v)} textarea />
-                      <div className="mt-4">
-                        <h3 className="font-semibold text-dark mb-3">Items</h3>
-                        <ArrayField items={settings.exploreOurWork.items} onAdd={() => addArrayItem('exploreOurWork.items', { index: '', title: '', subtitle: '', description: '', href: '', imageUrl: '' })} onRemove={(i) => removeArrayItem('exploreOurWork.items', i)} onUpdate={(i, k, v) => updateArrayItem('exploreOurWork.items', i, k, v)} fields={[{ key: 'index', label: 'Index' }, { key: 'title', label: 'Title' }, { key: 'subtitle', label: 'Subtitle' }, { key: 'description', label: 'Description', textarea: true }, { key: 'href', label: 'Link URL' }, { key: 'imageUrl', label: 'Image', image: true }]} folder="rescue-mission/explore" />
-                      </div>
-                    </div>
-                  </div>
-                </>
+                </div>
               )}
 
               {activeTab === 'impact' && (
