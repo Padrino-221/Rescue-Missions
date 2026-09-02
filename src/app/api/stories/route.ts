@@ -15,9 +15,6 @@ const CREATE_FIELDS = [
 ] as const
 
 export async function GET() {
-  const unauthorized = await requireAuth()
-  if (unauthorized) return unauthorized
-
   const rows = await query(
     `SELECT id, title, excerpt, category, author, date, read_time AS "readTime",
             featured, image, content

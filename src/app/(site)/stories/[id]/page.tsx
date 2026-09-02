@@ -1,16 +1,64 @@
 'use client'
 
 import { useParams } from 'next/navigation'
+import { useState, useEffect } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { PiClock, PiUser, PiArrowLeft, PiArrowRight } from 'react-icons/pi'
-import { stories, getStoryById } from '@/lib/stories'
+
+interface Story {
+  id: number
+  title: string
+  excerpt: string
+  category: string
+  author: string
+  date: string
+  readTime: string
+  featured: boolean
+  image: string
+  content: string
+}
 
 export default function StoryDetailPage() {
   const params = useParams()
   const id = Number(params.id)
-  const story = getStoryById(id)
+  const [story, setStory] = useState<Story | null>(null)
+  const [otherStories, setOtherStories] = useState<Story[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    fetch(`/api/stories/${id}`)
+      .then((res) => {
+        if (!res.ok) throw new Error('Not found')
+        return res.json()
+      })
+      .then((data) => {
+        setStory(data)
+        setLoading(false)
+      })
+      .catch(() => {
+        setStory(null)
+        setLoading(false)
+      })
+
+    fetch('/api/stories')
+      .then((res) => res.json())
+      .then((data) => {
+        setOtherStories(data.filter((s: Story) => s.id !== id).slice(0, 3))
+      })
+      .catch(() => {})
+  }, [id])
+
+  if (loading) {
+    return (
+      <section className="bg-cream pt-24 pb-8 lg:pt-28 lg:pb-10">
+        <div className="container-premium text-center py-20">
+          <p className="text-dark/50">Loading...</p>
+        </div>
+      </section>
+    )
+  }
 
   if (!story) {
     return (
@@ -28,8 +76,6 @@ export default function StoryDetailPage() {
       </section>
     )
   }
-
-  const otherStories = stories.filter((s) => s.id !== story.id).slice(0, 3)
 
   return (
     <>
