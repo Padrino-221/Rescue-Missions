@@ -81,13 +81,12 @@ export default function AboutPage({ initialSettings }: { initialSettings?: SiteS
             transition={{ duration: 0.6 }}
             className="max-w-3xl"
           >
-            <span className="kicker mb-5">About Us</span>
+            <span className="kicker mb-5">{settings?.about?.kicker || 'About Us'}</span>
             <h1 className="text-4xl sm:text-5xl md:text-6xl font-serif text-dark">
-              Our Story
+              {settings?.about?.heading || 'Our Story'}
             </h1>
             <p className="mt-5 text-lg text-dark/55 max-w-xl leading-relaxed">
-              A journey of hope, dedication, and transformation in the lives of
-              orphaned children since {foundedYear}.
+              {settings?.about?.heroDescription || 'A journey of hope, dedication, and transformation in the lives of orphaned children since'} {foundedYear}.
             </p>
           </motion.div>
         </div>

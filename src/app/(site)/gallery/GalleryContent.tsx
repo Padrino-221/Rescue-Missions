@@ -1,28 +1,34 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { motion } from 'framer-motion'
 import Image from 'next/image'
 import { PiImageFill, PiPlayFill, PiX } from 'react-icons/pi'
 import { useSettings } from '@/lib/useSettings'
 import type { SiteSettings } from '@/lib/settings'
 
-const categories = ['All', 'Events', 'Programs', 'Facilities', 'Children']
-
-const galleryItems = [
-  { id: 1, type: 'image', category: 'Events', title: 'Annual Fundraising Gala', alt: 'People gathered at the annual fundraising gala event', image: 'https://images.unsplash.com/photo-1511578314322-379afb476865?auto=format&fit=crop&w=900&q=80' },
-  { id: 2, type: 'image', category: 'Programs', title: 'Education Program', alt: 'Children participating in the education program', image: 'https://images.unsplash.com/photo-1503676260728-1c00da094a0b?auto=format&fit=crop&w=900&q=80' },
-  { id: 3, type: 'image', category: 'Children', title: 'Happy Children', alt: 'Smiling children at the orphanage', image: 'https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?auto=format&fit=crop&w=900&q=80' },
-  { id: 4, type: 'video', category: 'Programs', title: 'Healthcare Initiative', alt: 'Healthcare initiative video preview', image: 'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=900&q=80' },
-  { id: 5, type: 'image', category: 'Facilities', title: 'New Learning Center', alt: 'The newly constructed learning center', image: 'https://images.unsplash.com/photo-1562774053-701939374585?auto=format&fit=crop&w=900&q=80' },
-  { id: 6, type: 'image', category: 'Events', title: 'Community Outreach', alt: 'Community outreach program in action', image: 'https://images.unsplash.com/photo-1559027615-cd4628902d4a?auto=format&fit=crop&w=900&q=80' },
-  { id: 7, type: 'image', category: 'Children', title: 'Graduation Day', alt: 'Children celebrating graduation day', image: 'https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&w=900&q=80' },
-  { id: 8, type: 'image', category: 'Programs', title: 'Nutrition Program', alt: 'Children receiving nutritious meals', image: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=900&q=80' },
-  { id: 9, type: 'video', category: 'Events', title: 'Volunteer Workshop', alt: 'Volunteer training workshop', image: 'https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=900&q=80' },
-  { id: 10, type: 'image', category: 'Facilities', title: 'Playground Area', alt: 'Children playing on the playground', image: 'https://images.unsplash.com/photo-1509099836639-18ba1795216d?auto=format&fit=crop&w=900&q=80' },
-  { id: 11, type: 'image', category: 'Children', title: 'Arts & Crafts', alt: 'Children doing arts and crafts activities', image: 'https://images.unsplash.com/photo-1513364776144-60967b0f800f?auto=format&fit=crop&w=900&q=80' },
-  { id: 12, type: 'image', category: 'Programs', title: 'Sports Day', alt: 'Children participating in sports day events', image: 'https://images.unsplash.com/photo-1461896836934-ffe607ba8211?auto=format&fit=crop&w=900&q=80' },
-]
+const defaultGallerySettings = {
+  kicker: 'Gallery',
+  heading: 'Media Gallery',
+  description: 'Explore photos and videos from our programs, events, and the children we serve.',
+  pressHeading: 'Press & Media',
+  pressDescription: 'For media inquiries or to download our press kit, please contact our communications team.',
+  categories: ['All', 'Events', 'Programs', 'Facilities', 'Children'],
+  items: [
+    { id: 1, type: 'image', category: 'Events', title: 'Annual Fundraising Gala', alt: 'People gathered at the annual fundraising gala event', image: 'https://images.unsplash.com/photo-1511578314322-379afb476865?auto=format&fit=crop&w=900&q=80' },
+    { id: 2, type: 'image', category: 'Programs', title: 'Education Program', alt: 'Children participating in the education program', image: 'https://images.unsplash.com/photo-1503676260728-1c00da094a0b?auto=format&fit=crop&w=900&q=80' },
+    { id: 3, type: 'image', category: 'Children', title: 'Happy Children', alt: 'Smiling children at the orphanage', image: 'https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?auto=format&fit=crop&w=900&q=80' },
+    { id: 4, type: 'video', category: 'Programs', title: 'Healthcare Initiative', alt: 'Healthcare initiative video preview', image: 'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=900&q=80' },
+    { id: 5, type: 'image', category: 'Facilities', title: 'New Learning Center', alt: 'The newly constructed learning center', image: 'https://images.unsplash.com/photo-1562774053-701939374585?auto=format&fit=crop&w=900&q=80' },
+    { id: 6, type: 'image', category: 'Events', title: 'Community Outreach', alt: 'Community outreach program in action', image: 'https://images.unsplash.com/photo-1559027615-cd4628902d4a?auto=format&fit=crop&w=900&q=80' },
+    { id: 7, type: 'image', category: 'Children', title: 'Graduation Day', alt: 'Children celebrating graduation day', image: 'https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&w=900&q=80' },
+    { id: 8, type: 'image', category: 'Programs', title: 'Nutrition Program', alt: 'Children receiving nutritious meals', image: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=900&q=80' },
+    { id: 9, type: 'video', category: 'Events', title: 'Volunteer Workshop', alt: 'Volunteer training workshop', image: 'https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=900&q=80' },
+    { id: 10, type: 'image', category: 'Facilities', title: 'Playground Area', alt: 'Children playing on the playground', image: 'https://images.unsplash.com/photo-1509099836639-18ba1795216d?auto=format&fit=crop&w=900&q=80' },
+    { id: 11, type: 'image', category: 'Children', title: 'Arts & Crafts', alt: 'Children doing arts and crafts activities', image: 'https://images.unsplash.com/photo-1513364776144-60967b0f800f?auto=format&fit=crop&w=900&q=80' },
+    { id: 12, type: 'image', category: 'Programs', title: 'Sports Day', alt: 'Children participating in sports day events', image: 'https://images.unsplash.com/photo-1461896836934-ffe607ba8211?auto=format&fit=crop&w=900&q=80' },
+  ],
+}
 
 export default function GalleryPage({ initialSettings }: { initialSettings?: SiteSettings | null }) {
   const [activeCategory, setActiveCategory] = useState('All')
@@ -30,11 +36,22 @@ export default function GalleryPage({ initialSettings }: { initialSettings?: Sit
   const { settings, loading } = useSettings(initialSettings)
   const mediaEmail = settings?.contact?.mediaEmail || 'media@rescuemission.org'
 
-  const filteredItems = activeCategory === 'All' 
-    ? galleryItems 
-    : galleryItems.filter(item => item.category === activeCategory)
+  const gallerySettings = useMemo(() => {
+    if (!settings?.gallery) return defaultGallerySettings
+    return {
+      kicker: settings.gallery.kicker || defaultGallerySettings.kicker,
+      heading: settings.gallery.heading || defaultGallerySettings.heading,
+      description: settings.gallery.description || defaultGallerySettings.description,
+      pressHeading: settings.gallery.pressHeading || defaultGallerySettings.pressHeading,
+      pressDescription: settings.gallery.pressDescription || defaultGallerySettings.pressDescription,
+      categories: settings.gallery.categories?.length ? settings.gallery.categories : defaultGallerySettings.categories,
+      items: settings.gallery.items?.length ? settings.gallery.items : defaultGallerySettings.items,
+    }
+  }, [settings])
 
-  if (loading) return null
+  const filteredItems = activeCategory === 'All' 
+    ? gallerySettings.items 
+    : gallerySettings.items.filter(item => item.category === activeCategory)
 
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
@@ -50,6 +67,8 @@ export default function GalleryPage({ initialSettings }: { initialSettings?: Sit
     }
   }, [selectedItem])
 
+  if (loading) return null
+
   return (
     <>
       {/* Hero */}
@@ -62,12 +81,12 @@ export default function GalleryPage({ initialSettings }: { initialSettings?: Sit
             transition={{ duration: 0.6 }}
             className="max-w-3xl"
           >
-            <span className="kicker mb-6">Gallery</span>
+            <span className="kicker mb-6">{gallerySettings.kicker}</span>
             <h1 className="text-4xl sm:text-5xl md:text-6xl font-serif text-dark">
-              Media Gallery
+              {gallerySettings.heading}
             </h1>
             <p className="mt-6 text-lg text-dark/60 max-w-xl leading-relaxed">
-              Explore photos and videos from our programs, events, and the children we serve.
+              {gallerySettings.description}
             </p>
           </motion.div>
         </div>
@@ -78,7 +97,7 @@ export default function GalleryPage({ initialSettings }: { initialSettings?: Sit
         <div className="container-premium">
           {/* Filters */}
           <div className="flex flex-wrap gap-2 mb-8 justify-center">
-            {categories.map((category) => (
+            {gallerySettings.categories.map((category) => (
               <button
                 key={category}
                 onClick={() => setActiveCategory(category)}
@@ -158,14 +177,14 @@ export default function GalleryPage({ initialSettings }: { initialSettings?: Sit
             <PiX className="w-6 h-6" />
           </button>
           <div className="max-w-4xl w-full bg-white rounded-3xl overflow-hidden" onClick={(e) => e.stopPropagation()}>
-            <div className="relative aspect-video" role="img" aria-label={galleryItems.find(item => item.id === selectedItem)?.alt}>
+            <div className="relative aspect-video" role="img" aria-label={gallerySettings.items.find(item => item.id === selectedItem)?.alt}>
               <Image
-                src={galleryItems.find(item => item.id === selectedItem)?.image ?? ''}
-                alt={galleryItems.find(item => item.id === selectedItem)?.alt ?? ''}
+                src={gallerySettings.items.find(item => item.id === selectedItem)?.image ?? ''}
+                alt={gallerySettings.items.find(item => item.id === selectedItem)?.alt ?? ''}
                 fill
                 className="object-cover object-top"
               />
-              {galleryItems.find(item => item.id === selectedItem)?.type === 'video' && (
+              {gallerySettings.items.find(item => item.id === selectedItem)?.type === 'video' && (
                 <div className="absolute inset-0 flex items-center justify-center bg-dark/30">
                   <div className="w-16 h-16 bg-lime rounded-full flex items-center justify-center">
                     <PiPlayFill className="w-8 h-8 text-dark ml-1" />
@@ -175,10 +194,10 @@ export default function GalleryPage({ initialSettings }: { initialSettings?: Sit
             </div>
             <div className="p-8">
               <h3 className="text-2xl font-serif text-dark">
-                {galleryItems.find(item => item.id === selectedItem)?.title}
+                {gallerySettings.items.find(item => item.id === selectedItem)?.title}
               </h3>
               <p className="text-dark/60 mt-2">
-                {galleryItems.find(item => item.id === selectedItem)?.category}
+                {gallerySettings.items.find(item => item.id === selectedItem)?.category}
               </p>
             </div>
           </div>
@@ -188,9 +207,9 @@ export default function GalleryPage({ initialSettings }: { initialSettings?: Sit
       {/* Press Kit */}
       <section className="section-padding bg-white">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl font-serif text-dark mb-6">Press & Media</h2>
+          <h2 className="text-3xl font-serif text-dark mb-6">{gallerySettings.pressHeading}</h2>
           <p className="text-dark/60 mb-8">
-            For media inquiries or to download our press kit, please contact our communications team.
+            {gallerySettings.pressDescription}
           </p>
           <div className="flex flex-wrap justify-center gap-4">
             <button className="btn-primary">

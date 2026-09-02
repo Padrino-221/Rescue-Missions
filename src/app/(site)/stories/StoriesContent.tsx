@@ -1,17 +1,55 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { motion } from 'framer-motion'
 import { PiClock, PiUser, PiArrowRight, PiMagnifyingGlass } from 'react-icons/pi'
-import { stories } from '@/lib/stories'
+import { useSettings } from '@/lib/useSettings'
+import type { SiteSettings } from '@/lib/settings'
 
-const categories = ['All', 'Success Stories', 'Events', 'Announcements', 'Volunteer Spotlights']
+interface Story {
+  id: number
+  title: string
+  excerpt: string
+  category: string
+  author: string
+  date: string
+  readTime: string
+  featured: boolean
+  image: string
+  content: string
+}
 
-export default function StoriesContent() {
+const defaultStoriesSettings = {
+  kicker: 'Our Blog',
+  heading: 'Stories of Hope',
+  description: 'Read inspiring stories of transformation, learn about our events, and stay updated with our latest news.',
+  categories: ['All', 'Success Stories', 'Events', 'Announcements', 'Volunteer Spotlights'],
+}
+
+export default function StoriesContent({ initialSettings }: { initialSettings?: SiteSettings | null }) {
+  const { settings, loading } = useSettings(initialSettings)
+  const [stories, setStories] = useState<Story[]>([])
   const [activeCategory, setActiveCategory] = useState('All')
   const [searchQuery, setSearchQuery] = useState('')
+
+  const storiesSettings = useMemo(() => {
+    if (!settings?.stories) return defaultStoriesSettings
+    return {
+      kicker: settings.stories.kicker || defaultStoriesSettings.kicker,
+      heading: settings.stories.heading || defaultStoriesSettings.heading,
+      description: settings.stories.description || defaultStoriesSettings.description,
+      categories: settings.stories.categories?.length ? settings.stories.categories : defaultStoriesSettings.categories,
+    }
+  }, [settings])
+
+  useEffect(() => {
+    fetch('/api/stories')
+      .then((res) => res.json())
+      .then((data) => setStories(data))
+      .catch(() => {})
+  }, [])
 
   const filteredStories = stories.filter((story) => {
     const matchesCategory = activeCategory === 'All' || story.category === activeCategory
@@ -20,6 +58,8 @@ export default function StoriesContent() {
   })
 
   const featuredStory = stories.find((s) => s.featured)
+
+  if (loading) return null
 
   return (
     <>
@@ -33,13 +73,12 @@ export default function StoriesContent() {
             transition={{ duration: 0.6 }}
             className="max-w-3xl"
           >
-            <span className="kicker mb-6">Our Blog</span>
+            <span className="kicker mb-6">{storiesSettings.kicker}</span>
             <h1 className="text-4xl sm:text-5xl md:text-6xl font-serif text-dark">
-              Stories of Hope
+              {storiesSettings.heading}
             </h1>
             <p className="mt-6 text-lg text-dark/60 max-w-xl leading-relaxed">
-              Read inspiring stories of transformation, learn about our events, and stay
-              updated with our latest news.
+              {storiesSettings.description}
             </p>
           </motion.div>
         </div>
@@ -100,7 +139,7 @@ export default function StoriesContent() {
           {/* Filters */}
           <div className="flex flex-col md:flex-row gap-4 mb-8 justify-between items-center">
             <div className="flex flex-wrap gap-2">
-              {categories.map((category) => (
+              {storiesSettings.categories.map((category) => (
                 <button
                   key={category}
                   onClick={() => setActiveCategory(category)}

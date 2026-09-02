@@ -1,9 +1,10 @@
 import type { MetadataRoute } from 'next'
-import { stories } from '@/lib/stories'
+import { getSettings } from '@/lib/settings'
+import { pool } from '@/lib/db'
 
-const BASE_URL = 'https://rescuemissionsgh.org'
-
-export default function sitemap(): MetadataRoute.Sitemap {
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const settings = await getSettings()
+  const BASE_URL = settings?.siteUrl || 'https://rescuemissionsgh.org'
   const now = new Date().toISOString()
 
   const staticPages: MetadataRoute.Sitemap = [
@@ -57,12 +58,18 @@ export default function sitemap(): MetadataRoute.Sitemap {
     },
   ]
 
-  const storyPages: MetadataRoute.Sitemap = stories.map((story) => ({
-    url: `${BASE_URL}/stories/${story.id}`,
-    lastModified: now,
-    changeFrequency: 'monthly' as const,
-    priority: 0.6,
-  }))
+  let storyPages: MetadataRoute.Sitemap = []
+  try {
+    const result = await pool.query('SELECT id FROM stories ORDER BY id')
+    storyPages = result.rows.map((row) => ({
+      url: `${BASE_URL}/stories/${row.id}`,
+      lastModified: now,
+      changeFrequency: 'monthly' as const,
+      priority: 0.6,
+    }))
+  } catch {
+    // Stories table may not exist yet
+  }
 
   return [...staticPages, ...storyPages]
 }

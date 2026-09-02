@@ -2,14 +2,20 @@ import type { Metadata } from 'next'
 import { getSettings } from '@/lib/settings'
 import GalleryContent from './GalleryContent'
 
-export const metadata: Metadata = {
-  title: 'Gallery',
-  description: 'Browse photos and videos from Rescue Mission Orphanage. See our programs, events, and the children we serve in action.',
-  openGraph: {
-    title: 'Gallery | Rescue Mission Orphanage',
-    description: 'Browse photos and videos from Rescue Mission Orphanage programs and events.',
-    url: 'https://rescuemissionsgh.org/gallery',
-  },
+export async function generateMetadata(): Promise<Metadata> {
+  const settings = await getSettings()
+  const orgName = settings?.general?.orgName || 'Rescue Mission Orphanage'
+  const siteUrl = settings?.siteUrl || 'https://rescuemissionsgh.org'
+
+  return {
+    title: 'Gallery',
+    description: `Browse photos and videos from ${orgName}. See our programs, events, and the children we serve in action.`,
+    openGraph: {
+      title: `Gallery | ${orgName}`,
+      description: `Browse photos and videos from ${orgName} programs and events.`,
+      url: `${siteUrl}/gallery`,
+    },
+  }
 }
 
 export default async function GalleryPage() {

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { motion } from 'framer-motion'
 import { PiPhone, PiEnvelope, PiMapPin, PiClock, PiPaperPlaneTilt, PiFacebookLogo, PiTwitterLogo, PiInstagramLogo, PiYoutubeLogo } from 'react-icons/pi'
 import Input from '@/components/ui/Input'
@@ -77,6 +77,27 @@ export default function ContactPage({ initialSettings }: { initialSettings?: Sit
 
   const faqs = settings?.faq?.length ? settings.faq : defaultFaqs
 
+  const contactPage = useMemo(() => {
+    if (!settings?.contactPage) return {
+      kicker: 'Get in Touch',
+      heading: 'Contact Us',
+      description: "Have questions? We'd love to hear from you. Send us a message and we'll respond as soon as possible.",
+      formHeading: 'Send us a Message',
+      infoHeading: 'Contact Information',
+      socialHeading: 'Follow Us',
+      faqHeading: 'Frequently Asked Questions',
+    }
+    return {
+      kicker: settings.contactPage.kicker || 'Get in Touch',
+      heading: settings.contactPage.heading || 'Contact Us',
+      description: settings.contactPage.description || "Have questions? We'd love to hear from you. Send us a message and we'll respond as soon as possible.",
+      formHeading: settings.contactPage.formHeading || 'Send us a Message',
+      infoHeading: settings.contactPage.infoHeading || 'Contact Information',
+      socialHeading: settings.contactPage.socialHeading || 'Follow Us',
+      faqHeading: settings.contactPage.faqHeading || 'Frequently Asked Questions',
+    }
+  }, [settings])
+
   if (loading) return null
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -97,13 +118,12 @@ export default function ContactPage({ initialSettings }: { initialSettings?: Sit
             transition={{ duration: 0.6 }}
             className="max-w-3xl"
           >
-            <span className="kicker mb-6">Get in Touch</span>
+            <span className="kicker mb-6">{contactPage.kicker}</span>
             <h1 className="text-4xl sm:text-5xl md:text-6xl font-serif text-dark">
-              Contact Us
+              {contactPage.heading}
             </h1>
             <p className="mt-6 text-lg text-dark/60 max-w-xl leading-relaxed">
-              Have questions? We&apos;d love to hear from you. Send us a message and
-              we&apos;ll respond as soon as possible.
+              {contactPage.description}
             </p>
           </motion.div>
         </div>
@@ -120,7 +140,7 @@ export default function ContactPage({ initialSettings }: { initialSettings?: Sit
               transition={{ duration: 0.6 }}
               className="lg:col-span-2"
             >
-              <h2 className="text-2xl font-serif text-dark mb-6">Send us a Message</h2>
+              <h2 className="text-2xl font-serif text-dark mb-6">{contactPage.formHeading}</h2>
               <form onSubmit={handleSubmit} className="card-premium p-8 space-y-6">
                 <div className="grid md:grid-cols-2 gap-6">
                   <Input
@@ -176,7 +196,7 @@ export default function ContactPage({ initialSettings }: { initialSettings?: Sit
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.6, delay: 0.2 }}
             >
-              <h2 className="text-2xl font-serif text-dark mb-6">Contact Information</h2>
+              <h2 className="text-2xl font-serif text-dark mb-6">{contactPage.infoHeading}</h2>
               <div className="space-y-6">
                 {contactInfo.map((info) => (
                   <div key={info.title} className="flex items-start gap-4">
@@ -194,7 +214,7 @@ export default function ContactPage({ initialSettings }: { initialSettings?: Sit
               </div>
               
               <div className="mt-8">
-                <h3 className="font-semibold text-dark mb-4">Follow Us</h3>
+                <h3 className="font-semibold text-dark mb-4">{contactPage.socialHeading}</h3>
                 <div className="flex gap-3">
                   {socialLinks.map((social, i) => (
                     <a
@@ -216,7 +236,7 @@ export default function ContactPage({ initialSettings }: { initialSettings?: Sit
       <section className="section-padding bg-white">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-8">
-            <h2 className="text-3xl font-serif text-dark">Frequently Asked Questions</h2>
+            <h2 className="text-3xl font-serif text-dark">{contactPage.faqHeading}</h2>
           </div>
           
           <div className="space-y-4">

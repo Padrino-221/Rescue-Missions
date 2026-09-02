@@ -8,6 +8,7 @@ export interface SiteSettings {
     foundedYear: string
     copyrightYear: string
   }
+  siteUrl: string
   contact: {
     phone1: string
     phone2: string
@@ -40,7 +41,31 @@ export interface SiteSettings {
     description: string
     stats: { value: string; label: string; description: string }[]
   }
+  howWeHelp: {
+    kicker: string
+    heading: string
+    description: string
+    imageUrl: string
+    imageAlt: string
+    tags: string[]
+    services: { title: string; description: string }[]
+  }
+  featuredStory: {
+    kicker: string
+    heading: string
+    description: string
+    imageUrl: string
+    imageAlt: string
+    progressBars: { label: string; percentage: number; color: string }[]
+    quote: string
+    quoteAuthor: string
+    quoteRole: string
+    quoteAvatar: string
+  }
   about: {
+    kicker: string
+    heading: string
+    heroDescription: string
     storyHeading: string
     storyParagraphs: string[]
     storyImageUrl: string
@@ -50,7 +75,69 @@ export interface SiteSettings {
     team: { name: string; role: string; bio: string; avatar: string }[]
     milestones: { year: string; title: string; description: string }[]
   }
-  testimonials: { quote: string; author: string; role: string; avatar: string }[]
+  programs: {
+    kicker: string
+    heading: string
+    description: string
+    ctaHeading: string
+    ctaDescription: string
+    items: {
+      id: string
+      icon: string
+      title: string
+      subtitle: string
+      description: string
+      features: string[]
+      impact: Record<string, string>
+      image: string
+    }[]
+  }
+  gallery: {
+    kicker: string
+    heading: string
+    description: string
+    pressHeading: string
+    pressDescription: string
+    categories: string[]
+    items: { id: number; type: string; category: string; title: string; alt: string; image: string }[]
+  }
+  stories: {
+    kicker: string
+    heading: string
+    description: string
+    categories: string[]
+  }
+  events: {
+    kicker: string
+    heading: string
+    description: string
+  }
+  getInvolved: {
+    kicker: string
+    heading: string
+    description: string
+    volunteerHeading: string
+    volunteerDescription: string
+    sponsorHeading: string
+    sponsorDescription: string
+    corporateHeading: string
+    corporateDescription: string
+  }
+  contactPage: {
+    kicker: string
+    heading: string
+    description: string
+    formHeading: string
+    infoHeading: string
+    socialHeading: string
+    faqHeading: string
+  }
+  testimonials: {
+    kicker: string
+    heading: string
+    description: string
+    items: { quote: string; author: string; role: string; avatar: string }[]
+  }
   volunteerRoles: { title: string; commitment: string; description: string }[]
   sponsorship: { monthlyAmount: number; benefits: string[] }
   corporate: {
@@ -58,7 +145,10 @@ export interface SiteSettings {
     benefits: string[]
   }
   faq: { question: string; answer: string }[]
-  partners: { name: string }[]
+  partners: {
+    kicker: string
+    items: { name: string }[]
+  }
   exploreOurWork: {
     kicker: string
     heading: string

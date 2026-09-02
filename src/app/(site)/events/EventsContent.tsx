@@ -1,10 +1,12 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { PiCalendar, PiClock, PiMapPin, PiArrowRight, PiMagnifyingGlass } from 'react-icons/pi'
+import { useSettings } from '@/lib/useSettings'
+import type { SiteSettings } from '@/lib/settings'
 
 interface Event {
   id: number
@@ -18,12 +20,28 @@ interface Event {
   imageUrl: string
 }
 
-const filters = ['All', 'Upcoming', 'Completed'] as const
+const defaultEventsSettings = {
+  kicker: 'Events',
+  heading: "What's Happening",
+  description: 'Stay updated with our latest events, drives, and community gatherings.',
+}
 
-export default function EventsContent() {
+export default function EventsContent({ initialSettings }: { initialSettings?: SiteSettings | null }) {
   const [events, setEvents] = useState<Event[]>([])
   const [activeFilter, setActiveFilter] = useState<string>('All')
   const [searchQuery, setSearchQuery] = useState('')
+  const { settings, loading } = useSettings(initialSettings)
+
+  const eventsSettings = useMemo(() => {
+    if (!settings?.events) return defaultEventsSettings
+    return {
+      kicker: settings.events.kicker || defaultEventsSettings.kicker,
+      heading: settings.events.heading || defaultEventsSettings.heading,
+      description: settings.events.description || defaultEventsSettings.description,
+    }
+  }, [settings])
+
+  const filters = ['All', 'Upcoming', 'Completed'] as const
 
   useEffect(() => {
     fetch('/api/events')
@@ -47,6 +65,8 @@ export default function EventsContent() {
     })
   }
 
+  if (loading) return null
+
   return (
     <>
       {/* Hero */}
@@ -59,12 +79,12 @@ export default function EventsContent() {
             transition={{ duration: 0.6 }}
             className="max-w-3xl"
           >
-            <span className="kicker mb-6">Events</span>
+            <span className="kicker mb-6">{eventsSettings.kicker}</span>
             <h1 className="text-4xl sm:text-5xl md:text-6xl font-serif text-dark">
-              What&apos;s Happening
+              {eventsSettings.heading}
             </h1>
             <p className="mt-6 text-lg text-dark/60 max-w-xl leading-relaxed">
-              Stay updated with our latest events, drives, and community gatherings.
+              {eventsSettings.description}
             </p>
           </motion.div>
         </div>

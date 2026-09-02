@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { motion } from 'framer-motion'
 import { PiHeartFill, PiUsers, PiBuilding, PiCheck } from 'react-icons/pi'
 import Input from '@/components/ui/Input'
@@ -51,6 +51,31 @@ export default function GetInvolvedPage({ initialSettings }: { initialSettings?:
   const sponsorship = settings?.sponsorship || defaultSponsorship
   const corporate = settings?.corporate || defaultCorporate
 
+  const getInvolved = useMemo(() => {
+    if (!settings?.getInvolved) return {
+      kicker: 'Join Our Mission',
+      heading: 'Get Involved',
+      description: 'There are many ways you can make a difference in the lives of orphaned children \u2014 find the one that fits you.',
+      volunteerHeading: 'Volunteer With Us',
+      volunteerDescription: 'Join our team of dedicated volunteers and make a direct impact on children\'s lives. Whether you have a few hours or a few weeks, there\'s a role for you.',
+      sponsorHeading: 'Sponsor a Child',
+      sponsorDescription: 'Your sponsorship provides a child with consistent support for education, healthcare, and daily needs. Build a meaningful connection while changing a life.',
+      corporateHeading: 'Corporate Partnerships',
+      corporateDescription: 'Partner with us to make a meaningful impact while enhancing your corporate social responsibility profile. We offer flexible partnership options tailored to your goals.',
+    }
+    return {
+      kicker: settings.getInvolved.kicker || 'Join Our Mission',
+      heading: settings.getInvolved.heading || 'Get Involved',
+      description: settings.getInvolved.description || 'There are many ways you can make a difference in the lives of orphaned children \u2014 find the one that fits you.',
+      volunteerHeading: settings.getInvolved.volunteerHeading || 'Volunteer With Us',
+      volunteerDescription: settings.getInvolved.volunteerDescription || 'Join our team of dedicated volunteers and make a direct impact on children\'s lives. Whether you have a few hours or a few weeks, there\'s a role for you.',
+      sponsorHeading: settings.getInvolved.sponsorHeading || 'Sponsor a Child',
+      sponsorDescription: settings.getInvolved.sponsorDescription || 'Your sponsorship provides a child with consistent support for education, healthcare, and daily needs. Build a meaningful connection while changing a life.',
+      corporateHeading: settings.getInvolved.corporateHeading || 'Corporate Partnerships',
+      corporateDescription: settings.getInvolved.corporateDescription || 'Partner with us to make a meaningful impact while enhancing your corporate social responsibility profile. We offer flexible partnership options tailored to your goals.',
+    }
+  }, [settings])
+
   if (loading) return null
 
   return (
@@ -65,13 +90,12 @@ export default function GetInvolvedPage({ initialSettings }: { initialSettings?:
             transition={{ duration: 0.6 }}
             className="max-w-3xl"
           >
-            <span className="kicker mb-6">Join Our Mission</span>
+            <span className="kicker mb-6">{getInvolved.kicker}</span>
             <h1 className="text-4xl sm:text-5xl md:text-6xl font-serif text-dark">
-              Get Involved
+              {getInvolved.heading}
             </h1>
             <p className="mt-6 text-lg text-dark/60 max-w-xl leading-relaxed">
-              There are many ways you can make a difference in the lives of orphaned
-              children — find the one that fits you.
+              {getInvolved.description}
             </p>
           </motion.div>
         </div>
@@ -118,10 +142,9 @@ export default function GetInvolvedPage({ initialSettings }: { initialSettings?:
               className="grid lg:grid-cols-2 gap-12"
             >
               <div>
-                <h2 className="text-3xl font-serif text-dark mb-6">Volunteer With Us</h2>
+                <h2 className="text-3xl font-serif text-dark mb-6">{getInvolved.volunteerHeading}</h2>
                 <p className="text-dark/60 mb-8 leading-relaxed">
-                  Join our team of dedicated volunteers and make a direct impact on children&apos;s lives. 
-                  Whether you have a few hours or a few weeks, there&apos;s a role for you.
+                  {getInvolved.volunteerDescription}
                 </p>
                 
                 <div className="space-y-4">
@@ -188,10 +211,9 @@ export default function GetInvolvedPage({ initialSettings }: { initialSettings?:
               className="grid lg:grid-cols-2 gap-12"
             >
               <div>
-                <h2 className="text-3xl font-serif text-dark mb-6" id="sponsor">Sponsor a Child</h2>
+                <h2 className="text-3xl font-serif text-dark mb-6" id="sponsor">{getInvolved.sponsorHeading}</h2>
                 <p className="text-dark/60 mb-8 leading-relaxed">
-                  Your sponsorship provides a child with consistent support for education, healthcare, 
-                  and daily needs. Build a meaningful connection while changing a life.
+                  {getInvolved.sponsorDescription}
                 </p>
                 
                 <div className="card-premium p-6 mb-8">
@@ -240,10 +262,9 @@ export default function GetInvolvedPage({ initialSettings }: { initialSettings?:
               className="grid lg:grid-cols-2 gap-12"
             >
               <div>
-                <h2 className="text-3xl font-serif text-dark mb-6" id="corporate">Corporate Partnerships</h2>
+                <h2 className="text-3xl font-serif text-dark mb-6" id="corporate">{getInvolved.corporateHeading}</h2>
                 <p className="text-dark/60 mb-8 leading-relaxed">
-                  Partner with us to make a meaningful impact while enhancing your corporate social 
-                  responsibility profile. We offer flexible partnership options tailored to your goals.
+                  {getInvolved.corporateDescription}
                 </p>
                 
                 <div className="space-y-4">

@@ -4,30 +4,50 @@ import Hero from '@/components/Hero'
 import ImpactStats from '@/components/ImpactStats'
 import ProgramsOverview from '@/components/ProgramsOverview'
 import HowWeHelp from '@/components/HowWeHelp'
+import FeaturedStory from '@/components/FeaturedStory'
 import Testimonials from '@/components/Testimonials'
 import Partners from '@/components/Partners'
 import CallToAction from '@/components/CallToAction'
 
-export const metadata: Metadata = {
-  title: 'Rescue Mission Orphanage | Give Hope To Children In Need',
-  description: 'Rescue Mission Orphanage provides shelter, education, healthcare, and care to orphaned children in Ghana. Join us in making a difference — donate, volunteer, or sponsor a child today.',
-  openGraph: {
-    title: 'Rescue Mission Orphanage | Give Hope To Children In Need',
-    description: 'Rescue Mission Orphanage provides shelter, education, healthcare, and care to orphaned children in Ghana.',
-    url: 'https://rescuemissionsgh.org',
-    images: ['/og-image.png'],
-  },
+export async function generateMetadata(): Promise<Metadata> {
+  const settings = await getSettings()
+  const orgName = settings?.general?.orgName || 'Rescue Mission Orphanage'
+  const tagline = settings?.general?.tagline || 'Give Hope To Children In Need'
+  const description = settings?.general?.description || 'A dedicated charity organization focused on creating sustainable solutions for those in need.'
+  const siteUrl = settings?.siteUrl || 'https://rescuemissionsgh.org'
+
+  return {
+    title: `${orgName} | ${tagline}`,
+    description,
+    openGraph: {
+      title: `${orgName} | ${tagline}`,
+      description,
+      url: siteUrl,
+      images: ['/og-image.png'],
+    },
+  }
 }
 
 export default async function Home() {
   const settings = await getSettings()
+  const orgName = settings?.general?.orgName || 'Rescue Mission Orphanage'
+  const tagline = settings?.general?.tagline || 'Give Hope To Children In Need'
+  const description = settings?.general?.description || 'A dedicated charity organization focused on creating sustainable solutions for orphaned children in Ghana through education, healthcare, and shelter.'
+  const siteUrl = settings?.siteUrl || 'https://rescuemissionsgh.org'
+  const foundedYear = settings?.general?.foundedYear || '2025'
+  const phone1 = settings?.contact?.phone1 || '+233-24-567-890'
+  const email1 = settings?.contact?.email1 || 'info@rescuemission.org'
+  const address1 = settings?.contact?.address1 || 'Accra'
+  const address2 = settings?.contact?.address2 || 'Ghana'
+  const social = settings?.social || {}
 
   return (
     <>
       <Hero initialSettings={settings} />
       <ImpactStats initialSettings={settings} />
       <ProgramsOverview initialSettings={settings} />
-      <HowWeHelp />
+      <HowWeHelp initialSettings={settings} />
+      <FeaturedStory initialSettings={settings} />
       <Testimonials initialSettings={settings} />
       <Partners initialSettings={settings} />
       <CallToAction initialSettings={settings} />
@@ -38,29 +58,29 @@ export default async function Home() {
           __html: JSON.stringify({
             '@context': 'https://schema.org',
             '@type': 'NonprofitOrganization',
-            name: 'Rescue Mission Orphanage',
-            url: 'https://rescuemissionsgh.org',
-            logo: 'https://rescuemissionsgh.org/favicon.svg',
-            description: 'A dedicated charity organization focused on creating sustainable solutions for orphaned children in Ghana through education, healthcare, and shelter.',
-            foundingDate: '2025',
+            name: orgName,
+            url: siteUrl,
+            logo: `${siteUrl}/favicon.svg`,
+            description,
+            foundingDate: foundedYear,
             address: {
               '@type': 'PostalAddress',
-              addressLocality: 'Accra',
-              addressCountry: 'GH',
+              addressLocality: address1,
+              addressCountry: address2,
             },
             contactPoint: {
               '@type': 'ContactPoint',
-              telephone: '+233-256494710',
+              telephone: phone1,
               contactType: 'customer service',
-              email: 'info@rescuemission.org',
+              email: email1,
             },
             sameAs: [
-              'https://facebook.com/rescuemission',
-              'https://twitter.com/rescuemission',
-              'https://instagram.com/rescuemission',
-              'https://youtube.com/rescuemission',
-              'https://linkedin.com/company/rescuemission',
-            ],
+              social.facebook,
+              social.twitter,
+              social.instagram,
+              social.youtube,
+              social.linkedin,
+            ].filter(Boolean),
             nonprofitInfo: {
               '@type': 'NonprofitType',
               name: 'Orphanage',

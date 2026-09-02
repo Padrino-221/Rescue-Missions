@@ -1,6 +1,10 @@
 import type { MetadataRoute } from 'next'
+import { getSettings } from '@/lib/settings'
 
-export default function robots(): MetadataRoute.Robots {
+export default async function robots(): Promise<MetadataRoute.Robots> {
+  const settings = await getSettings()
+  const siteUrl = settings?.siteUrl || 'https://rescuemissionsgh.org'
+
   return {
     rules: [
       {
@@ -9,6 +13,6 @@ export default function robots(): MetadataRoute.Robots {
         disallow: ['/mission-control/', '/api/'],
       },
     ],
-    sitemap: 'https://rescuemissionsgh.org/sitemap.xml',
+    sitemap: `${siteUrl}/sitemap.xml`,
   }
 }
