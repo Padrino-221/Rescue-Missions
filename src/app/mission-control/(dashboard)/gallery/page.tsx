@@ -74,6 +74,8 @@ export default function GalleryPage() {
   const [saving, setSaving] = useState(false)
   const [busyIds, setBusyIds] = useState<number[]>([])
 
+  const bulkBusy = selectedItems.length > 0 && selectedItems.every((id) => busyIds.includes(id))
+
   useEffect(() => {
     if (settings?.gallery?.items) {
       const next = settings.gallery.items as unknown as GalleryItem[]
@@ -202,9 +204,10 @@ export default function GalleryPage() {
             </span>
             <button
               onClick={deleteSelected}
-              className="flex items-center gap-1.5 bg-red-500 hover:bg-red-600 text-white text-sm font-medium px-3 py-1.5 rounded-lg transition-colors"
+              disabled={bulkBusy}
+              className="flex items-center gap-1.5 bg-red-500 hover:bg-red-600 text-white text-sm font-medium px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <PiTrash className="w-4 h-4" />
+              {bulkBusy ? <PiSpinner className="w-4 h-4 animate-spin" /> : <PiTrash className="w-4 h-4" />}
               Delete
             </button>
           </motion.div>

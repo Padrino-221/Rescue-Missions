@@ -21,6 +21,7 @@ import {
   PiTrash,
   PiImageFill,
   PiCalendar,
+  PiSpinner,
 } from 'react-icons/pi'
 import ImageUpload from '@/components/ui/ImageUpload'
 import { useToast } from '@/components/ui/Toast'
@@ -289,6 +290,7 @@ export default function SettingsPage() {
   const [settings, setSettings] = useState(defaultSettings)
   const [activeTab, setActiveTab] = useState('general')
   const [saved, setSaved] = useState(false)
+  const [saving, setSaving] = useState(false)
   const { settings: serverSettings, loading: settingsLoading } = useSettings()
   const { toast } = useToast()
   const { confirm } = useAlert()
@@ -399,6 +401,7 @@ export default function SettingsPage() {
       toast('Settings are still loading. Please wait a moment and try again.', 'error')
       return
     }
+    setSaving(true)
     try {
       const res = await fetch('/api/settings', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(settings) })
       if (!res.ok) throw new Error('Save failed')
@@ -407,6 +410,8 @@ export default function SettingsPage() {
     } catch (err) {
       console.error('Save error:', err)
       toast('Failed to save settings', 'error')
+    } finally {
+      setSaving(false)
     }
   }
 
@@ -896,15 +901,16 @@ export default function SettingsPage() {
 
           {/* Actions */}
           {!settingsReady && (
-            <div className="mt-6 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700">
+            <div className="mt-6 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700 flex items-center gap-2">
+              {settingsLoading && <PiSpinner className="w-4 h-4 animate-spin shrink-0" />}
               {settingsLoading
                 ? 'Loading your saved settings…'
                 : 'Could not load the saved settings, so saving is disabled to avoid overwriting them.'}
             </div>
           )}
           <div className="flex items-center gap-4 mt-6">
-            <button onClick={handleSave} disabled={!settingsReady} className="inline-flex items-center gap-2 px-8 py-3.5 rounded-full bg-dark text-white font-extrabold text-sm tracking-wide hover:bg-dark-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
-              <PiFloppyDisk className="w-4 h-4" /> Save Changes
+            <button onClick={handleSave} disabled={!settingsReady || saving} className="inline-flex items-center gap-2 px-8 py-3.5 rounded-full bg-dark text-white font-extrabold text-sm tracking-wide hover:bg-dark-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+              {saving ? <PiSpinner className="w-4 h-4 animate-spin" /> : <PiFloppyDisk className="w-4 h-4" />} {saving ? 'Saving…' : 'Save Changes'}
             </button>
             <button onClick={handleReset} disabled={!settingsReady} className="inline-flex items-center gap-2 px-6 py-3.5 rounded-full border-2 border-dark/20 text-dark font-extrabold text-sm tracking-wide hover:border-dark/40 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
               <PiArrowCounterClockwise className="w-4 h-4" /> Reset to Defaults

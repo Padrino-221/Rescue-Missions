@@ -69,6 +69,8 @@ export default function ContactsPage() {
     setBusyIds((prev) => (busy ? [...new Set([...prev, ...ids])] : prev.filter((id) => !ids.includes(id))));
   };
 
+  const bulkBusy = selectedContacts.length > 0 && selectedContacts.every((id) => busyIds.includes(id));
+
   const markAsRead = async (id: number) => {
     setBusy([id], true);
     try {
@@ -219,15 +221,17 @@ export default function ContactsPage() {
                 <div className="flex gap-2">
                   <button
                     onClick={markSelectedAsRead}
-                    className="flex items-center gap-2 px-3 py-1.5 bg-[#0e3b2b] text-[#f8fbf6] rounded-lg text-sm font-medium hover:bg-[#0e3b2b]/90 transition-colors"
+                    disabled={bulkBusy}
+                    className="flex items-center gap-2 px-3 py-1.5 bg-[#0e3b2b] text-[#f8fbf6] rounded-lg text-sm font-medium hover:bg-[#0e3b2b]/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    <PiCheck /> Mark Read
+                    {bulkBusy ? <PiSpinner className="animate-spin" /> : <PiCheck />} Mark Read
                   </button>
                   <button
                     onClick={deleteSelected}
-                    className="flex items-center gap-2 px-3 py-1.5 bg-red-500 text-white rounded-lg text-sm font-medium hover:bg-red-600 transition-colors"
+                    disabled={bulkBusy}
+                    className="flex items-center gap-2 px-3 py-1.5 bg-red-500 text-white rounded-lg text-sm font-medium hover:bg-red-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    <PiTrash /> Delete
+                    {bulkBusy ? <PiSpinner className="animate-spin" /> : <PiTrash />} Delete
                   </button>
                 </div>
               </div>
@@ -308,7 +312,11 @@ export default function ContactsPage() {
                               className="p-2 hover:bg-[#0e3b2b]/10 rounded-lg transition-colors text-[#0e3b2b] disabled:opacity-50"
                               title="Mark as read"
                             >
-                              <PiEnvelope />
+                              {busyIds.includes(contact.id) ? (
+                                <PiSpinner className="animate-spin" />
+                              ) : (
+                                <PiEnvelope />
+                              )}
                             </button>
                           )}
                           <button
@@ -384,7 +392,11 @@ export default function ContactsPage() {
                             disabled={busyIds.includes(contact.id)}
                             className="p-1.5 hover:bg-[#0e3b2b]/10 rounded-lg transition-colors text-[#0e3b2b] disabled:opacity-50"
                           >
-                            <PiEnvelope />
+                            {busyIds.includes(contact.id) ? (
+                              <PiSpinner className="animate-spin" />
+                            ) : (
+                              <PiEnvelope />
+                            )}
                           </button>
                         )}
                         <button
