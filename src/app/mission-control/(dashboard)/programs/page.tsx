@@ -109,7 +109,7 @@ export default function ProgramsPage() {
 
   const filteredPrograms = items.filter(
     (program) =>
-      program.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (program.title ?? '').toLowerCase().includes(searchQuery.toLowerCase()) ||
       (program.subtitle ?? '').toLowerCase().includes(searchQuery.toLowerCase())
   );
 
@@ -281,7 +281,16 @@ export default function ProgramsPage() {
 
         {!loading && filteredPrograms.length === 0 && (
           <div className="rounded-2xl border border-[#0e3b2b]/10 bg-white p-12 text-center text-[#0e3b2b]/50">
-            No programs found.
+            {items.length === 0 ? (
+              <>
+                <p>No programs yet.</p>
+                <p className="mt-2 text-sm text-[#0e3b2b]/40">
+                  The public site shows placeholder programs until you add your own here.
+                </p>
+              </>
+            ) : (
+              <p>No programs match your search.</p>
+            )}
           </div>
         )}
       </div>

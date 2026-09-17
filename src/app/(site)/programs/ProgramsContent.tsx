@@ -4,18 +4,10 @@ import { useMemo } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { motion } from 'framer-motion'
-import { PiGraduationCap, PiHeart, PiHouse, PiGear, PiLightning, PiUsers, PiArrowRight } from 'react-icons/pi'
+import { PiArrowRight } from 'react-icons/pi'
+import { programIcons } from '@/lib/programIcons'
 import { useSettings } from '@/lib/useSettings'
 import type { SiteSettings } from '@/lib/settings'
-
-const iconMap: Record<string, typeof PiGraduationCap> = {
-  'graduation-cap': PiGraduationCap,
-  heart: PiHeart,
-  house: PiHouse,
-  gear: PiGear,
-  lightning: PiLightning,
-  users: PiUsers,
-}
 
 const defaultPrograms = {
   kicker: 'Our Programs',
@@ -78,7 +70,7 @@ export default function ProgramsContent({ initialSettings }: { initialSettings?:
         <div className="container-premium">
           <div className="space-y-12 lg:space-y-20">
             {programsData.items.map((program, index) => {
-              const Icon = iconMap[program.icon] || PiHeart
+              const Icon = programIcons[program.icon] ?? programIcons.heart
               return (
               <motion.div
                 key={program.id}

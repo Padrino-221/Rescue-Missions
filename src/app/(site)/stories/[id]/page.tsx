@@ -80,7 +80,7 @@ export default function StoryDetailPage() {
   return (
     <>
       {/* Hero */}
-      <section className="bg-cream pt-40 pb-8 lg:pt-48 lg:pb-10 overflow-hidden relative">
+      <section className="bg-cream pt-24 pb-8 lg:pt-28 lg:pb-10 overflow-hidden relative">
         <div className="absolute top-24 right-0 w-64 h-64 bg-lime/15 rounded-full blur-3xl pointer-events-none" />
         <div className="container-premium">
           <motion.div
@@ -207,29 +207,41 @@ export default function StoryDetailPage() {
                 </motion.div>
               ))}
             </div>
+
+            <div className="mt-12 text-center">
+              <Link
+                href="/stories"
+                className="inline-flex items-center gap-2 btn-secondary"
+              >
+                <PiArrowLeft className="w-4 h-4" />
+                View All Stories
+              </Link>
+            </div>
           </div>
         </section>
       )}
 
       {/* CTA */}
-      <section className="bg-cream pb-16">
-        <div className="container-premium text-center">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-          >
-            <Link
-              href="/stories"
-              className="inline-flex items-center gap-2 btn-secondary"
+      {!otherStories.length && (
+        <section className="bg-cream pb-16">
+          <div className="container-premium text-center">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6 }}
             >
-              <PiArrowLeft className="w-4 h-4" />
-              View All Stories
-            </Link>
-          </motion.div>
-        </div>
-      </section>
+              <Link
+                href="/stories"
+                className="inline-flex items-center gap-2 btn-secondary"
+              >
+                <PiArrowLeft className="w-4 h-4" />
+                View All Stories
+              </Link>
+            </motion.div>
+          </div>
+        </section>
+      )}
     </>
   )
 }
