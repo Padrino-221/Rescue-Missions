@@ -7,15 +7,9 @@
  *
  * The script never deletes or overwrites existing events.
  */
-import pg from 'pg'
 import { readFileSync, existsSync } from 'fs'
 import { join } from 'path'
-
-const { Client } = pg
-
-const connectionString =
-  process.env.DATABASE_URL ||
-  'postgres://postgres:1234567890@localhost:5432/rescue_mission'
+import { createClient } from './db.mjs'
 
 const SCHEMA = `
 CREATE TABLE IF NOT EXISTS events (
@@ -32,12 +26,7 @@ CREATE TABLE IF NOT EXISTS events (
 `
 
 async function main() {
-  const client = new Client({
-    connectionString,
-    ssl: connectionString.includes('sslmode=require') || connectionString.includes('neon.tech')
-      ? { rejectUnauthorized: false }
-      : undefined,
-  })
+  const client = createClient()
   await client.connect()
 
   await client.query(SCHEMA)

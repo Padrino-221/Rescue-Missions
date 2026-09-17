@@ -1,14 +1,6 @@
-import pg from 'pg'
-const { Client } = pg
+import { createClient } from './db.mjs'
 
-const c = new Client({
-  host: 'ep-crimson-thunder-ayvdckx1-pooler.c-5.us-east-2.aws.neon.tech',
-  port: 5432,
-  user: 'neondb_owner',
-  password: 'npg_mZb2xDNrC1kE',
-  database: 'neondb',
-  ssl: { rejectUnauthorized: false }
-})
+const c = createClient()
 
 async function main() {
   await c.connect()

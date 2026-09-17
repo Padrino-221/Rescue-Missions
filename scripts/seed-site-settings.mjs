@@ -1,25 +1,13 @@
-import pg from 'pg'
 import { readFileSync, existsSync } from 'fs'
 import { join } from 'path'
-
-const { Client } = pg
-
-const connectionString =
-  process.env.DATABASE_URL ||
-  'postgres://postgres:1234567890@localhost:5432/rescue_mission'
+import { createClient } from './db.mjs'
 
 // By default this script NEVER overwrites settings that already exist in the
 // database, so content edited on the deployed site is preserved. Set FORCE=1
 // to explicitly overwrite the stored settings.
 const force = process.env.FORCE === '1'
 
-const c = new Client({
-  connectionString,
-  ssl:
-    connectionString.includes('neon.tech') || connectionString.includes('sslmode=require')
-      ? { rejectUnauthorized: false }
-      : undefined,
-})
+const c = createClient()
 
 async function main() {
   await c.connect()
