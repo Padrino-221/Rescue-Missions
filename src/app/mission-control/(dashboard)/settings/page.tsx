@@ -24,6 +24,7 @@ import {
 } from 'react-icons/pi'
 import ImageUpload from '@/components/ui/ImageUpload'
 import { useToast } from '@/components/ui/Toast'
+import { useAlert } from '@/components/ui/Alert'
 
 const tabs = [
   { id: 'general', label: 'General', icon: PiGear },
@@ -288,8 +289,12 @@ export default function SettingsPage() {
   const [settings, setSettings] = useState(defaultSettings)
   const [activeTab, setActiveTab] = useState('general')
   const [saved, setSaved] = useState(false)
-  const { settings: serverSettings } = useSettings()
+  const { settings: serverSettings, loading: settingsLoading } = useSettings()
   const { toast } = useToast()
+  const { confirm } = useAlert()
+  const settingsReady = Boolean(
+    serverSettings && Object.keys(serverSettings).length > 0
+  )
 
   // Merge server data over defaults once it arrives
   useEffect(() => {
@@ -390,6 +395,10 @@ export default function SettingsPage() {
   }
 
   const handleSave = async () => {
+    if (!settingsReady) {
+      toast('Settings are still loading. Please wait a moment and try again.', 'error')
+      return
+    }
     try {
       const res = await fetch('/api/settings', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(settings) })
       if (!res.ok) throw new Error('Save failed')
@@ -402,14 +411,23 @@ export default function SettingsPage() {
   }
 
   const handleReset = () => {
-    const fresh = defaultSettings()
-    // Preserve fields that aren't in the default object so reset + save never wipes live content.
-    if (serverSettings?.homeHero) {
-      fresh.homeHero.imageUrl = serverSettings.homeHero.imageUrl || fresh.homeHero.imageUrl
-      fresh.homeHero.imageAlt = serverSettings.homeHero.imageAlt || fresh.homeHero.imageAlt
-    }
-    if (serverSettings?.about?.storyImageUrl) fresh.about.storyImageUrl = serverSettings.about.storyImageUrl
-    setSettings(fresh)
+    confirm({
+      title: 'Reset all fields?',
+      message:
+        'This replaces every field on this page with the original demo content. Your live site is not changed until you click Save Changes.',
+      icon: 'warning',
+      confirmLabel: 'Reset fields',
+      onConfirm: () => {
+        const fresh = defaultSettings()
+        // Preserve uploaded images so a reset never leaves broken image links.
+        if (serverSettings?.homeHero) {
+          fresh.homeHero.imageUrl = serverSettings.homeHero.imageUrl || fresh.homeHero.imageUrl
+          fresh.homeHero.imageAlt = serverSettings.homeHero.imageAlt || fresh.homeHero.imageAlt
+        }
+        if (serverSettings?.about?.storyImageUrl) fresh.about.storyImageUrl = serverSettings.about.storyImageUrl
+        setSettings(fresh)
+      },
+    })
   }
 
   return (
@@ -703,6 +721,9 @@ export default function SettingsPage() {
               {activeTab === 'featured' && (
                 <div className={sectionCls}>
                   <h2 className="text-lg font-serif text-dark mb-4">Featured Story Section</h2>
+                  <p className="text-xs text-dark/60 bg-cream rounded-xl px-4 py-3 mb-4">
+                    This is the highlighted story block on the homepage. To pin a story to the top of the Stories page instead, use the Featured toggle in the story editor.
+                  </p>
                   <div className="space-y-4">
                     <div className="grid sm:grid-cols-2 gap-4">
                       <Field label="Kicker" value={settings.featuredStory.kicker} onChange={(v) => update('featuredStory.kicker', v)} />
@@ -730,6 +751,9 @@ export default function SettingsPage() {
               {activeTab === 'programs' && (
                 <div className={sectionCls}>
                   <h2 className="text-lg font-serif text-dark mb-4">Programs Page</h2>
+                  <p className="text-xs text-dark/60 bg-cream rounded-xl px-4 py-3 mb-4">
+                    Tip: add or remove individual programs on the <strong>Programs</strong> page in the sidebar — it also edits each program&apos;s icon, key activities, and impact stats.
+                  </p>
                   <div className="space-y-4">
                     <div className="grid sm:grid-cols-2 gap-4">
                       <Field label="Kicker" value={settings.programs.kicker} onChange={(v) => update('programs.kicker', v)} />
@@ -751,6 +775,9 @@ export default function SettingsPage() {
               {activeTab === 'gallery' && (
                 <div className={sectionCls}>
                   <h2 className="text-lg font-serif text-dark mb-4">Gallery Page</h2>
+                  <p className="text-xs text-dark/60 bg-cream rounded-xl px-4 py-3 mb-4">
+                    Tip: add or edit individual photos and videos on the <strong>Gallery</strong> page in the sidebar.
+                  </p>
                   <div className="space-y-4">
                     <div className="grid sm:grid-cols-2 gap-4">
                       <Field label="Kicker" value={settings.gallery.kicker} onChange={(v) => update('gallery.kicker', v)} />
@@ -782,6 +809,9 @@ export default function SettingsPage() {
               {activeTab === 'stories' && (
                 <div className={sectionCls}>
                   <h2 className="text-lg font-serif text-dark mb-4">Stories Page</h2>
+                  <p className="text-xs text-dark/60 bg-cream rounded-xl px-4 py-3 mb-4">
+                    These categories power the filters on the public Stories page and the story editor.
+                  </p>
                   <div className="space-y-4">
                     <div className="grid sm:grid-cols-2 gap-4">
                       <Field label="Kicker" value={settings.stories.kicker} onChange={(v) => update('stories.kicker', v)} />
@@ -865,11 +895,18 @@ export default function SettingsPage() {
           </AnimatePresence>
 
           {/* Actions */}
+          {!settingsReady && (
+            <div className="mt-6 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700">
+              {settingsLoading
+                ? 'Loading your saved settings…'
+                : 'Could not load the saved settings, so saving is disabled to avoid overwriting them.'}
+            </div>
+          )}
           <div className="flex items-center gap-4 mt-6">
-            <button onClick={handleSave} className="inline-flex items-center gap-2 px-8 py-3.5 rounded-full bg-dark text-white font-extrabold text-sm tracking-wide hover:bg-dark-50 transition-colors">
+            <button onClick={handleSave} disabled={!settingsReady} className="inline-flex items-center gap-2 px-8 py-3.5 rounded-full bg-dark text-white font-extrabold text-sm tracking-wide hover:bg-dark-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
               <PiFloppyDisk className="w-4 h-4" /> Save Changes
             </button>
-            <button onClick={handleReset} className="inline-flex items-center gap-2 px-6 py-3.5 rounded-full border-2 border-dark/20 text-dark font-extrabold text-sm tracking-wide hover:border-dark/40 transition-colors">
+            <button onClick={handleReset} disabled={!settingsReady} className="inline-flex items-center gap-2 px-6 py-3.5 rounded-full border-2 border-dark/20 text-dark font-extrabold text-sm tracking-wide hover:border-dark/40 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
               <PiArrowCounterClockwise className="w-4 h-4" /> Reset to Defaults
             </button>
           </div>

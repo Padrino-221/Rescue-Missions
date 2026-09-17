@@ -178,8 +178,30 @@ function sanitizeValue(value: unknown): unknown {
   return value
 }
 
+let settingsTableReady: Promise<void> | null = null
+
+/**
+ * Ensures the `site_settings` table exists. Safe to call on every request; the
+ * DDL only runs once per process.
+ */
+function ensureSettingsTable(): Promise<void> {
+  if (!settingsTableReady) {
+    settingsTableReady = pool
+      .query('CREATE TABLE IF NOT EXISTS site_settings (key TEXT PRIMARY KEY, data JSONB NOT NULL)')
+      .then(
+        () => undefined,
+        (err) => {
+          settingsTableReady = null
+          throw err
+        }
+      )
+  }
+  return settingsTableReady
+}
+
 export async function getSettings(): Promise<SiteSettings> {
   try {
+    await ensureSettingsTable()
     const rows = await pool.query('SELECT data FROM site_settings WHERE key = $1', ['main'])
     if (rows.rows.length > 0 && rows.rows[0].data) {
       return rows.rows[0].data as SiteSettings
@@ -188,9 +210,39 @@ export async function getSettings(): Promise<SiteSettings> {
   return {} as SiteSettings
 }
 
+function isPlainObject(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
+}
+
+/**
+ * Recursively merge `incoming` over `base`. Arrays are replaced wholesale, and
+ * keys that only exist in `base` are preserved. This keeps settings that the
+ * client edited directly on the deployed site from being wiped out by code
+ * updates that don't know about every field.
+ */
+function deepMerge(
+  base: Record<string, unknown>,
+  incoming: Record<string, unknown>
+): Record<string, unknown> {
+  const merged: Record<string, unknown> = { ...base }
+  for (const [key, value] of Object.entries(incoming)) {
+    if (isPlainObject(value) && isPlainObject(merged[key])) {
+      merged[key] = deepMerge(merged[key] as Record<string, unknown>, value)
+    } else if (value !== undefined) {
+      merged[key] = value
+    }
+  }
+  return merged
+}
+
 export async function saveSettings(settings: SiteSettings): Promise<void> {
   const cleaned = sanitizeValue(settings) as SiteSettings
-  const json = JSON.stringify(cleaned)
+  const existing = await getSettings()
+  const merged = deepMerge(
+    existing as unknown as Record<string, unknown>,
+    cleaned as unknown as Record<string, unknown>
+  )
+  const json = JSON.stringify(merged)
   await pool.query(
     `INSERT INTO site_settings (key, data) VALUES ('main', $1)
      ON CONFLICT (key) DO UPDATE SET data = $1`,

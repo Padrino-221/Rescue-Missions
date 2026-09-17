@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import cloudinary from '@/lib/cloudinary'
+import { requireAuth } from '@/lib/api-auth'
 
 export async function POST(req: NextRequest) {
+  const unauthorized = await requireAuth()
+  if (unauthorized) return unauthorized
+
   try {
     const formData = await req.formData()
     const file = formData.get('file') as File | null

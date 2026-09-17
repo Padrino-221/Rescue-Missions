@@ -104,7 +104,7 @@ export default function ProgramsContent({ initialSettings }: { initialSettings?:
                   <div className="mt-8">
                     <h4 className="font-semibold text-dark mb-4">Key Activities:</h4>
                     <ul className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      {program.features.map((feature) => (
+                      {(program.features ?? []).map((feature) => (
                         <li key={feature} className="flex items-center gap-2 text-dark/60 text-sm">
                           <span className="w-2 h-2 bg-lime rounded-full" />
                           {feature}
@@ -114,7 +114,7 @@ export default function ProgramsContent({ initialSettings }: { initialSettings?:
                   </div>
                   
                   <div className="mt-8 flex flex-wrap gap-6">
-                    {Object.entries(program.impact).map(([key, value]) => (
+                    {Object.entries(program.impact ?? {}).map(([key, value]) => (
                       <div key={key}>
                         <p className="text-2xl font-serif text-dark font-semibold">{value}</p>
                         <p className="text-dark/50 text-sm capitalize">{key.replace(/([A-Z])/g, ' $1')}</p>
@@ -124,14 +124,16 @@ export default function ProgramsContent({ initialSettings }: { initialSettings?:
                 </div>
                 
                 <div className={index % 2 === 1 ? 'lg:order-1' : ''}>
-                  <div className="relative rounded-[2rem] overflow-hidden aspect-[4/3] h-full">
-                    <Image
-                      src={program.image}
-                      alt={`${program.title} program`}
-                      fill
-                      sizes="(min-width: 1024px) 45vw, 100vw"
-                      className="object-cover object-top"
-                    />
+                  <div className="relative rounded-[2rem] overflow-hidden aspect-[4/3] h-full bg-dark/5">
+                    {program.image && (
+                      <Image
+                        src={program.image}
+                        alt={`${program.title} program`}
+                        fill
+                        sizes="(min-width: 1024px) 45vw, 100vw"
+                        className="object-cover object-top"
+                      />
+                    )}
                   </div>
                 </div>
               </motion.div>

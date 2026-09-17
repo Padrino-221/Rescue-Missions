@@ -10,9 +10,9 @@ import {
   PiTrash,
   PiSpinner,
   PiEye,
-  PiX,
 } from 'react-icons/pi';
 import { useResource } from '@/lib/useResource';
+import Modal from '@/components/dashboard/Modal';
 import { useToast } from '@/components/ui/Toast';
 import { useAlert } from '@/components/ui/Alert';
 
@@ -124,7 +124,10 @@ export default function ContactsPage() {
       onConfirm: async () => {
         setBusy(selectedContacts, true);
         try {
-          await Promise.all(selectedContacts.map((id) => fetch(`/api/contacts/${id}`, { method: 'DELETE' })));
+          const responses = await Promise.all(
+            selectedContacts.map((id) => fetch(`/api/contacts/${id}`, { method: 'DELETE' }))
+          );
+          if (responses.some((r) => !r.ok)) throw new Error();
           toast('Selected contacts deleted successfully');
           setData((prev) => prev.filter((c) => !selectedContacts.includes(c.id)));
           setSelectedContacts([]);
@@ -159,6 +162,7 @@ export default function ContactsPage() {
               </span>
             )}
           </div>
+          <p className="text-[#0e3b2b]/60 mt-1">Messages submitted through the public contact form</p>
         </motion.div>
 
         <motion.div
@@ -411,51 +415,48 @@ export default function ContactsPage() {
       </div>
 
       {/* Message Modal */}
-      {viewingContact && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setViewingContact(null)}>
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="bg-white rounded-2xl w-full max-w-lg shadow-xl"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex items-center justify-between px-6 py-4 border-b border-[#0e3b2b]/10">
-              <h3 className="font-serif text-lg text-[#0e3b2b]">Message from {viewingContact.name}</h3>
-              <button onClick={() => setViewingContact(null)} className="w-8 h-8 rounded-lg hover:bg-[#0e3b2b]/10 flex items-center justify-center transition-colors">
-                <PiX className="w-5 h-5 text-[#0e3b2b]" />
-              </button>
-            </div>
-            <div className="p-6">
-              <div className="flex flex-wrap gap-4 mb-4 text-sm">
-                <div>
-                  <span className="text-[#0e3b2b]/50">From: </span>
-                  <span className="text-[#0e3b2b] font-medium">{viewingContact.name}</span>
-                </div>
-                <div>
-                  <span className="text-[#0e3b2b]/50">Email: </span>
-                  <a href={`mailto:${viewingContact.email}`} className="text-[#0e3b2b] font-medium hover:underline">{viewingContact.email}</a>
-                </div>
-                <div>
-                  <span className="text-[#0e3b2b]/50">Date: </span>
-                  <span className="text-[#0e3b2b]">{formatDate(viewingContact.date)}</span>
-                </div>
+      <Modal
+        open={viewingContact !== null}
+        onClose={() => setViewingContact(null)}
+        title={viewingContact ? `Message from ${viewingContact.name}` : 'Message'}
+        subtitle={viewingContact?.subject}
+        icon={<PiEnvelope className="text-xl" />}
+        maxWidth="max-w-lg"
+        footer={
+          <div className="flex justify-end">
+            <button
+              onClick={() => setViewingContact(null)}
+              className="px-6 py-2.5 rounded-xl bg-[#0e3b2b] text-[#f8fbf6] text-sm font-semibold hover:bg-[#0e3b2b]/90 transition-colors"
+            >
+              Close
+            </button>
+          </div>
+        }
+      >
+        {viewingContact && (
+          <div className="space-y-4">
+            <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm">
+              <div>
+                <span className="text-[#0e3b2b]/50">From: </span>
+                <span className="text-[#0e3b2b] font-medium">{viewingContact.name}</span>
               </div>
-              <div className="mb-4">
-                <span className="text-[#0e3b2b]/50 text-sm">Subject: </span>
-                <span className="px-2 py-1 bg-[#0e3b2b]/5 rounded text-xs font-medium text-[#0e3b2b]">{viewingContact.subject}</span>
+              <div>
+                <span className="text-[#0e3b2b]/50">Email: </span>
+                <a href={`mailto:${viewingContact.email}`} className="text-[#0e3b2b] font-medium hover:underline">
+                  {viewingContact.email}
+                </a>
               </div>
-              <div className="bg-[#f8fbf6] rounded-xl p-4">
-                <p className="text-[#0e3b2b] leading-relaxed whitespace-pre-wrap">{viewingContact.message}</p>
+              <div>
+                <span className="text-[#0e3b2b]/50">Date: </span>
+                <span className="text-[#0e3b2b]">{formatDate(viewingContact.date)}</span>
               </div>
             </div>
-            <div className="px-6 py-4 border-t border-[#0e3b2b]/10 flex justify-end">
-              <button onClick={() => setViewingContact(null)} className="px-6 py-2.5 rounded-full bg-[#0e3b2b] text-[#f8fbf6] text-sm font-semibold hover:bg-[#0e3b2b]/90 transition-colors">
-                Close
-              </button>
+            <div className="bg-[#f8fbf6] rounded-2xl p-4">
+              <p className="text-[#0e3b2b] leading-relaxed whitespace-pre-wrap">{viewingContact.message}</p>
             </div>
-          </motion.div>
-        </div>
-      )}
+          </div>
+        )}
+      </Modal>
     </div>
   );
 }

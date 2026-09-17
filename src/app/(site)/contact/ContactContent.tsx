@@ -48,6 +48,8 @@ export default function ContactPage({ initialSettings }: { initialSettings?: Sit
     subject: '',
     message: '',
   })
+  const [submitting, setSubmitting] = useState(false)
+  const [submitMessage, setSubmitMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
 
   const contact = settings?.contact
   const contactInfo = contact
@@ -89,10 +91,24 @@ export default function ContactPage({ initialSettings }: { initialSettings?: Sit
 
   if (loading) return null
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    alert('Thank you for your message! We will get back to you soon.')
-    setFormData({ name: '', email: '', subject: '', message: '' })
+    setSubmitting(true)
+    setSubmitMessage(null)
+    try {
+      const res = await fetch('/api/contacts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      })
+      if (!res.ok) throw new Error('Request failed')
+      setSubmitMessage({ type: 'success', text: 'Thank you for your message! We will get back to you soon.' })
+      setFormData({ name: '', email: '', subject: '', message: '' })
+    } catch {
+      setSubmitMessage({ type: 'error', text: 'Sorry, something went wrong. Please try again or email us directly.' })
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   return (
@@ -155,10 +171,10 @@ export default function ContactPage({ initialSettings }: { initialSettings?: Sit
                   value={formData.subject}
                   onChange={(val) => setFormData({ ...formData, subject: val })}
                   options={[
-                    { label: 'General Inquiry', value: 'general' },
-                    { label: 'Volunteer Opportunity', value: 'volunteer' },
-                    { label: 'Partnership', value: 'partnership' },
-                    { label: 'Media Inquiry', value: 'media' },
+                    { label: 'General Inquiry', value: 'General Inquiry' },
+                    { label: 'Volunteer Opportunity', value: 'Volunteer Opportunity' },
+                    { label: 'Partnership', value: 'Partnership' },
+                    { label: 'Media Inquiry', value: 'Media Inquiry' },
                   ]}
                 />
                 <Textarea
@@ -169,12 +185,22 @@ export default function ContactPage({ initialSettings }: { initialSettings?: Sit
                   onChange={(e) => setFormData({ ...formData, message: e.target.value })}
                   placeholder="How can we help you?"
                 />
+                {submitMessage && (
+                  <p
+                    className={`text-sm ${
+                      submitMessage.type === 'success' ? 'text-green-600' : 'text-red-600'
+                    }`}
+                  >
+                    {submitMessage.text}
+                  </p>
+                )}
                 <button
                   type="submit"
-                  className="btn-primary"
+                  disabled={submitting}
+                  className="btn-primary disabled:opacity-60 disabled:cursor-not-allowed"
                 >
                   <PiPaperPlaneTilt className="w-5 h-5" />
-                  Send Message
+                  {submitting ? 'Sending...' : 'Send Message'}
                 </button>
               </form>
             </motion.div>

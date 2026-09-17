@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Image from 'next/image'
 import { motion } from 'framer-motion'
 import {
@@ -10,8 +10,9 @@ import {
   PiPlayFill,
   PiMagnifyingGlass,
   PiSpinner,
+  PiFloppyDisk,
 } from 'react-icons/pi'
-import { useResource } from '@/lib/useResource'
+import { useSettings } from '@/lib/useSettings'
 import Modal from '@/components/dashboard/Modal'
 import ImageUpload from '@/components/ui/ImageUpload'
 import Select from '@/components/ui/Select'
@@ -23,28 +24,48 @@ type GalleryItem = {
   type: 'image' | 'video'
   category: string
   title: string
+  alt: string
   image: string
 }
 
-const categories = ['All', 'Events', 'Programs', 'Facilities', 'Children'] as const
-
 type GalleryForm = {
+  id: number | null
   title: string
   category: string
   type: GalleryItem['type']
+  alt: string
   image: string
 }
 
-const emptyForm: GalleryForm = { title: '', category: 'Events', type: 'image', image: '' }
+const fallbackCategories = ['Events', 'Programs', 'Facilities', 'Children']
+
+const emptyForm: GalleryForm = {
+  id: null,
+  title: '',
+  category: 'Events',
+  type: 'image',
+  alt: '',
+  image: '',
+}
 
 const inputClasses =
-  'w-full px-4 py-2.5 rounded-xl border border-[#0e3b2b]/15 bg-white text-sm text-[#0e3b2b] placeholder:text-[#0e3b2b]/35 focus:outline-none focus:border-[#0e3b2b]/40 transition-colors'
-const labelClasses = 'block text-sm font-medium text-[#0e3b2b] mb-1.5'
+  'w-full px-4 py-3 rounded-2xl border border-[#0e3b2b]/15 bg-white text-sm text-[#0e3b2b] placeholder:text-[#0e3b2b]/35 focus:outline-none focus:border-[#0e3b2b]/40 focus:ring-4 focus:ring-[#7ed957]/20 transition-all'
+const labelClasses = 'block text-xs font-semibold uppercase tracking-wide text-[#0e3b2b]/50 mb-2'
+
+function SectionLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="flex items-center gap-3">
+      <h3 className="text-[11px] font-extrabold uppercase tracking-[0.16em] text-[#0e3b2b]/45">{children}</h3>
+      <span className="h-px flex-1 bg-[#0e3b2b]/10" />
+    </div>
+  )
+}
 
 export default function GalleryPage() {
-  const { data: items, setData, loading, error, reload } = useResource<GalleryItem>('/api/gallery')
+  const { settings, loading } = useSettings()
   const { toast } = useToast()
   const { confirm } = useAlert()
+  const [items, setItems] = useState<GalleryItem[]>([])
   const [activeCategory, setActiveCategory] = useState<string>('All')
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedItems, setSelectedItems] = useState<number[]>([])
@@ -53,11 +74,30 @@ export default function GalleryPage() {
   const [saving, setSaving] = useState(false)
   const [busyIds, setBusyIds] = useState<number[]>([])
 
+  useEffect(() => {
+    if (settings?.gallery?.items) {
+      const next = settings.gallery.items as unknown as GalleryItem[]
+      queueMicrotask(() => setItems(next))
+    }
+  }, [settings])
+
+  const categories = settings?.gallery?.categories?.filter((c) => c && c !== 'All') ?? fallbackCategories
+
   const filteredItems = items.filter((item) => {
     const matchesCategory = activeCategory === 'All' || item.category === activeCategory
     const matchesSearch = item.title.toLowerCase().includes(searchQuery.toLowerCase())
     return matchesCategory && matchesSearch
   })
+
+  const persist = async (next: GalleryItem[]) => {
+    const res = await fetch('/api/settings', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ gallery: { items: next } }),
+    })
+    if (!res.ok) throw new Error('Save failed')
+    setItems(next)
+  }
 
   const toggleSelect = (id: number) => {
     setSelectedItems((prev) =>
@@ -75,11 +115,9 @@ export default function GalleryPage() {
       onConfirm: async () => {
         setBusyIds((prev) => [...prev, id])
         try {
-          const res = await fetch(`/api/gallery/${id}`, { method: 'DELETE' })
-          if (!res.ok) throw new Error()
-          toast('Item deleted successfully')
-          setData((prev) => prev.filter((i) => i.id !== id))
+          await persist(items.filter((i) => i.id !== id))
           setSelectedItems((prev) => prev.filter((i) => i !== id))
+          toast('Item deleted successfully')
         } catch {
           toast('Failed to delete the item.', 'error')
         } finally {
@@ -98,10 +136,9 @@ export default function GalleryPage() {
       onConfirm: async () => {
         setBusyIds((prev) => [...new Set([...prev, ...selectedItems])])
         try {
-          await Promise.all(selectedItems.map((id) => fetch(`/api/gallery/${id}`, { method: 'DELETE' })))
-          toast('Selected items deleted successfully')
-          setData((prev) => prev.filter((i) => !selectedItems.includes(i.id)))
+          await persist(items.filter((i) => !selectedItems.includes(i.id)))
           setSelectedItems([])
+          toast('Selected items deleted successfully')
         } catch {
           toast('Failed to delete some items.', 'error')
         } finally {
@@ -115,18 +152,23 @@ export default function GalleryPage() {
     e.preventDefault()
     setSaving(true)
     try {
-      const res = await fetch('/api/gallery', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form),
-      })
-      if (!res.ok) throw new Error()
+      const item: GalleryItem = {
+        id: form.id ?? Date.now(),
+        title: form.title,
+        category: form.category,
+        type: form.type,
+        alt: form.alt,
+        image: form.image,
+      }
+      const next = form.id
+        ? items.map((i) => (i.id === form.id ? item : i))
+        : [item, ...items]
+      await persist(next)
       setFormOpen(false)
       setForm(emptyForm)
-      toast('Item added to gallery successfully')
-      reload()
+      toast(form.id ? 'Gallery item updated successfully' : 'Item added to gallery successfully')
     } catch {
-      toast('Failed to add the item.', 'error')
+      toast('Failed to save the item.', 'error')
     } finally {
       setSaving(false)
     }
@@ -136,13 +178,16 @@ export default function GalleryPage() {
     <div className="min-h-screen bg-[#f8fbf6] p-4 md:p-6 lg:p-8">
       <div className="max-w-7xl mx-auto">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-          <h1 className="text-3xl font-bold text-[#0e3b2b]">Gallery</h1>
+          <div>
+            <h1 className="text-3xl font-bold text-[#0e3b2b]">Gallery</h1>
+            <p className="text-[#0e3b2b]/60 mt-1">Manage the photos and videos shown on the public Gallery page</p>
+          </div>
           <button
-            onClick={() => setFormOpen(true)}
+            onClick={() => { setForm(emptyForm); setFormOpen(true) }}
             className="flex items-center gap-2 bg-[#7ed957] text-[#0e3b2b] font-semibold px-5 py-2.5 rounded-xl hover:bg-[#6bc945] transition-colors self-start"
           >
             <PiPlus className="w-5 h-5" />
-            Upload
+            Add item
           </button>
         </div>
 
@@ -178,7 +223,7 @@ export default function GalleryPage() {
           </div>
 
           <div className="flex gap-2 flex-wrap">
-            {categories.map((category) => (
+            {['All', ...categories].map((category) => (
               <button
                 key={category}
                 onClick={() => setActiveCategory(category)}
@@ -193,12 +238,6 @@ export default function GalleryPage() {
             ))}
           </div>
         </div>
-
-        {error && (
-          <div className="mb-4 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-600">
-            {error}
-          </div>
-        )}
 
         {loading ? (
           <div className="rounded-2xl border border-[#0e3b2b]/10 bg-white p-16 text-center">
@@ -220,14 +259,16 @@ export default function GalleryPage() {
                 }`}
                 onClick={() => toggleSelect(item.id)}
               >
-                <div className="relative aspect-square">
-                  <Image
-                    src={item.image}
-                    alt={item.title}
-                    fill
-                    className="object-cover"
-                    sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, 25vw"
-                  />
+                <div className="relative aspect-square bg-[#0e3b2b]/5">
+                  {item.image && (
+                    <Image
+                      src={item.image}
+                      alt={item.alt || item.title}
+                      fill
+                      className="object-cover"
+                      sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, 25vw"
+                    />
+                  )}
 
                   <div
                     className={`absolute inset-0 bg-[#0e3b2b]/0 group-hover:bg-[#0e3b2b]/50 transition-all duration-300 flex flex-col items-center justify-center p-3`}
@@ -250,21 +291,40 @@ export default function GalleryPage() {
                       <p className="text-sm font-semibold text-center leading-tight">
                         {item.title}
                       </p>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          deleteItem(item.id)
-                        }}
-                        disabled={busyIds.includes(item.id)}
-                        className="mt-1 flex items-center gap-1 bg-red-500 hover:bg-red-600 text-white text-xs font-medium px-3 py-1.5 rounded-lg transition-colors disabled:opacity-60"
-                      >
-                        {busyIds.includes(item.id) ? (
-                          <PiSpinner className="w-3.5 h-3.5 animate-spin" />
-                        ) : (
-                          <PiTrash className="w-3.5 h-3.5" />
-                        )}
-                        Delete
-                      </button>
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            setForm({
+                              id: item.id,
+                              title: item.title,
+                              category: item.category,
+                              type: item.type,
+                              alt: item.alt ?? '',
+                              image: item.image,
+                            })
+                            setFormOpen(true)
+                          }}
+                          className="mt-1 flex items-center gap-1 bg-[#7ed957] hover:bg-[#6bc945] text-[#0e3b2b] text-xs font-medium px-3 py-1.5 rounded-lg transition-colors"
+                        >
+                          Edit
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            deleteItem(item.id)
+                          }}
+                          disabled={busyIds.includes(item.id)}
+                          className="mt-1 flex items-center gap-1 bg-red-500 hover:bg-red-600 text-white text-xs font-medium px-3 py-1.5 rounded-lg transition-colors disabled:opacity-60"
+                        >
+                          {busyIds.includes(item.id) ? (
+                            <PiSpinner className="w-3.5 h-3.5 animate-spin" />
+                          ) : (
+                            <PiTrash className="w-3.5 h-3.5" />
+                          )}
+                          Delete
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -284,27 +344,53 @@ export default function GalleryPage() {
       </div>
 
       {/* Upload Modal */}
-      <Modal open={formOpen} onClose={() => setFormOpen(false)} title="Add to Gallery">
-        <form onSubmit={handleUpload} className="space-y-4">
-          <div>
-            <label className={labelClasses}>Title *</label>
-            <input
-              className={inputClasses}
-              value={form.title}
-              onChange={(e) => setForm((p) => ({ ...p, title: e.target.value }))}
-              required
-            />
+      <Modal
+        open={formOpen}
+        onClose={() => setFormOpen(false)}
+        title={form.id ? 'Edit gallery item' : 'Add to gallery'}
+        subtitle={form.id ? 'Update the details and save your changes.' : 'Add a photo or video to the public Gallery page.'}
+        icon={<PiImage className="text-xl" />}
+        footer={
+          <div className="flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-end">
+            <button
+              type="button"
+              onClick={() => setFormOpen(false)}
+              className="px-5 py-2.5 rounded-xl border border-[#0e3b2b]/15 text-sm font-semibold text-[#0e3b2b] transition-colors hover:bg-[#0e3b2b]/5"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              form="gallery-form"
+              disabled={saving}
+              className="inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl bg-[#0e3b2b] text-white text-sm font-semibold transition-colors hover:bg-[#0e3b2b]/90 disabled:opacity-60"
+            >
+              {saving ? <PiSpinner className="animate-spin" /> : <PiFloppyDisk className="text-base" />}
+              {saving ? 'Saving...' : form.id ? 'Save changes' : 'Add to gallery'}
+            </button>
           </div>
-          <div className="grid gap-4 sm:grid-cols-2">
+        }
+      >
+        <form id="gallery-form" onSubmit={handleUpload} className="space-y-8">
+          <section className="space-y-4">
+            <SectionLabel>Details</SectionLabel>
             <div>
+              <label className={labelClasses}>Title *</label>
+              <input
+                className={`${inputClasses} font-semibold`}
+                value={form.title}
+                onChange={(e) => setForm((p) => ({ ...p, title: e.target.value }))}
+                placeholder="e.g. Annual fundraising gala"
+                required
+              />
+            </div>
+            <div className="grid gap-4 sm:grid-cols-2">
               <Select
                 label="Category"
                 value={form.category}
                 onChange={(v) => setForm((p) => ({ ...p, category: v }))}
-                options={categories.filter((c) => c !== 'All').map((c) => ({ label: c, value: c }))}
+                options={categories.map((c) => ({ label: c, value: c }))}
               />
-            </div>
-            <div>
               <Select
                 label="Type"
                 value={form.type}
@@ -315,26 +401,21 @@ export default function GalleryPage() {
                 ]}
               />
             </div>
-          </div>
-          <div>
+            <div>
+              <label className={labelClasses}>Alt Text</label>
+              <input
+                className={inputClasses}
+                value={form.alt}
+                onChange={(e) => setForm((p) => ({ ...p, alt: e.target.value }))}
+                placeholder="Describe the image for accessibility"
+              />
+            </div>
+          </section>
+
+          <section className="space-y-4">
+            <SectionLabel>Media</SectionLabel>
             <ImageUpload value={form.image} onChange={(v) => setForm((p) => ({ ...p, image: v }))} folder="rescue-mission/gallery" label="Gallery Image" />
-          </div>
-          <div className="flex justify-end gap-3 pt-2">
-            <button
-              type="button"
-              onClick={() => setFormOpen(false)}
-              className="px-5 py-2.5 rounded-xl border border-[#0e3b2b]/15 text-sm font-semibold text-[#0e3b2b] hover:bg-[#0e3b2b]/5 transition-colors"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={saving}
-              className="px-6 py-2.5 rounded-xl bg-[#0e3b2b] text-white text-sm font-semibold hover:bg-[#0e3b2b]/90 transition-colors disabled:opacity-60"
-            >
-              {saving ? 'Adding...' : 'Add to Gallery'}
-            </button>
-          </div>
+          </section>
         </form>
       </Modal>
     </div>

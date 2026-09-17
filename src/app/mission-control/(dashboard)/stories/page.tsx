@@ -10,8 +10,12 @@ import {
   PiMagnifyingGlass,
   PiEye,
   PiSpinner,
+  PiNewspaper,
+  PiFloppyDisk,
+  PiSparkle,
 } from 'react-icons/pi'
 import { useResource } from '@/lib/useResource'
+import { useSettings } from '@/lib/useSettings'
 import Modal from '@/components/dashboard/Modal'
 import ImageUpload from '@/components/ui/ImageUpload'
 import Select from '@/components/ui/Select'
@@ -31,12 +35,12 @@ type Story = {
   content: string
 }
 
-const categories = ['All', 'Success Stories', 'Events', 'Announcements', 'Volunteer Spotlights'] as const
+const defaultCategories = ['All', 'Success Stories', 'Events', 'Announcements', 'Volunteer Spotlights']
 
 const emptyForm = {
   title: '',
   excerpt: '',
-  category: 'Announcements',
+  category: '',
   author: '',
   date: '',
   readTime: '',
@@ -46,15 +50,32 @@ const emptyForm = {
 }
 
 const inputClasses =
-  'w-full px-4 py-2.5 rounded-xl border border-dark/15 bg-white text-sm text-dark placeholder:text-dark/35 focus:outline-none focus:border-dark/40 transition-colors'
-const labelClasses = 'block text-sm font-medium text-dark mb-1.5'
+  'w-full px-4 py-3 rounded-2xl border border-dark/15 bg-white text-sm text-dark placeholder:text-dark/35 focus:outline-none focus:border-dark/40 focus:ring-4 focus:ring-lime/20 transition-all'
+const labelClasses = 'block text-xs font-semibold uppercase tracking-wide text-dark/50 mb-2'
+
+function SectionLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="flex items-center gap-3">
+      <h3 className="text-[11px] font-extrabold uppercase tracking-[0.16em] text-dark/45">{children}</h3>
+      <span className="h-px flex-1 bg-dark/10" />
+    </div>
+  )
+}
 
 export default function StoriesPage() {
   const { data: stories, loading, error, reload } = useResource<Story>('/api/stories')
+  const { settings } = useSettings()
   const { toast } = useToast()
   const { confirm } = useAlert()
   const [searchQuery, setSearchQuery] = useState('')
   const [activeCategory, setActiveCategory] = useState<string>('All')
+
+  const configuredCategories = settings?.stories?.categories
+  const categories = configuredCategories?.length
+    ? configuredCategories.includes('All')
+      ? configuredCategories
+      : ['All', ...configuredCategories]
+    : defaultCategories
 
   const [formOpen, setFormOpen] = useState(false)
   const [editingId, setEditingId] = useState<number | null>(null)
@@ -73,7 +94,7 @@ export default function StoriesPage() {
   })
 
   const openNew = () => {
-    setForm(emptyForm)
+    setForm({ ...emptyForm, category: categories.find((c) => c !== 'All') ?? '' })
     setEditingId(null)
     setFormOpen(true)
   }
@@ -143,13 +164,12 @@ export default function StoriesPage() {
     <div className="min-h-screen bg-cream">
       <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <motion.h1
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-2xl font-bold text-dark"
-        >
-          Stories
-        </motion.h1>
+        <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
+          <h1 className="text-2xl font-bold text-dark">Stories</h1>
+          <p className="text-sm text-dark/50 mt-1">
+            Manage the articles shown on the public Stories page.
+          </p>
+        </motion.div>
         <motion.button
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -221,7 +241,7 @@ export default function StoriesPage() {
                 <th className="text-left text-sm font-semibold text-dark/60 px-6 py-4">Category</th>
                 <th className="text-left text-sm font-semibold text-dark/60 px-6 py-4">Author</th>
                 <th className="text-left text-sm font-semibold text-dark/60 px-6 py-4">Date</th>
-                <th className="text-left text-sm font-semibold text-dark/60 px-6 py-4">Status</th>
+                <th className="text-left text-sm font-semibold text-dark/60 px-6 py-4">Placement</th>
                 <th className="text-right text-sm font-semibold text-dark/60 px-6 py-4">Actions</th>
               </tr>
             </thead>
@@ -267,7 +287,7 @@ export default function StoriesPage() {
                           story.featured ? 'bg-lime/20 text-dark' : 'bg-dark/10 text-dark/60'
                         }`}
                       >
-                        {story.featured ? 'Published' : 'Draft'}
+                        {story.featured ? 'Featured' : 'Standard'}
                       </span>
                     </td>
                     <td className="px-6 py-4">
@@ -334,7 +354,7 @@ export default function StoriesPage() {
                           story.featured ? 'bg-lime/20 text-dark' : 'bg-dark/10 text-dark/60'
                         }`}
                       >
-                        {story.featured ? 'Published' : 'Draft'}
+                        {story.featured ? 'Featured' : 'Standard'}
                       </span>
                     </div>
                     <p className="text-xs text-dark/50 line-clamp-2 mt-1">{story.excerpt}</p>
@@ -351,7 +371,7 @@ export default function StoriesPage() {
                       story.featured ? 'bg-lime/15 text-dark' : 'bg-dark/10 text-dark/60'
                     }`}
                   >
-                    {story.featured ? 'Published' : 'Draft'}
+                    {story.featured ? 'Featured' : 'Standard'}
                   </span>
                   <div className="flex items-center gap-2">
                     <button
@@ -398,101 +418,155 @@ export default function StoriesPage() {
       <Modal
         open={formOpen}
         onClose={() => setFormOpen(false)}
-        title={editingId ? 'Edit Story' : 'New Story'}
+        title={editingId ? 'Edit story' : 'New story'}
+        subtitle={
+          editingId
+            ? 'Update the details and save your changes.'
+            : 'Share an update, story, or announcement with your audience.'
+        }
+        icon={<PiNewspaper className="text-xl" />}
         maxWidth="max-w-3xl"
-      >
-        <form onSubmit={handleSave} className="space-y-4">
-          <div>
-            <label className={labelClasses}>Title *</label>
-            <input
-              className={inputClasses}
-              value={form.title}
-              onChange={(e) => update('title', e.target.value)}
-              required
-            />
+        footer={
+          <div className="flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-end">
+            <button
+              type="button"
+              onClick={() => setFormOpen(false)}
+              className="px-5 py-2.5 rounded-xl border border-dark/15 text-sm font-semibold text-dark transition-colors hover:bg-dark/5"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              form="story-form"
+              disabled={saving}
+              className="inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl bg-dark text-white text-sm font-semibold transition-colors hover:bg-dark-50 disabled:opacity-60"
+            >
+              {saving ? (
+                <PiSpinner className="animate-spin" />
+              ) : (
+                <PiFloppyDisk className="text-base" />
+              )}
+              {saving ? 'Saving...' : editingId ? 'Save changes' : 'Create story'}
+            </button>
           </div>
-          <div className="grid gap-4 sm:grid-cols-2">
+        }
+      >
+        <form id="story-form" onSubmit={handleSave} className="space-y-8">
+          <section className="space-y-4">
+            <SectionLabel>Story details</SectionLabel>
             <div>
+              <label className={labelClasses}>Title *</label>
+              <input
+                className={`${inputClasses} text-base font-semibold`}
+                value={form.title}
+                onChange={(e) => update('title', e.target.value)}
+                placeholder="e.g. How education changed Mary's life"
+                required
+              />
+            </div>
+            <div>
+              <label className={labelClasses}>Excerpt</label>
+              <textarea
+                className={`${inputClasses} resize-none`}
+                rows={2}
+                value={form.excerpt}
+                onChange={(e) => update('excerpt', e.target.value)}
+                placeholder="A short summary shown on cards and previews"
+              />
+            </div>
+            <div>
+              <label className={labelClasses}>Content</label>
+              <textarea
+                className={`${inputClasses} resize-none leading-relaxed`}
+                rows={9}
+                value={form.content}
+                onChange={(e) => update('content', e.target.value)}
+                placeholder="Write the full story here..."
+              />
+            </div>
+          </section>
+
+          <section className="space-y-4">
+            <SectionLabel>Organize</SectionLabel>
+            <div className="grid gap-4 sm:grid-cols-2">
               <Select
                 label="Category"
                 value={form.category}
                 onChange={(v) => update('category', v)}
                 options={categories.filter((c) => c !== 'All').map((c) => ({ label: c, value: c }))}
               />
+              <div>
+                <label className={labelClasses}>Author</label>
+                <input
+                  className={inputClasses}
+                  value={form.author}
+                  onChange={(e) => update('author', e.target.value)}
+                  placeholder="Author name"
+                />
+              </div>
+              <div>
+                <label className={labelClasses}>Date</label>
+                <input
+                  className={inputClasses}
+                  value={form.date}
+                  placeholder="e.g. March 15, 2024"
+                  onChange={(e) => update('date', e.target.value)}
+                />
+              </div>
+              <div>
+                <label className={labelClasses}>Read time</label>
+                <input
+                  className={inputClasses}
+                  value={form.readTime}
+                  placeholder="e.g. 5 min read"
+                  onChange={(e) => update('readTime', e.target.value)}
+                />
+              </div>
             </div>
-            <div>
-              <label className={labelClasses}>Author</label>
-              <input
-                className={inputClasses}
-                value={form.author}
-                onChange={(e) => update('author', e.target.value)}
-              />
-            </div>
-            <div>
-              <label className={labelClasses}>Date</label>
-              <input
-                className={inputClasses}
-                value={form.date}
-                placeholder="e.g. March 15, 2024"
-                onChange={(e) => update('date', e.target.value)}
-              />
-            </div>
-            <div>
-              <label className={labelClasses}>Read time</label>
-              <input
-                className={inputClasses}
-                value={form.readTime}
-                placeholder="e.g. 5 min read"
-                onChange={(e) => update('readTime', e.target.value)}
-              />
-            </div>
-          </div>
-          <div>
+          </section>
+
+          <section className="space-y-4">
+            <SectionLabel>Cover image</SectionLabel>
             <ImageUpload value={form.image} onChange={(v) => update('image', v)} folder="rescue-mission/stories" label="Story Image" />
-          </div>
-          <div>
-            <label className={labelClasses}>Excerpt</label>
-            <textarea
-              className={inputClasses}
-              rows={2}
-              value={form.excerpt}
-              onChange={(e) => update('excerpt', e.target.value)}
-            />
-          </div>
-          <div>
-            <label className={labelClasses}>Content</label>
-            <textarea
-              className={inputClasses}
-              rows={8}
-              value={form.content}
-              onChange={(e) => update('content', e.target.value)}
-            />
-          </div>
-          <label className="flex items-center gap-2 text-sm text-dark cursor-pointer">
-            <input
-              type="checkbox"
-              checked={form.featured}
-              onChange={(e) => update('featured', e.target.checked)}
-              className="rounded border-dark/30 text-lime focus:ring-lime/50"
-            />
-            Feature this story (show on the public site)
-          </label>
-          <div className="flex justify-end gap-3 pt-2">
+          </section>
+
+          <section className="space-y-4">
+            <SectionLabel>Visibility</SectionLabel>
             <button
               type="button"
-              onClick={() => setFormOpen(false)}
-              className="px-5 py-2.5 rounded-xl border border-dark/15 text-sm font-semibold text-dark hover:bg-dark/5 transition-colors"
+              onClick={() => update('featured', !form.featured)}
+              className={`flex w-full items-center justify-between gap-4 rounded-2xl border p-4 text-left transition-colors ${
+                form.featured ? 'border-lime bg-lime/10' : 'border-dark/15 bg-white hover:border-dark/30'
+              }`}
             >
-              Cancel
+              <div className="flex items-start gap-3">
+                <span
+                  className={`mt-0.5 flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl ${
+                    form.featured ? 'bg-lime text-dark' : 'bg-dark/5 text-dark/40'
+                  }`}
+                >
+                  <PiSparkle className="text-base" />
+                </span>
+                <span>
+                  <span className="block text-sm font-semibold text-dark">Feature this story</span>
+                  <span className="mt-0.5 block text-xs text-dark/50">
+                    Featured stories are highlighted at the top of the public Stories page.
+                  </span>
+                </span>
+              </div>
+              <span
+                className={`relative h-6 w-11 flex-shrink-0 rounded-full transition-colors ${
+                  form.featured ? 'bg-dark' : 'bg-dark/20'
+                }`}
+              >
+                <span
+                  className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-all ${
+                    form.featured ? 'left-[22px]' : 'left-0.5'
+                  }`}
+                />
+              </span>
             </button>
-            <button
-              type="submit"
-              disabled={saving}
-              className="px-6 py-2.5 rounded-xl bg-dark text-white text-sm font-semibold hover:bg-dark/90 transition-colors disabled:opacity-60"
-            >
-              {saving ? 'Saving...' : editingId ? 'Save Changes' : 'Create Story'}
-            </button>
-          </div>
+          </section>
         </form>
       </Modal>
 
@@ -501,6 +575,7 @@ export default function StoriesPage() {
         open={viewing !== null}
         onClose={() => setViewing(null)}
         title={viewing?.title ?? ''}
+        icon={<PiEye className="text-xl" />}
         maxWidth="max-w-2xl"
       >
         {viewing && (

@@ -30,7 +30,7 @@ export function useSettings(initialSettings?: SiteSettings | null) {
 
   useEffect(() => {
     if (!initialSettings) {
-      reload()
+      queueMicrotask(reload)
     }
   }, [reload, initialSettings])
 

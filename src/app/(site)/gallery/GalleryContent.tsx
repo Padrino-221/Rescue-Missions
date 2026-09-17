@@ -126,14 +126,16 @@ export default function GalleryPage({ initialSettings }: { initialSettings?: Sit
                 }`}
                 onClick={() => setSelectedItem(item.id)}
               >
-                <div className={`relative ${index % 5 === 0 ? 'h-64 md:h-full' : 'h-48'}`}>
-                  <Image
-                    src={item.image}
-                    alt={item.alt}
-                    fill
-                    sizes="(min-width: 1024px) 25vw, (min-width: 768px) 33vw, 50vw"
-                    className="object-cover transition-transform duration-700 group-hover:scale-105"
-                  />
+                <div className={`relative bg-dark/5 ${index % 5 === 0 ? 'h-64 md:h-full' : 'h-48'}`}>
+                  {item.image && (
+                    <Image
+                      src={item.image}
+                      alt={item.alt || item.title}
+                      fill
+                      sizes="(min-width: 1024px) 25vw, (min-width: 768px) 33vw, 50vw"
+                      className="object-cover transition-transform duration-700 group-hover:scale-105"
+                    />
+                  )}
                 </div>
                 
                 {/* Overlay */}
@@ -177,13 +179,15 @@ export default function GalleryPage({ initialSettings }: { initialSettings?: Sit
             <PiX className="w-6 h-6" />
           </button>
           <div className="max-w-4xl w-full bg-white rounded-3xl overflow-hidden" onClick={(e) => e.stopPropagation()}>
-            <div className="relative aspect-video" role="img" aria-label={gallerySettings.items.find(item => item.id === selectedItem)?.alt}>
-              <Image
-                src={gallerySettings.items.find(item => item.id === selectedItem)?.image ?? ''}
-                alt={gallerySettings.items.find(item => item.id === selectedItem)?.alt ?? ''}
-                fill
-                className="object-cover object-top"
-              />
+            <div className="relative aspect-video bg-dark/5" role="img" aria-label={gallerySettings.items.find(item => item.id === selectedItem)?.alt}>
+              {gallerySettings.items.find(item => item.id === selectedItem)?.image && (
+                <Image
+                  src={gallerySettings.items.find(item => item.id === selectedItem)?.image ?? ''}
+                  alt={gallerySettings.items.find(item => item.id === selectedItem)?.alt ?? ''}
+                  fill
+                  className="object-cover object-top"
+                />
+              )}
               {gallerySettings.items.find(item => item.id === selectedItem)?.type === 'video' && (
                 <div className="absolute inset-0 flex items-center justify-center bg-dark/30">
                   <div className="w-16 h-16 bg-lime rounded-full flex items-center justify-center">

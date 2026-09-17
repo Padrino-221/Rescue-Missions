@@ -4,13 +4,21 @@ import { join } from 'path'
 
 const { Client } = pg
 
+const connectionString =
+  process.env.DATABASE_URL ||
+  'postgres://postgres:1234567890@localhost:5432/rescue_mission'
+
+// By default this script NEVER overwrites settings that already exist in the
+// database, so content edited on the deployed site is preserved. Set FORCE=1
+// to explicitly overwrite the stored settings.
+const force = process.env.FORCE === '1'
+
 const c = new Client({
-  host: 'ep-crimson-thunder-ayvdckx1-pooler.c-5.us-east-2.aws.neon.tech',
-  port: 5432,
-  user: 'neondb_owner',
-  password: 'npg_mZb2xDNrC1kE',
-  database: 'neondb',
-  ssl: { rejectUnauthorized: false }
+  connectionString,
+  ssl:
+    connectionString.includes('neon.tech') || connectionString.includes('sslmode=require')
+      ? { rejectUnauthorized: false }
+      : undefined,
 })
 
 async function main() {
@@ -23,10 +31,14 @@ async function main() {
     const json = JSON.stringify(settings)
     await c.query(
       `INSERT INTO site_settings (key, data) VALUES ('main', $1)
-       ON CONFLICT (key) DO UPDATE SET data = $1`,
+       ON CONFLICT (key) ${force ? 'DO UPDATE SET data = $1' : 'DO NOTHING'}`,
       [json]
     )
-    console.log('Settings seeded into site_settings table')
+    console.log(
+      force
+        ? 'Settings overwritten in site_settings table (FORCE=1)'
+        : 'Settings seeded into site_settings table (existing settings left untouched)'
+    )
   }
 
   const result = await c.query('SELECT key, pg_column_size(data) as size FROM site_settings WHERE key = $1', ['main'])

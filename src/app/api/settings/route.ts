@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { getSettings, saveSettings } from '@/lib/settings'
+import { requireAuth } from '@/lib/api-auth'
 
 export const dynamic = 'force-dynamic'
 
@@ -14,6 +15,9 @@ export async function GET() {
 }
 
 export async function PUT(request: Request) {
+  const unauthorized = await requireAuth()
+  if (unauthorized) return unauthorized
+
   try {
     const settings = await request.json()
     await saveSettings(settings)

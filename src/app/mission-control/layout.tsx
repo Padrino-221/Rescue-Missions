@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Mission Control | Rescue Mission Orphanage',
+  title: 'Mission Control | Admin',
 }
 
 export default function MissionControlLayout({

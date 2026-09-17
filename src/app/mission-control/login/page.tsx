@@ -41,7 +41,7 @@ export default function LoginPage() {
             <PiHeartFill className="w-8 h-8 text-dark" />
           </div>
           <h1 className="text-2xl font-serif text-white">Mission Control</h1>
-          <p className="text-white/50 text-sm mt-2">Rescue Mission Orphanage Admin</p>
+          <p className="text-white/50 text-sm mt-2">Admin panel</p>
         </div>
 
         <div className="bg-white rounded-3xl p-8">
@@ -65,7 +65,7 @@ export default function LoginPage() {
                 onChange={(e) => setEmail(e.target.value)}
                 required
                 className="w-full px-4 py-3 rounded-xl border border-dark/15 bg-white text-dark text-sm placeholder:text-dark/35 focus:outline-none focus:border-dark/40 transition-colors"
-                placeholder="admin@rescuemission.org"
+                placeholder="you@example.com"
               />
             </div>
             <div>
@@ -89,10 +89,6 @@ export default function LoginPage() {
               {loading ? 'Signing in...' : 'Sign In'}
             </button>
           </form>
-
-          <p className="mt-6 text-center text-xs text-dark/40">
-            Default: admin@rescuemission.org / RescueMission2024!
-          </p>
         </div>
       </div>
     </div>

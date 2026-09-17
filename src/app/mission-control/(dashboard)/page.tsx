@@ -9,7 +9,6 @@ import {
   PiImages,
   PiBooks,
   PiChatsCircle,
-  PiTrendUp,
   PiUsers,
   PiSpinner,
 } from 'react-icons/pi'
@@ -19,7 +18,6 @@ type Stats = {
   totalContacts: number
   publishedStories: number
   totalStories: number
-  activePrograms: number
   totalPrograms: number
   galleryItems: number
 }
@@ -75,23 +73,23 @@ export default function MissionControlOverview() {
   const statCards = stats
     ? [
         {
-          label: 'Active Programs',
-          value: String(stats.activePrograms),
-          change: `${stats.totalPrograms} total programs`,
+          label: 'Programs',
+          value: String(stats.totalPrograms),
+          detail: 'Shown on the public site',
           icon: PiBooks,
           bgColor: 'bg-red-50',
         },
         {
-          label: 'Published Stories',
+          label: 'Featured Stories',
           value: String(stats.publishedStories),
-          change: `${stats.totalStories} total stories`,
+          detail: `${stats.totalStories} total stories`,
           icon: PiNewspaper,
           bgColor: 'bg-purple-50',
         },
         {
           label: 'Unread Messages',
           value: String(stats.unreadContacts),
-          change: `${stats.totalContacts} total contacts`,
+          detail: `${stats.totalContacts} total contacts`,
           icon: PiChatsCircle,
           bgColor: 'bg-blue-50',
         },
@@ -136,10 +134,7 @@ export default function MissionControlOverview() {
                       <p className="font-serif text-2xl md:text-3xl font-bold text-dark mt-1">
                         {stat.value}
                       </p>
-                      <p className="font-body text-xs text-lime font-semibold mt-2 flex items-center gap-1">
-                        <PiTrendUp className="text-sm" />
-                        {stat.change}
-                      </p>
+                      <p className="font-body text-xs text-dark/45 mt-2">{stat.detail}</p>
                     </div>
                     <div className={`${stat.bgColor} p-3 rounded-xl`}>
                       <Icon className="text-xl text-dark" />

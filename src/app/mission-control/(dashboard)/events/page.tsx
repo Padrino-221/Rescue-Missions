@@ -9,10 +9,11 @@ import {
   PiCalendar,
   PiClock,
   PiMapPin,
-  PiX,
   PiSpinner,
   PiMagnifyingGlass,
+  PiFloppyDisk,
 } from 'react-icons/pi'
+import Modal from '@/components/dashboard/Modal'
 import Select from '@/components/ui/Select'
 import ImageUpload from '@/components/ui/ImageUpload'
 import { useToast } from '@/components/ui/Toast'
@@ -39,6 +40,19 @@ const defaultFormState = {
   category: 'Community',
   status: 'upcoming',
   imageUrl: '',
+}
+
+const inputClasses =
+  'w-full px-4 py-3 rounded-2xl border border-[#0e3b2b]/15 bg-white text-sm text-[#0e3b2b] placeholder:text-[#0e3b2b]/35 focus:outline-none focus:border-[#0e3b2b]/40 focus:ring-4 focus:ring-[#7ed957]/20 transition-all'
+const labelClasses = 'block text-xs font-semibold uppercase tracking-wide text-[#0e3b2b]/50 mb-2'
+
+function SectionLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="flex items-center gap-3">
+      <h3 className="text-[11px] font-extrabold uppercase tracking-[0.16em] text-[#0e3b2b]/45">{children}</h3>
+      <span className="h-px flex-1 bg-[#0e3b2b]/10" />
+    </div>
+  )
 }
 
 export default function EventsPage() {
@@ -116,7 +130,7 @@ export default function EventsPage() {
     setSaving(true)
     try {
       const url = editingEvent ? `/api/events/${editingEvent.id}` : '/api/events'
-      const method = editingEvent ? 'PUT' : 'POST'
+      const method = editingEvent ? 'PATCH' : 'POST'
       const res = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
@@ -127,7 +141,8 @@ export default function EventsPage() {
         await fetchEvents()
         closeModal()
       } else {
-        toast('Failed to save event.', 'error')
+        const data = await res.json().catch(() => null)
+        toast(data?.error || 'Failed to save event.', 'error')
       }
     } catch (err) {
       toast('Failed to save event.', 'error')
@@ -177,7 +192,7 @@ export default function EventsPage() {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
           <div>
             <h1 className="text-3xl font-bold text-[#0e3b2b]">Events</h1>
-            <p className="text-[#0e3b2b]/60 mt-1">Manage orphanage events and activities</p>
+            <p className="text-[#0e3b2b]/60 mt-1">Manage the events shown on the public Events page</p>
           </div>
           <button
             onClick={openCreateModal}
@@ -387,137 +402,150 @@ export default function EventsPage() {
         )}
       </div>
 
-      {showModal && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="bg-white rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto"
-          >
-            <div className="flex items-center justify-between px-6 py-4 border-b border-[#0e3b2b]/10">
-              <h2 className="text-lg font-bold text-[#0e3b2b]">
-                {editingEvent ? 'Edit Event' : 'New Event'}
-              </h2>
-              <button
-                onClick={closeModal}
-                className="p-2 rounded-lg hover:bg-[#0e3b2b]/10 text-[#0e3b2b]/50 hover:text-[#0e3b2b] transition-colors"
-              >
-                <PiX size={20} />
-              </button>
+      <Modal
+        open={showModal}
+        onClose={closeModal}
+        title={editingEvent ? 'Edit event' : 'New event'}
+        subtitle={
+          editingEvent
+            ? 'Update the details and save your changes.'
+            : 'Add an event to the public Events page.'
+        }
+        icon={<PiCalendar className="text-xl" />}
+        maxWidth="max-w-3xl"
+        footer={
+          <div className="flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-end">
+            <button
+              type="button"
+              onClick={closeModal}
+              className="px-5 py-2.5 rounded-xl border border-[#0e3b2b]/15 text-sm font-semibold text-[#0e3b2b] transition-colors hover:bg-[#0e3b2b]/5"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={handleSave}
+              disabled={saving || !formState.title}
+              className="inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl bg-[#7ed957] text-[#0e3b2b] text-sm font-semibold transition-colors hover:bg-[#6bc748] disabled:opacity-50"
+            >
+              {saving ? (
+                <PiSpinner className="animate-spin" />
+              ) : (
+                <PiFloppyDisk className="text-base" />
+              )}
+              {saving ? 'Saving...' : editingEvent ? 'Update event' : 'Create event'}
+            </button>
+          </div>
+        }
+      >
+        <div className="space-y-8">
+          <section className="space-y-4">
+            <SectionLabel>Event details</SectionLabel>
+            <div>
+              <label className={labelClasses}>Title *</label>
+              <input
+                type="text"
+                value={formState.title}
+                onChange={(e) => setFormState({ ...formState, title: e.target.value })}
+                className={`${inputClasses} text-base font-semibold`}
+                placeholder="e.g. Annual fundraising gala"
+              />
             </div>
+            <div>
+              <label className={labelClasses}>Description</label>
+              <textarea
+                value={formState.description}
+                onChange={(e) => setFormState({ ...formState, description: e.target.value })}
+                rows={4}
+                className={`${inputClasses} resize-none leading-relaxed`}
+                placeholder="What is this event about?"
+              />
+            </div>
+          </section>
 
-            <div className="p-6 space-y-4">
+          <section className="space-y-4">
+            <SectionLabel>When &amp; where</SectionLabel>
+            <div className="grid gap-4 sm:grid-cols-2">
               <div>
-                <label className="block text-sm font-medium text-[#0e3b2b] mb-2">Title</label>
+                <label className={labelClasses}>Date</label>
+                <input
+                  type="date"
+                  value={formState.date}
+                  onChange={(e) => setFormState({ ...formState, date: e.target.value })}
+                  className={inputClasses}
+                />
+              </div>
+              <div>
+                <label className={labelClasses}>Time</label>
                 <input
                   type="text"
-                  value={formState.title}
-                  onChange={(e) => setFormState({ ...formState, title: e.target.value })}
-                  className="w-full px-4 py-3 rounded-xl border border-[#0e3b2b]/15 bg-white text-[#0e3b2b] text-sm focus:outline-none focus:border-[#0e3b2b]/40"
-                  placeholder="Event title"
+                  value={formState.time}
+                  onChange={(e) => setFormState({ ...formState, time: e.target.value })}
+                  className={inputClasses}
+                  placeholder="e.g. 10:00 AM"
                 />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-[#0e3b2b] mb-2">
-                  Description
-                </label>
-                <textarea
-                  value={formState.description}
-                  onChange={(e) => setFormState({ ...formState, description: e.target.value })}
-                  rows={3}
-                  className="w-full px-4 py-3 rounded-xl border border-[#0e3b2b]/15 bg-white text-[#0e3b2b] text-sm focus:outline-none focus:border-[#0e3b2b]/40 resize-none"
-                  placeholder="Event description"
-                />
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-[#0e3b2b] mb-2">Date</label>
-                  <input
-                    type="date"
-                    value={formState.date}
-                    onChange={(e) => setFormState({ ...formState, date: e.target.value })}
-                    className="w-full px-4 py-3 rounded-xl border border-[#0e3b2b]/15 bg-white text-[#0e3b2b] text-sm focus:outline-none focus:border-[#0e3b2b]/40"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-[#0e3b2b] mb-2">Time</label>
-                  <input
-                    type="text"
-                    value={formState.time}
-                    onChange={(e) => setFormState({ ...formState, time: e.target.value })}
-                    className="w-full px-4 py-3 rounded-xl border border-[#0e3b2b]/15 bg-white text-[#0e3b2b] text-sm focus:outline-none focus:border-[#0e3b2b]/40"
-                    placeholder="e.g. 10:00 AM"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-[#0e3b2b] mb-2">Location</label>
-                <input
-                  type="text"
-                  value={formState.location}
-                  onChange={(e) => setFormState({ ...formState, location: e.target.value })}
-                  className="w-full px-4 py-3 rounded-xl border border-[#0e3b2b]/15 bg-white text-[#0e3b2b] text-sm focus:outline-none focus:border-[#0e3b2b]/40"
-                  placeholder="Event location"
-                />
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <Select
-                    label="Category"
-                    value={formState.category}
-                    onChange={(v) => setFormState({ ...formState, category: v })}
-                    options={[
-                      { label: 'Fundraiser', value: 'Fundraiser' },
-                      { label: 'Community', value: 'Community' },
-                      { label: 'Volunteer', value: 'Volunteer' },
-                      { label: 'Celebration', value: 'Celebration' },
-                      { label: 'Healthcare', value: 'Healthcare' },
-                      { label: 'Education', value: 'Education' },
-                      { label: 'Other', value: 'Other' },
-                    ]}
-                  />
-                </div>
-                <div>
-                  <Select
-                    label="Status"
-                    value={formState.status}
-                    onChange={(v) => setFormState({ ...formState, status: v })}
-                    options={[
-                      { label: 'Upcoming', value: 'upcoming' },
-                      { label: 'Completed', value: 'completed' },
-                    ]}
-                  />
-                </div>
-              </div>
-
-              <div>
-                <ImageUpload value={formState.imageUrl} onChange={(v) => setFormState({ ...formState, imageUrl: v })} folder="rescue-mission/events" label="Event Image" />
               </div>
             </div>
-
-            <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-[#0e3b2b]/10">
-              <button
-                onClick={closeModal}
-                className="px-5 py-2.5 rounded-xl text-sm font-medium text-[#0e3b2b]/60 hover:bg-[#0e3b2b]/10 transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleSave}
-                disabled={saving || !formState.title}
-                className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#7ed957] text-[#0e3b2b] text-sm font-semibold hover:bg-[#6bc748] transition-colors disabled:opacity-50"
-              >
-                {saving && <PiSpinner size={16} className="animate-spin" />}
-                {editingEvent ? 'Update' : 'Create'}
-              </button>
+            <div>
+              <label className={labelClasses}>Location</label>
+              <input
+                type="text"
+                value={formState.location}
+                onChange={(e) => setFormState({ ...formState, location: e.target.value })}
+                className={inputClasses}
+                placeholder="e.g. Golden Tulip Hotel, Accra"
+              />
             </div>
-          </motion.div>
+          </section>
+
+          <section className="space-y-4">
+            <SectionLabel>Organize</SectionLabel>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Select
+                label="Category"
+                value={formState.category}
+                onChange={(v) => setFormState({ ...formState, category: v })}
+                options={[
+                  { label: 'Fundraiser', value: 'Fundraiser' },
+                  { label: 'Community', value: 'Community' },
+                  { label: 'Volunteer', value: 'Volunteer' },
+                  { label: 'Celebration', value: 'Celebration' },
+                  { label: 'Healthcare', value: 'Healthcare' },
+                  { label: 'Education', value: 'Education' },
+                  { label: 'Other', value: 'Other' },
+                ]}
+              />
+              <div>
+                <label className={labelClasses}>Status</label>
+                <div className="grid grid-cols-2 gap-1 rounded-2xl border border-[#0e3b2b]/15 bg-[#0e3b2b]/[0.02] p-1">
+                  {([
+                    { label: 'Upcoming', value: 'upcoming' },
+                    { label: 'Completed', value: 'completed' },
+                  ] as const).map((option) => (
+                    <button
+                      key={option.value}
+                      type="button"
+                      onClick={() => setFormState({ ...formState, status: option.value })}
+                      className={`rounded-xl px-4 py-2.5 text-sm font-semibold transition-colors ${
+                        formState.status === option.value
+                          ? 'bg-[#0e3b2b] text-white'
+                          : 'text-[#0e3b2b]/60 hover:bg-[#0e3b2b]/5'
+                      }`}
+                    >
+                      {option.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section className="space-y-4">
+            <SectionLabel>Cover image</SectionLabel>
+            <ImageUpload value={formState.imageUrl} onChange={(v) => setFormState({ ...formState, imageUrl: v })} folder="rescue-mission/events" label="Event Image" />
+          </section>
         </div>
-      )}
+      </Modal>
     </div>
   )
 }

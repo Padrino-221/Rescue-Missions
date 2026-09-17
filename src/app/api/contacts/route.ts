@@ -14,9 +14,6 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  const unauthorized = await requireAuth()
-  if (unauthorized) return unauthorized
-
   const body = await readJson(request)
   if (!body) return NextResponse.json({ error: 'Invalid body' }, { status: 400 })
 

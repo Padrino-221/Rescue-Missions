@@ -65,6 +65,18 @@ CREATE TABLE IF NOT EXISTS gallery_items (
   image TEXT NOT NULL DEFAULT ''
 );
 
+CREATE TABLE IF NOT EXISTS events (
+  id SERIAL PRIMARY KEY,
+  title TEXT NOT NULL,
+  description TEXT NOT NULL DEFAULT '',
+  date TEXT NOT NULL DEFAULT '',
+  time TEXT NOT NULL DEFAULT '',
+  location TEXT NOT NULL DEFAULT '',
+  category TEXT NOT NULL DEFAULT 'Community',
+  status TEXT NOT NULL DEFAULT 'upcoming',
+  image_url TEXT NOT NULL DEFAULT ''
+);
+
 CREATE TABLE IF NOT EXISTS settings (
   id INTEGER PRIMARY KEY DEFAULT 1,
   org_name TEXT NOT NULL,
