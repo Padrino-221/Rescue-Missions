@@ -5,6 +5,7 @@ import Image from 'next/image'
 import { PiHeartFill, PiEye, PiShieldCheck, PiGlobe, PiUsers, PiArrowRight, PiHandHeart } from 'react-icons/pi'
 import Link from 'next/link'
 import { useSettings } from '@/lib/useSettings'
+import { defaultTeam, resolveTeam, teamSlug } from '@/lib/team'
 import type { SiteSettings } from '@/lib/settings'
 
 const defaultValues = [
@@ -12,13 +13,6 @@ const defaultValues = [
   { icon: PiShieldCheck, title: 'Integrity', description: 'Transparency and accountability in all operations.' },
   { icon: PiGlobe, title: 'Impact', description: 'Sustainable solutions creating lasting change.' },
   { icon: PiUsers, title: 'Collaboration', description: 'Partnerships amplifying our collective impact.' },
-]
-
-const defaultTeam = [
-  { name: 'Grace Mwangi', role: 'Executive Director', bio: '20+ years in nonprofit leadership', avatar: 'https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?auto=format&fit=crop&w=200&q=80' },
-  { name: 'David Okonkwo', role: 'Programs Director', bio: 'Expert in child development programs', avatar: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&w=200&q=80' },
-  { name: 'Sarah Williams', role: 'Development Manager', bio: 'Passionate about community engagement', avatar: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=200&q=80' },
-  { name: 'James Chen', role: 'Finance Director', bio: 'Ensuring transparent financial stewardship', avatar: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=200&q=80' },
 ]
 
 const defaultMilestones = [
@@ -63,7 +57,7 @@ export default function AboutPage({ initialSettings }: { initialSettings?: SiteS
   const values = about?.values?.length
     ? about.values.map((v) => ({ icon: iconMap[v.title] || PiHeartFill, title: v.title, description: v.description }))
     : defaultValues
-  const team = about?.team?.length ? about.team : defaultTeam
+  const team = resolveTeam(about?.team)
   const milestones = about?.milestones?.length ? about.milestones : defaultMilestones
 
   if (loading) return null
@@ -229,7 +223,10 @@ export default function AboutPage({ initialSettings }: { initialSettings?: SiteS
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.4, delay: index * 0.08 }}
-                className="card-premium overflow-hidden"
+              >
+              <Link
+                href={`/about/leadership/${teamSlug(member.name, index)}`}
+                className="card-premium overflow-hidden group block"
               >
                 <div className="relative h-48 overflow-hidden bg-dark/5">
                   {member.avatar && (
@@ -238,15 +235,19 @@ export default function AboutPage({ initialSettings }: { initialSettings?: SiteS
                       alt={member.name}
                       fill
                       sizes="(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw"
-                      className="object-cover object-top"
+                      className="object-cover object-top transition-transform duration-700 group-hover:scale-105"
                     />
                   )}
                 </div>
                 <div className="p-5">
-                  <h3 className="text-base font-semibold text-dark">{member.name}</h3>
+                  <h3 className="text-base font-semibold text-dark group-hover:text-dark-100 transition-colors">{member.name}</h3>
                   <p className="text-lime text-sm font-medium">{member.role}</p>
-                  <p className="mt-1.5 text-dark/50 text-xs">{member.bio}</p>
+                  <span className="mt-3 inline-flex items-center gap-1.5 text-sm font-semibold text-dark">
+                    View profile
+                    <PiArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-1" />
+                  </span>
                 </div>
+              </Link>
               </motion.div>
             ))}
           </div>

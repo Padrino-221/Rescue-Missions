@@ -777,7 +777,7 @@ export default function SettingsPage() {
                   </div>
                   <div className={sectionCls}>
                     <h2 className="text-lg font-serif text-dark mb-4">Team Members</h2>
-                    <ArrayField items={settings.about.team} onAdd={() => addArrayItem('about.team', { name: '', role: '', bio: '', avatar: '' })} onRemove={(i) => removeArrayItem('about.team', i)} onUpdate={(i, k, v) => updateArrayItem('about.team', i, k, v)} fields={[{ key: 'name', label: 'Name' }, { key: 'role', label: 'Role' }, { key: 'bio', label: 'Bio' }, { key: 'avatar', label: 'Avatar', image: true }]} folder="rescue-mission/team" />
+                    <ArrayField items={settings.about.team} onAdd={() => addArrayItem('about.team', { name: '', role: '', bio: '', avatar: '' })} onRemove={(i) => removeArrayItem('about.team', i)} onUpdate={(i, k, v) => updateArrayItem('about.team', i, k, v)} fields={[{ key: 'name', label: 'Name' }, { key: 'role', label: 'Role' }, { key: 'bio', label: 'Bio (shown in full on their profile page)', textarea: true }, { key: 'avatar', label: 'Avatar', image: true }]} folder="rescue-mission/team" />
                   </div>
                   <div className={sectionCls}>
                     <h2 className="text-lg font-serif text-dark mb-4">Milestones</h2>
