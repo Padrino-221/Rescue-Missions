@@ -3,6 +3,7 @@
 import { useState, useMemo } from 'react'
 import { motion } from 'framer-motion'
 import { PiHeartFill, PiUsers, PiBuilding, PiCheck } from 'react-icons/pi'
+import Image from 'next/image'
 import Input from '@/components/ui/Input'
 import Select from '@/components/ui/Select'
 import Textarea from '@/components/ui/Textarea'
@@ -47,9 +48,16 @@ export default function GetInvolvedPage({ initialSettings }: { initialSettings?:
   const [activeTab, setActiveTab] = useState('volunteer')
   const { settings, loading } = useSettings(initialSettings)
 
-  const volunteerRoles = settings?.volunteerRoles || defaultVolunteerRoles
+  const volunteerRoles = settings?.volunteerRoles?.length ? settings.volunteerRoles : defaultVolunteerRoles
   const sponsorship = settings?.sponsorship || defaultSponsorship
   const corporate = settings?.corporate || defaultCorporate
+  const sponsoredChildren = settings?.sponsoredChildren?.length
+    ? settings.sponsoredChildren
+    : [
+        { name: 'Child 1', age: '7', note: 'Needs sponsorship', image: '' },
+        { name: 'Child 2', age: '8', note: 'Needs sponsorship', image: '' },
+        { name: 'Child 3', age: '9', note: 'Needs sponsorship', image: '' },
+      ]
 
   const getInvolved = useMemo(() => {
     if (!settings?.getInvolved) return {
@@ -237,12 +245,16 @@ export default function GetInvolvedPage({ initialSettings }: { initialSettings?:
               <div className="card-premium p-8">
                 <h3 className="text-xl font-serif text-dark mb-6">Children Awaiting Sponsors</h3>
                 <div className="space-y-4">
-                  {[1, 2, 3].map((i) => (
-                    <div key={i} className="flex items-center gap-4 p-4 bg-dark/5 rounded-2xl border border-dark/10">
-                      <div className="w-16 h-16 bg-dark/10 rounded-full flex-shrink-0" />
+                  {sponsoredChildren.map((child, i) => (
+                    <div key={child.name || `child-${i}`} className="flex items-center gap-4 p-4 bg-dark/5 rounded-2xl border border-dark/10">
+                      <div className="relative w-16 h-16 rounded-full overflow-hidden bg-dark/10 flex-shrink-0">
+                        {child.image ? (
+                          <Image src={child.image} alt={child.name || 'Child awaiting sponsorship'} fill className="object-cover" sizes="64px" />
+                        ) : null}
+                      </div>
                       <div className="flex-1">
-                        <p className="font-semibold text-dark">Child {i}</p>
-                        <p className="text-dark/60 text-sm">Age {6 + i} • Needs sponsorship</p>
+                        <p className="font-semibold text-dark">{child.name || `Child ${i + 1}`}</p>
+                        <p className="text-dark/60 text-sm">Age {child.age || '—'} • {child.note || 'Needs sponsorship'}</p>
                       </div>
                       <Link href="/contact" className="text-dark font-semibold text-sm hover:text-dark-100">
                         Sponsor →

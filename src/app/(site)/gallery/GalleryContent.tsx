@@ -32,7 +32,7 @@ const defaultGallerySettings = {
 
 export default function GalleryPage({ initialSettings }: { initialSettings?: SiteSettings | null }) {
   const [activeCategory, setActiveCategory] = useState('All')
-  const [selectedItem, setSelectedItem] = useState<number | null>(null)
+  const [selectedItem, setSelectedItem] = useState<number | string | null>(null)
   const { settings, loading } = useSettings(initialSettings)
   const mediaEmail = settings?.contact?.mediaEmail || 'media@rescuemission.org'
 
@@ -116,7 +116,7 @@ export default function GalleryPage({ initialSettings }: { initialSettings?: Sit
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
             {filteredItems.map((item, index) => (
               <motion.div
-                key={item.id}
+                key={String(item.id ?? `${item.title}-${index}`)}
                 initial={{ opacity: 0, scale: 0.95 }}
                 whileInView={{ opacity: 1, scale: 1 }}
                 viewport={{ once: true }}
@@ -164,46 +164,53 @@ export default function GalleryPage({ initialSettings }: { initialSettings?: Sit
       </section>
 
       {/* Lightbox Modal */}
-      {selectedItem && (
-        <div 
+      {selectedItem !== null && (
+        <div
           className="fixed inset-0 bg-dark/95 z-50 flex items-center justify-center p-4"
           role="dialog"
           aria-modal="true"
           aria-label="Image preview"
           onClick={() => setSelectedItem(null)}
         >
-          <button 
+          <button
             className="absolute top-6 right-6 w-11 h-11 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-white/20 transition-colors"
             onClick={() => setSelectedItem(null)}
           >
             <PiX className="w-6 h-6" />
           </button>
           <div className="max-w-4xl w-full bg-white rounded-3xl overflow-hidden" onClick={(e) => e.stopPropagation()}>
-            <div className="relative aspect-video bg-dark/5" role="img" aria-label={gallerySettings.items.find(item => item.id === selectedItem)?.alt}>
-              {gallerySettings.items.find(item => item.id === selectedItem)?.image && (
-                <Image
-                  src={gallerySettings.items.find(item => item.id === selectedItem)?.image ?? ''}
-                  alt={gallerySettings.items.find(item => item.id === selectedItem)?.alt ?? ''}
-                  fill
-                  className="object-cover object-top"
-                />
-              )}
-              {gallerySettings.items.find(item => item.id === selectedItem)?.type === 'video' && (
-                <div className="absolute inset-0 flex items-center justify-center bg-dark/30">
-                  <div className="w-16 h-16 bg-lime rounded-full flex items-center justify-center">
-                    <PiPlayFill className="w-8 h-8 text-dark ml-1" />
+            {(() => {
+              const active = gallerySettings.items.find((item) => String(item.id) === String(selectedItem))
+              return (
+                <>
+                  <div className="relative aspect-video bg-dark/5" role="img" aria-label={active?.alt}>
+                    {active?.image && (
+                      <Image
+                        src={active.image}
+                        alt={active.alt ?? ''}
+                        fill
+                        className="object-cover object-top"
+                      />
+                    )}
+                    {active?.type === 'video' && (
+                      <div className="absolute inset-0 flex items-center justify-center bg-dark/30">
+                        <div className="w-16 h-16 bg-lime rounded-full flex items-center justify-center">
+                          <PiPlayFill className="w-8 h-8 text-dark ml-1" />
+                        </div>
+                      </div>
+                    )}
                   </div>
-                </div>
-              )}
-            </div>
-            <div className="p-8">
-              <h3 className="text-2xl font-serif text-dark">
-                {gallerySettings.items.find(item => item.id === selectedItem)?.title}
-              </h3>
-              <p className="text-dark/60 mt-2">
-                {gallerySettings.items.find(item => item.id === selectedItem)?.category}
-              </p>
-            </div>
+                  <div className="p-8">
+                    <h3 className="text-2xl font-serif text-dark">
+                      {active?.title}
+                    </h3>
+                    <p className="text-dark/60 mt-2">
+                      {active?.category}
+                    </p>
+                  </div>
+                </>
+              )
+            })()}
           </div>
         </div>
       )}

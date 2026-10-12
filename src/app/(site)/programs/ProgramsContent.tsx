@@ -73,8 +73,8 @@ export default function ProgramsContent({ initialSettings }: { initialSettings?:
               const Icon = programIcons[program.icon] ?? programIcons.heart
               return (
               <motion.div
-                key={program.id}
-                id={program.id}
+                key={program.id || program.title || `program-${index}`}
+                id={program.id || undefined}
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}

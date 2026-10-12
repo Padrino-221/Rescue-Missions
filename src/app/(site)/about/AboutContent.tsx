@@ -193,7 +193,7 @@ export default function AboutPage({ initialSettings }: { initialSettings?: SiteS
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {values.map((value, index) => (
               <motion.div
-                key={value.title}
+                key={value.title ? `${value.title}-${index}` : `value-${index}`}
                 initial={{ opacity: 0, y: 15 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
@@ -224,21 +224,23 @@ export default function AboutPage({ initialSettings }: { initialSettings?: SiteS
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {team.map((member, index) => (
               <motion.div
-                key={member.name}
+                key={member.name || `member-${index}`}
                 initial={{ opacity: 0, y: 15 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.4, delay: index * 0.08 }}
                 className="card-premium overflow-hidden"
               >
-                <div className="relative h-48 overflow-hidden">
-                  <Image
-                    src={member.avatar}
-                    alt={member.name}
-                    fill
-                    sizes="(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw"
-                    className="object-cover object-top"
-                  />
+                <div className="relative h-48 overflow-hidden bg-dark/5">
+                  {member.avatar && (
+                    <Image
+                      src={member.avatar}
+                      alt={member.name}
+                      fill
+                      sizes="(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw"
+                      className="object-cover object-top"
+                    />
+                  )}
                 </div>
                 <div className="p-5">
                   <h3 className="text-base font-semibold text-dark">{member.name}</h3>
@@ -267,7 +269,7 @@ export default function AboutPage({ initialSettings }: { initialSettings?: SiteS
             <div className="grid grid-cols-5 gap-4">
               {milestones.map((m, i) => (
                 <motion.div
-                  key={m.year}
+                  key={`${m.year}-${m.title}-${i}`}
                   initial={{ opacity: 0, y: 15 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
@@ -289,7 +291,7 @@ export default function AboutPage({ initialSettings }: { initialSettings?: SiteS
             <div className="space-y-6">
               {milestones.map((m, i) => (
                 <motion.div
-                  key={m.year}
+                  key={`m-${m.year}-${m.title}-${i}`}
                   initial={{ opacity: 0, x: -10 }}
                   whileInView={{ opacity: 1, x: 0 }}
                   viewport={{ once: true }}

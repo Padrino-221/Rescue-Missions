@@ -5,14 +5,12 @@ import { useSettings } from '@/lib/useSettings'
 import type { SiteSettings } from '@/lib/settings'
 
 const defaultPartners = {
-  kicker: 'Trusted by partners & supporters worldwide',
+  kicker: 'Supported by individuals and corporate organisations',
   items: [
-    { name: 'ZenZap' },
-    { name: 'sparkle' },
-    { name: 'Lum Labs' },
-    { name: 'Pulse' },
-    { name: 'swift' },
-    { name: 'innovio' },
+    { name: 'Individual Donors' },
+    { name: 'Volunteer Community' },
+    { name: 'Corporate Partners' },
+    { name: 'Community Supporters' },
   ],
 }
 

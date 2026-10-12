@@ -219,9 +219,9 @@ export default function ContactPage({ initialSettings }: { initialSettings?: Sit
                       <info.icon className="w-5 h-5 text-lime" />
                     </div>
                     <div>
-                      <h3 className="font-semibold text-dark">{info.title}</h3>
+                      <h3 className="text-sm font-semibold text-dark">{info.title}</h3>
                       {info.details.map((detail, i) => (
-                        <p key={i} className="text-dark/60 text-sm">{detail}</p>
+                        <p key={i} className="text-[13px] leading-relaxed text-dark/55">{detail}</p>
                       ))}
                     </div>
                   </div>

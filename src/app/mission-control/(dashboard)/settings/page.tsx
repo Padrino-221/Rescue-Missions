@@ -270,6 +270,11 @@ const defaultSettings = () => ({
     { title: 'Skilled Volunteer', commitment: 'Project-based', description: 'Share your professional skills (medical, legal, etc.).' },
   ],
   sponsorship: { monthlyAmount: 50, benefits: ['Monthly updates and photos of your sponsored child', 'Direct correspondence through letters', 'Annual progress reports', 'Invitation to visit (where possible)', 'Tax-deductible donation receipt'] },
+  sponsoredChildren: [
+    { name: 'Child 1', age: '7', note: 'Needs sponsorship', image: '' },
+    { name: 'Child 2', age: '8', note: 'Needs sponsorship', image: '' },
+    { name: 'Child 3', age: '9', note: 'Needs sponsorship', image: '' },
+  ],
   corporate: { tiers: [
     { tier: 'Bronze', amount: 'GH₵5,000/year', benefits: 'Logo on website, social media mentions' },
     { tier: 'Silver', amount: 'GH₵15,000/year', benefits: 'All Bronze + event sponsorship, employee volunteer days' },
@@ -281,8 +286,13 @@ const defaultSettings = () => ({
     { question: 'How do I sponsor a child?', answer: 'Contact us to learn about our sponsorship program and how you can make a difference.' },
   ],
   partners: {
-    kicker: 'Trusted by partners & supporters worldwide',
-    items: [{ name: 'ZenZap' }, { name: 'sparkle' }, { name: 'Lum Labs' }, { name: 'Pulse' }, { name: 'swift' }, { name: 'innovio' }],
+    kicker: 'Supported by individuals and corporate organisations',
+    items: [
+      { name: 'Individual Donors' },
+      { name: 'Volunteer Community' },
+      { name: 'Corporate Partners' },
+      { name: 'Community Supporters' },
+    ],
   },
 })
 
@@ -294,13 +304,21 @@ export default function SettingsPage() {
   const { settings: serverSettings, loading: settingsLoading } = useSettings()
   const { toast } = useToast()
   const { confirm } = useAlert()
-  const settingsReady = Boolean(
-    serverSettings && Object.keys(serverSettings).length > 0
-  )
+  // Null means the fetch failed. An empty object means "no saved settings yet"
+  // (fresh DB) — saving must still be allowed in that case.
+  const fetchFailed = !settingsLoading && serverSettings === null
+  const settingsReady = !settingsLoading && serverSettings !== null
+  // Snapshot of what the server had when we loaded, so Save only sends keys
+  // the user actually changed. Untouched sections (e.g. programs/gallery
+  // edited on their dedicated pages) are left alone on the server.
+  const [baselineJson, setBaselineJson] = useState<string | null>(null)
+  const baselineRef = useState({ mergedOnce: false })[0]
 
-  // Merge server data over defaults once it arrives
+  // Merge server data over defaults once it arrives. Null values never wipe defaults.
   useEffect(() => {
-    if (!serverSettings) return
+    if (serverSettings === null || serverSettings === undefined) return
+    if (baselineRef.mergedOnce) return
+    baselineRef.mergedOnce = true
     // Defer to a microtask to avoid synchronously calling setState inside an effect
     queueMicrotask(() => {
       setSettings(prev => {
@@ -308,23 +326,29 @@ export default function SettingsPage() {
         const incoming = serverSettings as unknown as Record<string, unknown>
         for (const key of Object.keys(incoming)) {
           const value = incoming[key]
-          if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
-            merged[key] = { ...(merged[key] as Record<string, unknown>), ...(value as Record<string, unknown>) }
-          } else if (value !== undefined) {
+          if (value === undefined || value === null) continue
+          if (typeof value === 'object' && !Array.isArray(value)) {
+            const baseSection = (merged[key] as Record<string, unknown>) ?? {}
+            merged[key] = { ...baseSection, ...(value as Record<string, unknown>) }
+          } else {
             merged[key] = value
           }
         }
+        setBaselineJson(JSON.stringify(merged))
         return merged as typeof prev
       })
     })
-  }, [serverSettings])
+  }, [serverSettings, baselineRef])
 
   const update = (path: string, value: string) => {
     setSettings(prev => {
       const keys = path.split('.')
       const next = JSON.parse(JSON.stringify(prev))
       let obj = next
-      for (let i = 0; i < keys.length - 1; i++) obj = obj[keys[i]]
+      for (let i = 0; i < keys.length - 1; i++) {
+        if (obj[keys[i]] === null || typeof obj[keys[i]] !== 'object') obj[keys[i]] = {}
+        obj = obj[keys[i]]
+      }
       obj[keys[keys.length - 1]] = value
       return next
     })
@@ -335,7 +359,10 @@ export default function SettingsPage() {
       const keys = path.split('.')
       const next = JSON.parse(JSON.stringify(prev))
       let obj = next
-      for (const k of keys) obj = obj[k]
+      for (const k of keys) {
+        if (obj[k] === null || typeof obj[k] !== 'object') return prev
+        obj = obj[k]
+      }
       obj[index][key] = value
       return next
     })
@@ -346,7 +373,11 @@ export default function SettingsPage() {
       const keys = path.split('.')
       const next = JSON.parse(JSON.stringify(prev))
       let obj = next
-      for (const k of keys) obj = obj[k]
+      for (const k of keys) {
+        if (obj[k] === null || typeof obj[k] !== 'object') return prev
+        obj = obj[k]
+      }
+      if (!Array.isArray(obj)) return prev
       obj.push({ ...template })
       return next
     })
@@ -357,7 +388,11 @@ export default function SettingsPage() {
       const keys = path.split('.')
       const next = JSON.parse(JSON.stringify(prev))
       let obj = next
-      for (const k of keys) obj = obj[k]
+      for (const k of keys) {
+        if (obj[k] === null || typeof obj[k] !== 'object') return prev
+        obj = obj[k]
+      }
+      if (!Array.isArray(obj)) return prev
       obj.splice(index, 1)
       return next
     })
@@ -368,7 +403,11 @@ export default function SettingsPage() {
       const keys = path.split('.')
       const next = JSON.parse(JSON.stringify(prev))
       let obj = next
-      for (const k of keys) obj = obj[k]
+      for (const k of keys) {
+        if (obj[k] === null || typeof obj[k] !== 'object') return prev
+        obj = obj[k]
+      }
+      if (!Array.isArray(obj)) return prev
       obj[index] = value
       return next
     })
@@ -379,7 +418,11 @@ export default function SettingsPage() {
       const keys = path.split('.')
       const next = JSON.parse(JSON.stringify(prev))
       let obj = next
-      for (const k of keys) obj = obj[k]
+      for (const k of keys) {
+        if (obj[k] === null || typeof obj[k] !== 'object') return prev
+        obj = obj[k]
+      }
+      if (!Array.isArray(obj)) return prev
       obj.push(template)
       return next
     })
@@ -390,21 +433,91 @@ export default function SettingsPage() {
       const keys = path.split('.')
       const next = JSON.parse(JSON.stringify(prev))
       let obj = next
-      for (const k of keys) obj = obj[k]
+      for (const k of keys) {
+        if (obj[k] === null || typeof obj[k] !== 'object') return prev
+        obj = obj[k]
+      }
+      if (!Array.isArray(obj)) return prev
       obj.splice(index, 1)
       return next
     })
   }
 
+  const buildPayload = () => {
+    const current = JSON.parse(JSON.stringify(settings)) as Record<string, unknown>
+    // Coerce text inputs back to the numeric shapes the site expects.
+    const sponsorship = current.sponsorship as Record<string, unknown> | undefined
+    if (sponsorship && typeof sponsorship === 'object' && 'monthlyAmount' in sponsorship) {
+      const n = Number(sponsorship.monthlyAmount)
+      if (Number.isFinite(n)) sponsorship.monthlyAmount = n
+    }
+    const featured = current.featuredStory as Record<string, unknown> | undefined
+    if (featured && typeof featured === 'object' && Array.isArray(featured.progressBars)) {
+      featured.progressBars = (featured.progressBars as Record<string, unknown>[]).map((bar) => {
+        const n = Number((bar as Record<string, unknown>).percentage)
+        return { ...bar, percentage: Number.isFinite(n) ? n : 0 }
+      })
+    }
+    // programs.items and gallery.items are managed on their dedicated pages
+    // (which persist complete records). Never send them from here so a stale
+    // settings form cannot wipe live client content.
+    if (current.programs && typeof current.programs === 'object') {
+      const { items: _omitPrograms, ...programsMeta } = current.programs as Record<string, unknown>
+      current.programs = programsMeta
+    }
+    if (current.gallery && typeof current.gallery === 'object') {
+      const { items: _omitGallery, ...galleryMeta } = current.gallery as Record<string, unknown>
+      current.gallery = galleryMeta
+    }
+    // Fresh DB (no baseline): send everything except the omitted item arrays.
+    if (!baselineJson) return current
+    const baseline = JSON.parse(baselineJson) as Record<string, unknown>
+    const stripItems = (section: unknown) => {
+      if (section && typeof section === 'object' && !Array.isArray(section) && 'items' in (section as Record<string, unknown>)) {
+        const { items: _omit, ...rest } = section as Record<string, unknown>
+        return rest
+      }
+      return section
+    }
+    const payload: Record<string, unknown> = {}
+    for (const key of Object.keys(current)) {
+      if (key === 'programs' || key === 'gallery') {
+        // Only metadata (already stripped of items) — include if changed.
+        if (JSON.stringify(current[key]) !== JSON.stringify(stripItems((baseline as Record<string, unknown>)[key]))) {
+          payload[key] = current[key]
+        }
+        continue
+      }
+      if (JSON.stringify(current[key]) !== JSON.stringify((baseline as Record<string, unknown>)[key])) {
+        payload[key] = current[key]
+      }
+    }
+    return payload
+  }
+
   const handleSave = async () => {
     if (!settingsReady) {
-      toast('Settings are still loading. Please wait a moment and try again.', 'error')
+      toast(
+        fetchFailed
+          ? 'Could not load the saved settings, so saving is disabled to avoid overwriting them.'
+          : 'Settings are still loading. Please wait a moment and try again.',
+        'error'
+      )
+      return
+    }
+    const payload = buildPayload()
+    if (Object.keys(payload).length === 0) {
+      toast('No changes to save.', 'error')
       return
     }
     setSaving(true)
     try {
-      const res = await fetch('/api/settings', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(settings) })
+      // Payload only contains changed sections (and never programs/gallery
+      // items), so the server-side deep merge preserves live content edited
+      // elsewhere.
+      const res = await fetch('/api/settings', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
       if (!res.ok) throw new Error('Save failed')
+      setBaselineJson(JSON.stringify({ ...(JSON.parse(baselineJson ?? '{}')), ...JSON.parse(JSON.stringify(settings)) }))
       setSaved(true)
       setTimeout(() => setSaved(false), 3000)
     } catch (err) {
@@ -415,22 +528,69 @@ export default function SettingsPage() {
     }
   }
 
-  const handleReset = () => {
-    confirm({
-      title: 'Reset all fields?',
-      message:
-        'This replaces every field on this page with the original demo content. Your live site is not changed until you click Save Changes.',
-      icon: 'warning',
-      confirmLabel: 'Reset fields',
-      onConfirm: () => {
-        const fresh = defaultSettings()
-        // Preserve uploaded images so a reset never leaves broken image links.
-        if (serverSettings?.homeHero) {
-          fresh.homeHero.imageUrl = serverSettings.homeHero.imageUrl || fresh.homeHero.imageUrl
-          fresh.homeHero.imageAlt = serverSettings.homeHero.imageAlt || fresh.homeHero.imageAlt
+  const tabTopKeys: Record<string, string[]> = {
+    general: ['general', 'siteUrl'],
+    contact: ['contact'],
+    social: ['social'],
+    home: ['homeHero'],
+    explore: ['exploreOurWork'],
+    cta: ['cta'],
+    impact: ['impactStats'],
+    howwehelp: ['howWeHelp'],
+    featured: ['featuredStory'],
+    programs: ['programs'],
+    gallery: ['gallery'],
+    stories: ['stories'],
+    events: ['events'],
+    about: ['about'],
+    getinvolved: ['getInvolved'],
+    contactpage: ['contactPage'],
+    testimonials: ['testimonials'],
+    volunteer: ['volunteerRoles', 'sponsorship', 'sponsoredChildren'],
+    corporate: ['corporate'],
+    faq: ['faq', 'partners'],
+  }
+
+  const IMAGE_KEYS = new Set(['imageUrl', 'image', 'avatar', 'quoteAvatar', 'storyImageUrl'])
+
+  const restoreImages = (current: unknown, fresh: unknown): unknown => {
+    if (Array.isArray(current) && Array.isArray(fresh)) {
+      return (fresh as unknown[]).map((f, i) =>
+        i < (current as unknown[]).length ? restoreImages((current as unknown[])[i], f) : f
+      )
+    }
+    if (current && fresh && typeof current === 'object' && typeof fresh === 'object' && !Array.isArray(fresh)) {
+      const out = { ...(fresh as Record<string, unknown>) }
+      for (const [k, cv] of Object.entries(current as Record<string, unknown>)) {
+        if (IMAGE_KEYS.has(k) && typeof cv === 'string' && cv) {
+          out[k] = cv
+        } else if (k in out && cv && typeof cv === 'object') {
+          out[k] = restoreImages(cv, (out as Record<string, unknown>)[k])
         }
-        if (serverSettings?.about?.storyImageUrl) fresh.about.storyImageUrl = serverSettings.about.storyImageUrl
-        setSettings(fresh)
+      }
+      return out
+    }
+    return fresh
+  }
+
+  const handleReset = () => {
+    const activeLabel = tabs.find((t) => t.id === activeTab)?.label ?? activeTab
+    confirm({
+      title: `Reset ${activeLabel}?`,
+      message:
+        'This replaces only the section you are viewing with the original demo content. Other sections and your live site are unchanged until you click Save Changes.',
+      icon: 'warning',
+      confirmLabel: 'Reset section',
+      onConfirm: () => {
+        const fresh = defaultSettings() as unknown as Record<string, unknown>
+        const keys = tabTopKeys[activeTab] ?? []
+        setSettings((prev) => {
+          const next = JSON.parse(JSON.stringify(prev)) as Record<string, unknown>
+          for (const k of keys) {
+            next[k] = restoreImages(next[k], fresh[k])
+          }
+          return next as typeof prev
+        })
       },
     })
   }
@@ -585,6 +745,16 @@ export default function SettingsPage() {
               {activeTab === 'about' && (
                 <>
                   <div className={sectionCls}>
+                    <h2 className="text-lg font-serif text-dark mb-4">Page Hero</h2>
+                    <div className="space-y-4">
+                      <div className="grid sm:grid-cols-2 gap-4">
+                        <Field label="Kicker" value={settings.about.kicker} onChange={(v) => update('about.kicker', v)} />
+                        <Field label="Heading" value={settings.about.heading} onChange={(v) => update('about.heading', v)} />
+                      </div>
+                      <Field label="Hero Description" value={settings.about.heroDescription} onChange={(v) => update('about.heroDescription', v)} textarea />
+                    </div>
+                  </div>
+                  <div className={sectionCls}>
                     <h2 className="text-lg font-serif text-dark mb-4">Story Section</h2>
                     <div className="space-y-4">
                       <Field label="Story Heading" value={settings.about.storyHeading} onChange={(v) => update('about.storyHeading', v)} />
@@ -635,6 +805,11 @@ export default function SettingsPage() {
                   <div className={sectionCls}>
                     <h2 className="text-lg font-serif text-dark mb-4">Volunteer Roles</h2>
                     <ArrayField items={settings.volunteerRoles} onAdd={() => addArrayItem('volunteerRoles', { title: '', commitment: '', description: '' })} onRemove={(i) => removeArrayItem('volunteerRoles', i)} onUpdate={(i, k, v) => updateArrayItem('volunteerRoles', i, k, v)} fields={[{ key: 'title', label: 'Title' }, { key: 'commitment', label: 'Commitment' }, { key: 'description', label: 'Description' }]} />
+                  </div>
+                  <div className={sectionCls}>
+                    <h2 className="text-lg font-serif text-dark mb-4">Children Awaiting Sponsors</h2>
+                    <p className="text-dark/50 text-sm mb-4">These appear under Get Involved → Sponsor → Children Awaiting Sponsors.</p>
+                    <ArrayField items={settings.sponsoredChildren} onAdd={() => addArrayItem('sponsoredChildren', { name: '', age: '', note: 'Needs sponsorship', image: '' })} onRemove={(i) => removeArrayItem('sponsoredChildren', i)} onUpdate={(i, k, v) => updateArrayItem('sponsoredChildren', i, k, v)} fields={[{ key: 'name', label: 'Name' }, { key: 'age', label: 'Age' }, { key: 'note', label: 'Note' }, { key: 'image', label: 'Photo', image: true }]} folder="rescue-mission/sponsored-children" />
                   </div>
                   <div className={sectionCls}>
                     <h2 className="text-lg font-serif text-dark mb-4">Sponsorship</h2>
@@ -757,7 +932,7 @@ export default function SettingsPage() {
                 <div className={sectionCls}>
                   <h2 className="text-lg font-serif text-dark mb-4">Programs Page</h2>
                   <p className="text-xs text-dark/60 bg-cream rounded-xl px-4 py-3 mb-4">
-                    Tip: add or remove individual programs on the <strong>Programs</strong> page in the sidebar — it also edits each program&apos;s icon, key activities, and impact stats.
+                    Add or edit individual programs (including icons, key activities, and impact stats) on the <strong>Programs</strong> page in the sidebar. Those changes save separately and are never overwritten from here.
                   </p>
                   <div className="space-y-4">
                     <div className="grid sm:grid-cols-2 gap-4">
@@ -767,11 +942,7 @@ export default function SettingsPage() {
                     <Field label="Description" value={settings.programs.description} onChange={(v) => update('programs.description', v)} textarea />
                     <div className="grid sm:grid-cols-2 gap-4">
                       <Field label="CTA Heading" value={settings.programs.ctaHeading} onChange={(v) => update('programs.ctaHeading', v)} />
-                      <Field label="CTA Description" value={settings.programs.ctaDescription} onChange={(v) => update('programs.ctaDescription', v)} />
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-dark mb-3">Programs</h3>
-                      <ArrayField items={settings.programs.items.map((p: Record<string, unknown>) => ({ id: String(p.id || ''), icon: String(p.icon || 'heart'), title: String(p.title || ''), subtitle: String(p.subtitle || ''), description: String(p.description || ''), image: String(p.image || '') }))} onAdd={() => addArrayItem('programs.items', { id: '', icon: 'heart', title: '', subtitle: '', description: '', image: '' })} onRemove={(i) => removeArrayItem('programs.items', i)} onUpdate={(i, k, v) => updateArrayItem('programs.items', i, k, v)} fields={[{ key: 'title', label: 'Title' }, { key: 'subtitle', label: 'Subtitle' }, { key: 'description', label: 'Description', textarea: true }, { key: 'image', label: 'Image', image: true }]} folder="rescue-mission/programs" />
+                      <Field label="CTA Description" value={settings.programs.ctaDescription} onChange={(v) => update('programs.ctaDescription', v)} textarea />
                     </div>
                   </div>
                 </div>
@@ -781,7 +952,7 @@ export default function SettingsPage() {
                 <div className={sectionCls}>
                   <h2 className="text-lg font-serif text-dark mb-4">Gallery Page</h2>
                   <p className="text-xs text-dark/60 bg-cream rounded-xl px-4 py-3 mb-4">
-                    Tip: add or edit individual photos and videos on the <strong>Gallery</strong> page in the sidebar.
+                    Add or edit individual photos and videos on the <strong>Gallery</strong> page in the sidebar. Those changes save separately and are never overwritten from here.
                   </p>
                   <div className="space-y-4">
                     <div className="grid sm:grid-cols-2 gap-4">
@@ -802,10 +973,6 @@ export default function SettingsPage() {
                         </div>
                       ))}
                       <button onClick={() => addListItem('gallery.categories', '')} className="flex items-center gap-2 text-sm text-dark/60 hover:text-dark mt-2"><PiPlus className="w-4 h-4" /> Add Category</button>
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-dark mb-3">Gallery Items</h3>
-                      <ArrayField items={settings.gallery.items.map((g: Record<string, unknown>) => ({ id: String(g.id || ''), type: String(g.type || 'image'), category: String(g.category || ''), title: String(g.title || ''), alt: String(g.alt || ''), image: String(g.image || '') }))} onAdd={() => addArrayItem('gallery.items', { id: String(Date.now()), type: 'image', category: '', title: '', alt: '', image: '' })} onRemove={(i) => removeArrayItem('gallery.items', i)} onUpdate={(i, k, v) => updateArrayItem('gallery.items', i, k, v)} fields={[{ key: 'title', label: 'Title' }, { key: 'category', label: 'Category' }, { key: 'type', label: 'Type (image/video)' }, { key: 'alt', label: 'Alt Text' }, { key: 'image', label: 'Image', image: true }]} folder="rescue-mission/gallery" />
                     </div>
                   </div>
                 </div>
@@ -900,12 +1067,15 @@ export default function SettingsPage() {
           </AnimatePresence>
 
           {/* Actions */}
-          {!settingsReady && (
+          {fetchFailed && (
             <div className="mt-6 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700 flex items-center gap-2">
-              {settingsLoading && <PiSpinner className="w-4 h-4 animate-spin shrink-0" />}
-              {settingsLoading
-                ? 'Loading your saved settings…'
-                : 'Could not load the saved settings, so saving is disabled to avoid overwriting them.'}
+              Could not load the saved settings, so saving is disabled to avoid overwriting them.
+            </div>
+          )}
+          {settingsLoading && (
+            <div className="mt-6 rounded-xl border border-dark/10 bg-white px-4 py-3 text-sm text-dark/60 flex items-center gap-2">
+              <PiSpinner className="w-4 h-4 animate-spin shrink-0" />
+              Loading your saved settings…
             </div>
           )}
           <div className="flex items-center gap-4 mt-6">
@@ -913,7 +1083,7 @@ export default function SettingsPage() {
               {saving ? <PiSpinner className="w-4 h-4 animate-spin" /> : <PiFloppyDisk className="w-4 h-4" />} {saving ? 'Saving…' : 'Save Changes'}
             </button>
             <button onClick={handleReset} disabled={!settingsReady} className="inline-flex items-center gap-2 px-6 py-3.5 rounded-full border-2 border-dark/20 text-dark font-extrabold text-sm tracking-wide hover:border-dark/40 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
-              <PiArrowCounterClockwise className="w-4 h-4" /> Reset to Defaults
+              <PiArrowCounterClockwise className="w-4 h-4" /> Reset Section
             </button>
           </div>
         </div>

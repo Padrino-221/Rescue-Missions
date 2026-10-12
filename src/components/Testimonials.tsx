@@ -84,7 +84,7 @@ export default function Testimonials({ initialSettings }: { initialSettings?: Si
         <div className="grid md:grid-cols-3 gap-8">
           {testimonials.map((testimonial, index) => (
             <motion.figure
-              key={testimonial.author}
+              key={testimonial.author || `testimonial-${index}`}
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
@@ -102,13 +102,15 @@ export default function Testimonials({ initialSettings }: { initialSettings?: Si
               </blockquote>
 
               <figcaption className="mt-8 pt-6 border-t border-dark/10 flex items-center gap-4">
-                <Image
-                  src={testimonial.avatar}
-                  alt={testimonial.author}
-                  width={48}
-                  height={48}
-                  className="rounded-full object-cover"
-                />
+                {testimonial.avatar && (
+                  <Image
+                    src={testimonial.avatar}
+                    alt={testimonial.author}
+                    width={48}
+                    height={48}
+                    className="rounded-full object-cover"
+                  />
+                )}
                 <div>
                   <p className="font-semibold text-dark">{testimonial.author}</p>
                   <p className="text-dark/45 text-sm">{testimonial.role}</p>

@@ -78,22 +78,24 @@ export default function ProgramsOverview({ initialSettings }: { initialSettings?
             const Icon = iconList[i % iconList.length]
             return (
               <motion.div
-                key={item.index}
+                key={item.index || item.title || `explore-${i}`}
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.6 }}
               >
-                <Link href={item.href} className="block group h-full">
+                <Link href={item.href || '#'} className="block group h-full">
                   <div className="card-premium overflow-hidden h-full flex flex-col">
-                    <div className="relative aspect-[4/3] overflow-hidden">
-                      <Image
-                        src={item.imageUrl}
-                        alt={`${item.title} — Rescue Mission Orphanage`}
-                        fill
-                        sizes="(min-width: 768px) 33vw, 100vw"
-                        className="object-cover object-top transition-transform duration-700 group-hover:scale-105"
-                      />
+                    <div className="relative aspect-[4/3] overflow-hidden bg-dark/5">
+                      {item.imageUrl && (
+                        <Image
+                          src={item.imageUrl}
+                          alt={`${item.title} — Rescue Mission Orphanage`}
+                          fill
+                          sizes="(min-width: 768px) 33vw, 100vw"
+                          className="object-cover object-top transition-transform duration-700 group-hover:scale-105"
+                        />
+                      )}
                     </div>
 
                     <div className="p-8 flex flex-col flex-1">

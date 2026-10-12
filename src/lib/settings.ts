@@ -136,6 +136,7 @@ export interface SiteSettings {
   }
   volunteerRoles: { title: string; commitment: string; description: string }[]
   sponsorship: { monthlyAmount: number; benefits: string[] }
+  sponsoredChildren: { name: string; age: string; note: string; image: string }[]
   corporate: {
     tiers: { tier: string; amount: string; benefits: string }[]
     benefits: string[]
@@ -216,9 +217,9 @@ function isPlainObject(value: unknown): value is Record<string, unknown> {
 
 /**
  * Recursively merge `incoming` over `base`. Arrays are replaced wholesale, and
- * keys that only exist in `base` are preserved. This keeps settings that the
- * client edited directly on the deployed site from being wiped out by code
- * updates that don't know about every field.
+ * keys that only exist in `base` are preserved. `null` / `undefined` values in
+ * `incoming` never wipe out existing data — this keeps a stale settings form
+ * or a partial payload from blanking live client content.
  */
 function deepMerge(
   base: Record<string, unknown>,
@@ -226,17 +227,78 @@ function deepMerge(
 ): Record<string, unknown> {
   const merged: Record<string, unknown> = { ...base }
   for (const [key, value] of Object.entries(incoming)) {
+    if (value === undefined || value === null) continue
     if (isPlainObject(value) && isPlainObject(merged[key])) {
       merged[key] = deepMerge(merged[key] as Record<string, unknown>, value)
-    } else if (value !== undefined) {
+    } else {
       merged[key] = value
     }
   }
   return merged
 }
 
+function toNumber(value: unknown, fallback: number): number {
+  if (typeof value === 'number' && Number.isFinite(value)) return value
+  if (typeof value === 'string' && value.trim() !== '') {
+    const n = Number(value)
+    if (Number.isFinite(n)) return n
+  }
+  return fallback
+}
+
+/**
+ * Coerce loosely-typed client input into the shapes the public site expects.
+ * The settings UI edits everything as text, so numeric fields (sponsorship
+ * amount, progress percentages, gallery ids) and partially-filled program
+ * entries are normalized here as a last line of defence before persisting.
+ */
+function normalizeSettings(value: unknown): unknown {
+  const sanitized = sanitizeValue(value) as Record<string, unknown>
+  if (!isPlainObject(sanitized)) return sanitized
+
+  const sponsorship = sanitized.sponsorship as Record<string, unknown> | undefined
+  if (isPlainObject(sponsorship) && 'monthlyAmount' in sponsorship) {
+    sponsorship.monthlyAmount = toNumber(sponsorship.monthlyAmount, 50)
+  }
+
+  const featured = sanitized.featuredStory as Record<string, unknown> | undefined
+  if (isPlainObject(featured) && Array.isArray(featured.progressBars)) {
+    featured.progressBars = (featured.progressBars as Record<string, unknown>[]).map((bar) => ({
+      ...bar,
+      percentage: toNumber((bar as Record<string, unknown>).percentage, 0),
+    }))
+  }
+
+  const gallery = sanitized.gallery as Record<string, unknown> | undefined
+  if (isPlainObject(gallery) && Array.isArray(gallery.items)) {
+    gallery.items = (gallery.items as Record<string, unknown>[]).map((item) => {
+      const rawId = (item as Record<string, unknown>).id
+      const numericId = toNumber(rawId, NaN)
+      return {
+        ...item,
+        id: Number.isFinite(numericId) ? numericId : rawId,
+      }
+    })
+  }
+
+  const programs = sanitized.programs as Record<string, unknown> | undefined
+  if (isPlainObject(programs) && Array.isArray(programs.items)) {
+    programs.items = (programs.items as Record<string, unknown>[]).map((p) => {
+      const rec = p as Record<string, unknown>
+      return {
+        icon: 'heart',
+        ...rec,
+        features: Array.isArray(rec.features) ? rec.features : [],
+        impact: isPlainObject(rec.impact) ? rec.impact : {},
+      }
+    })
+  }
+
+  return sanitized
+}
+
 export async function saveSettings(settings: SiteSettings): Promise<void> {
-  const cleaned = sanitizeValue(settings) as SiteSettings
+  const cleaned = normalizeSettings(settings) as SiteSettings
   const existing = await getSettings()
   const merged = deepMerge(
     existing as unknown as Record<string, unknown>,

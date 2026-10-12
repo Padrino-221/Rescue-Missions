@@ -96,6 +96,7 @@ export default function ProgramsPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [formOpen, setFormOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [form, setForm] = useState<ProgramForm>(emptyForm);
   const [saving, setSaving] = useState(false);
   const [busyId, setBusyId] = useState<string | null>(null);
@@ -126,10 +127,14 @@ export default function ProgramsPage() {
   const openNew = () => {
     setForm(emptyForm);
     setEditingId(null);
+    setEditingIndex(null);
     setFormOpen(true);
   };
 
-  const openEdit = (program: ProgramItem) => {
+  const slugify = (s: string) =>
+    s.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 60) || 'program';
+
+  const openEdit = (program: ProgramItem, index?: number) => {
     setForm({
       id: program.id,
       icon: program.icon || 'heart',
@@ -140,7 +145,15 @@ export default function ProgramsPage() {
       impact: impactToText(program.impact),
       image: program.image ?? '',
     });
-    setEditingId(program.id);
+    setEditingId(program.id ?? null);
+    // Track index as well — some older records have empty ids, so id-only
+    // matching would treat an edit as a new insert.
+    if (typeof index === 'number') {
+      setEditingIndex(index);
+    } else {
+      const found = items.findIndex((p) => p === program || (program.id && p.id === program.id));
+      setEditingIndex(found >= 0 ? found : null);
+    }
     setFormOpen(true);
   };
 
@@ -148,8 +161,15 @@ export default function ProgramsPage() {
     e.preventDefault();
     setSaving(true);
     try {
+      const isEdit = editingIndex !== null && editingIndex >= 0;
+      const id =
+        editingId && editingId !== ''
+          ? editingId
+          : form.id && form.id !== ''
+            ? form.id
+            : `${slugify(form.title)}-${Date.now().toString(36)}`;
       const item: ProgramItem = {
-        id: editingId ?? Date.now().toString(),
+        id,
         icon: form.icon,
         title: form.title,
         subtitle: form.subtitle,
@@ -158,12 +178,12 @@ export default function ProgramsPage() {
         impact: parseImpact(form.impact),
         image: form.image,
       };
-      const next = editingId
-        ? items.map((p) => (p.id === editingId ? item : p))
+      const next = isEdit
+        ? items.map((p, idx) => (idx === editingIndex ? item : p))
         : [...items, item];
       await persist(next);
       setFormOpen(false);
-      toast(editingId ? 'Program updated successfully' : 'Program created successfully');
+      toast(isEdit ? 'Program updated successfully' : 'Program created successfully');
     } catch {
       toast('Failed to save the program.', 'error');
     } finally {
@@ -180,7 +200,8 @@ export default function ProgramsPage() {
       onConfirm: async () => {
         setBusyId(program.id);
         try {
-          await persist(items.filter((p) => p.id !== program.id));
+          const idx = items.findIndex((p) => p === program || (program.id && p.id === program.id));
+          await persist(items.filter((_, i) => i !== idx));
           toast('Program deleted successfully');
         } catch {
           toast('Failed to delete the program.', 'error');
