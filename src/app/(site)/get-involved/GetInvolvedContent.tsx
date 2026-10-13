@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { PiHeartFill, PiUsers, PiBuilding, PiCheck } from 'react-icons/pi'
 import Image from 'next/image'
@@ -11,84 +11,35 @@ import Link from 'next/link'
 import { useSettings } from '@/lib/useSettings'
 import type { SiteSettings } from '@/lib/settings'
 
-const defaultVolunteerRoles = [
-  { title: 'Teaching Assistant', commitment: '4 hours/week', description: 'Help children with their studies and homework.' },
-  { title: 'Mentor', commitment: '2 hours/week', description: 'Guide and support a child through their journey.' },
-  { title: 'Event Coordinator', commitment: 'Flexible', description: 'Help organize and run fundraising events.' },
-  { title: 'Skilled Volunteer', commitment: 'Project-based', description: 'Share your professional skills (medical, legal, etc.).' },
-]
-
-const defaultSponsorship = {
-  monthlyAmount: 50,
-  benefits: [
-    'Monthly updates and photos of your sponsored child',
-    'Direct correspondence through letters',
-    'Annual progress reports',
-    'Invitation to visit (where possible)',
-    'Tax-deductible donation receipt',
-  ],
-}
-
-const defaultCorporate = {
-  tiers: [
-    { tier: 'Bronze', amount: 'GH₵5,000/year', benefits: 'Logo on website, social media mentions' },
-    { tier: 'Silver', amount: 'GH₵15,000/year', benefits: 'All Bronze + event sponsorship, employee volunteer days' },
-    { tier: 'Gold', amount: 'GH₵30,000/year', benefits: 'All Silver + naming rights, board observer seat' },
-  ],
-  benefits: [
-    'Brand visibility on our website and events',
-    'Employee engagement opportunities',
-    'Tax benefits for corporate donations',
-    'CSR reporting support',
-    'Partnership certificates',
-  ],
-}
-
 export default function GetInvolvedPage({ initialSettings }: { initialSettings?: SiteSettings | null }) {
   const [activeTab, setActiveTab] = useState('volunteer')
   const { settings, loading } = useSettings(initialSettings)
 
-  const volunteerRoles = settings?.volunteerRoles?.length ? settings.volunteerRoles : defaultVolunteerRoles
-  const sponsorship = settings?.sponsorship || defaultSponsorship
-  const corporate = settings?.corporate || defaultCorporate
-  const sponsoredChildren = settings?.sponsoredChildren?.length
-    ? settings.sponsoredChildren
-    : [
-        { name: 'Child 1', age: '7', note: 'Needs sponsorship', image: '' },
-        { name: 'Child 2', age: '8', note: 'Needs sponsorship', image: '' },
-        { name: 'Child 3', age: '9', note: 'Needs sponsorship', image: '' },
-      ]
+  const volunteerRoles = settings?.volunteerRoles ?? []
+  const sponsorship = settings?.sponsorship ?? null
+  const corporate = settings?.corporate ?? null
+  const sponsoredChildren = settings?.sponsoredChildren ?? []
 
-  const getInvolved = useMemo(() => {
-    if (!settings?.getInvolved) return {
-      kicker: 'Join Our Mission',
-      heading: 'Get Involved',
-      description: 'There are many ways you can make a difference in the lives of orphaned children \u2014 find the one that fits you.',
-      volunteerHeading: 'Volunteer With Us',
-      volunteerDescription: 'Join our team of dedicated volunteers and make a direct impact on children\'s lives. Whether you have a few hours or a few weeks, there\'s a role for you.',
-      sponsorHeading: 'Sponsor a Child',
-      sponsorDescription: 'Your sponsorship provides a child with consistent support for education, healthcare, and daily needs. Build a meaningful connection while changing a life.',
-      corporateHeading: 'Corporate Partnerships',
-      corporateDescription: 'Partner with us to make a meaningful impact while enhancing your corporate social responsibility profile. We offer flexible partnership options tailored to your goals.',
-    }
-    return {
-      kicker: settings.getInvolved.kicker || 'Join Our Mission',
-      heading: settings.getInvolved.heading || 'Get Involved',
-      description: settings.getInvolved.description || 'There are many ways you can make a difference in the lives of orphaned children \u2014 find the one that fits you.',
-      volunteerHeading: settings.getInvolved.volunteerHeading || 'Volunteer With Us',
-      volunteerDescription: settings.getInvolved.volunteerDescription || 'Join our team of dedicated volunteers and make a direct impact on children\'s lives. Whether you have a few hours or a few weeks, there\'s a role for you.',
-      sponsorHeading: settings.getInvolved.sponsorHeading || 'Sponsor a Child',
-      sponsorDescription: settings.getInvolved.sponsorDescription || 'Your sponsorship provides a child with consistent support for education, healthcare, and daily needs. Build a meaningful connection while changing a life.',
-      corporateHeading: settings.getInvolved.corporateHeading || 'Corporate Partnerships',
-      corporateDescription: settings.getInvolved.corporateDescription || 'Partner with us to make a meaningful impact while enhancing your corporate social responsibility profile. We offer flexible partnership options tailored to your goals.',
-    }
-  }, [settings])
+  const gi = settings?.getInvolved
+  const getInvolved = {
+    kicker: gi?.kicker || '',
+    heading: gi?.heading || '',
+    description: gi?.description || '',
+    volunteerHeading: gi?.volunteerHeading || '',
+    volunteerDescription: gi?.volunteerDescription || '',
+    sponsorHeading: gi?.sponsorHeading || '',
+    sponsorDescription: gi?.sponsorDescription || '',
+    corporateHeading: gi?.corporateHeading || '',
+    corporateDescription: gi?.corporateDescription || '',
+  }
+  const hasHero = Boolean(getInvolved.kicker || getInvolved.heading || getInvolved.description)
 
   if (loading) return null
 
   return (
     <>
       {/* Hero */}
+      {hasHero && (
       <section className="bg-cream pt-24 pb-6 lg:pt-28 lg:pb-8 overflow-hidden relative">
         <div className="absolute top-24 right-0 w-64 h-64 bg-lime/15 rounded-full blur-3xl pointer-events-none" />
         <div className="container-premium">
@@ -98,16 +49,21 @@ export default function GetInvolvedPage({ initialSettings }: { initialSettings?:
             transition={{ duration: 0.6 }}
             className="max-w-3xl"
           >
-            <span className="kicker mb-6">{getInvolved.kicker}</span>
+            {getInvolved.kicker && <span className="kicker mb-6">{getInvolved.kicker}</span>}
+            {getInvolved.heading && (
             <h1 className="text-4xl sm:text-5xl md:text-6xl font-serif text-dark">
               {getInvolved.heading}
             </h1>
+            )}
+            {getInvolved.description && (
             <p className="mt-6 text-lg text-dark/60 max-w-xl leading-relaxed">
               {getInvolved.description}
             </p>
+            )}
           </motion.div>
         </div>
       </section>
+      )}
 
       {/* Ways to Get Involved */}
       <section className="section-padding bg-cream">
@@ -150,10 +106,12 @@ export default function GetInvolvedPage({ initialSettings }: { initialSettings?:
               className="grid lg:grid-cols-2 gap-12"
             >
               <div>
-                <h2 className="text-3xl font-serif text-dark mb-6">{getInvolved.volunteerHeading}</h2>
+                {getInvolved.volunteerHeading && <h2 className="text-3xl font-serif text-dark mb-6">{getInvolved.volunteerHeading}</h2>}
+                {getInvolved.volunteerDescription && (
                 <p className="text-dark/60 mb-8 leading-relaxed">
                   {getInvolved.volunteerDescription}
                 </p>
+                )}
                 
                 <div className="space-y-4">
                   {volunteerRoles.map((role) => (
@@ -219,15 +177,18 @@ export default function GetInvolvedPage({ initialSettings }: { initialSettings?:
               className="grid lg:grid-cols-2 gap-12"
             >
               <div>
-                <h2 className="text-3xl font-serif text-dark mb-6" id="sponsor">{getInvolved.sponsorHeading}</h2>
+                {getInvolved.sponsorHeading && <h2 className="text-3xl font-serif text-dark mb-6" id="sponsor">{getInvolved.sponsorHeading}</h2>}
+                {getInvolved.sponsorDescription && (
                 <p className="text-dark/60 mb-8 leading-relaxed">
                   {getInvolved.sponsorDescription}
                 </p>
+                )}
                 
+                {sponsorship && (
                 <div className="card-premium p-6 mb-8">
                   <h3 className="font-semibold text-dark mb-4">Monthly Sponsorship: GH₵{sponsorship.monthlyAmount}/month</h3>
                   <ul className="space-y-3">
-                    {sponsorship.benefits.map((benefit) => (
+                    {(sponsorship.benefits ?? []).map((benefit) => (
                       <li key={benefit} className="flex items-start gap-2 text-dark/60 text-sm">
                         <PiCheck className="w-5 h-5 text-lime mt-0.5 flex-shrink-0" />
                         <span>{benefit}</span>
@@ -235,6 +196,7 @@ export default function GetInvolvedPage({ initialSettings }: { initialSettings?:
                     ))}
                   </ul>
                 </div>
+                )}
                 
                 <Link href="/contact" className="btn-lime w-full">
                   <PiHeartFill className="w-5 h-5" />
@@ -274,13 +236,15 @@ export default function GetInvolvedPage({ initialSettings }: { initialSettings?:
               className="grid lg:grid-cols-2 gap-12"
             >
               <div>
-                <h2 className="text-3xl font-serif text-dark mb-6" id="corporate">{getInvolved.corporateHeading}</h2>
+                {getInvolved.corporateHeading && <h2 className="text-3xl font-serif text-dark mb-6" id="corporate">{getInvolved.corporateHeading}</h2>}
+                {getInvolved.corporateDescription && (
                 <p className="text-dark/60 mb-8 leading-relaxed">
                   {getInvolved.corporateDescription}
                 </p>
+                )}
                 
                 <div className="space-y-4">
-                  {corporate.tiers.map((item) => (
+                  {(corporate?.tiers ?? []).map((item) => (
                     <div key={item.tier} className="card-premium p-5">
                       <div className="flex items-start gap-4">
                         <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold text-white ${
@@ -301,7 +265,7 @@ export default function GetInvolvedPage({ initialSettings }: { initialSettings?:
               <div className="card-premium p-8">
                 <h3 className="text-xl font-serif text-dark mb-6">Partner Benefits</h3>
                 <ul className="space-y-3">
-                  {corporate.benefits.map((benefit) => (
+                  {(corporate?.benefits ?? []).map((benefit) => (
                     <li key={benefit} className="flex items-start gap-2 text-dark/60 text-sm">
                       <PiCheck className="w-5 h-5 text-lime mt-0.5 flex-shrink-0" />
                       <span>{benefit}</span>

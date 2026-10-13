@@ -1,32 +1,23 @@
 'use client'
 
-import { useMemo } from 'react'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { PiHeartFill, PiArrowUpRight } from 'react-icons/pi'
 import { useSettings } from '@/lib/useSettings'
 import type { SiteSettings } from '@/lib/settings'
 
-const defaults = {
-  kicker: 'Give Hope a Home',
-  heading: 'Your kindness becomes a child\'s breakthrough',
-  description:
-    'Every volunteer hour, every share — it all adds up to education, healthcare, and a safe home for a child in need.',
-}
-
 export default function CallToAction({ initialSettings }: { initialSettings?: SiteSettings | null }) {
   const { settings, loading } = useSettings(initialSettings)
 
-  const cta = useMemo(() => {
-    if (!settings?.cta) return defaults
-    return {
-      kicker: settings.cta.kicker || defaults.kicker,
-      heading: settings.cta.heading || defaults.heading,
-      description: settings.cta.description || defaults.description,
-    }
-  }, [settings])
-
+  const saved = settings?.cta
   if (loading) return null
+  if (!saved) return null
+  const cta = {
+    kicker: saved.kicker || '',
+    heading: saved.heading || '',
+    description: saved.description || '',
+  }
+  if (!cta.kicker && !cta.heading && !cta.description) return null
 
   return (
     <section className="section-padding bg-cream overflow-hidden">
@@ -41,15 +32,19 @@ export default function CallToAction({ initialSettings }: { initialSettings?: Si
           <div className="absolute top-0 right-0 w-96 h-96 bg-sky/15 rounded-full blur-3xl pointer-events-none" />
           <div className="absolute bottom-0 left-0 w-72 h-72 bg-coral/15 rounded-full blur-3xl pointer-events-none" />
 
-          <span className="kicker-light justify-center mb-8">{cta.kicker}</span>
+          {cta.kicker && <span className="kicker-light justify-center mb-8">{cta.kicker}</span>}
 
+          {cta.heading && (
           <h2 className="text-4xl md:text-6xl font-serif text-cream leading-[1.02] mx-auto max-w-3xl text-balance">
             {cta.heading}
           </h2>
+          )}
 
+          {cta.description && (
           <p className="mt-8 text-cream/60 text-lg max-w-2xl mx-auto leading-relaxed">
             {cta.description}
           </p>
+          )}
 
           <div className="mt-12 flex flex-wrap justify-center gap-4">
             <Link href="/contact" className="btn-lime !px-8 !py-4 text-base group">

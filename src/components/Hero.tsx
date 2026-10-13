@@ -17,34 +17,24 @@ interface HeroSettings {
   imageAlt: string
 }
 
-const defaults: HeroSettings = {
-  heading: 'Every child deserves a childhood.',
-  description:
-    'Rescue Mission Orphanage provides shelter, education, and care to children who need it most — turning hardship into hope, one child at a time.',
-  cta1Text: 'Contact Us',
-  cta2Text: 'Explore Our Work',
-  imageUrl:
-    'https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?auto=format&fit=crop&w=1200&q=80',
-  imageAlt: 'Children playing at Rescue Mission Orphanage',
-}
-
 export default function Hero({ initialSettings }: { initialSettings?: SiteSettings | null }) {
   const { settings, loading } = useSettings(initialSettings)
 
-  const hero = useMemo((): HeroSettings => {
+  const hero = useMemo((): HeroSettings | null => {
     const h = settings?.homeHero
-    if (!h) return defaults
+    if (!h) return null
     return {
-      heading: h.heading || defaults.heading,
-      description: h.description || defaults.description,
-      cta1Text: h.cta1Text || defaults.cta1Text,
-      cta2Text: h.cta2Text || defaults.cta2Text,
-      imageUrl: h.imageUrl || defaults.imageUrl,
-      imageAlt: h.imageAlt || defaults.imageAlt,
+      heading: h.heading || '',
+      description: h.description || '',
+      cta1Text: h.cta1Text || '',
+      cta2Text: h.cta2Text || '',
+      imageUrl: h.imageUrl || '',
+      imageAlt: h.imageAlt || '',
     }
   }, [settings])
 
   if (loading) return null
+  if (!hero || (!hero.heading && !hero.description && !hero.imageUrl)) return null
 
   const [firstPart, lastWord] = splitHeading(hero.heading)
 
@@ -63,6 +53,7 @@ export default function Hero({ initialSettings }: { initialSettings?: SiteSettin
             transition={{ duration: 0.8 }}
             className="lg:col-span-6"
           >
+            {hero.heading && (
             <h1 className="text-4xl sm:text-5xl md:text-6xl xl:text-[4.5rem] font-serif text-dark leading-[0.88]">
               {firstPart}{' '}
               <span className="relative inline-block">
@@ -70,25 +61,35 @@ export default function Hero({ initialSettings }: { initialSettings?: SiteSettin
                 <span className="absolute -bottom-1 left-0 right-0 h-4 bg-lime/70 -z-10 -skew-x-6 rounded-full" />
               </span>
             </h1>
+            )}
 
+            {hero.description && (
             <p className="mt-8 text-lg text-dark/60 max-w-lg leading-relaxed">
               {hero.description}
             </p>
+            )}
 
+            {(hero.cta1Text || hero.cta2Text) && (
             <div className="mt-10 flex flex-wrap gap-3 sm:gap-4">
+              {hero.cta1Text && (
               <Link href="/contact" className="btn-lime !px-6 !py-3 sm:!px-8 sm:!py-4 text-sm sm:text-base group">
                 <PiHeartFill className="w-4 h-4 sm:w-5 sm:h-5" />
                 {hero.cta1Text}
                 <PiArrowRight className="w-4 h-4 sm:w-5 sm:h-5 group-hover:translate-x-1 transition-transform" />
               </Link>
+              )}
+              {hero.cta2Text && (
               <Link href="/programs" className="btn-secondary !px-6 !py-3 sm:!px-8 sm:!py-4 text-sm sm:text-base group">
                 {hero.cta2Text}
                 <PiArrowRight className="w-4 h-4 sm:w-5 sm:h-5 group-hover:translate-x-1 transition-transform" />
               </Link>
+              )}
             </div>
+            )}
           </motion.div>
 
           {/* Right content - image */}
+          {hero.imageUrl && (
           <motion.div
             initial={{ opacity: 0, scale: 0.97 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -101,7 +102,7 @@ export default function Hero({ initialSettings }: { initialSettings?: SiteSettin
               <div className="relative rounded-[2.5rem] overflow-hidden aspect-[4/3] border-4 border-cream">
                 <Image
                   src={hero.imageUrl}
-                  alt={hero.imageAlt}
+                  alt={hero.imageAlt || ''}
                   fill
                   priority
                   sizes="(min-width: 1024px) 52vw, 100vw"
@@ -115,6 +116,7 @@ export default function Hero({ initialSettings }: { initialSettings?: SiteSettin
               </div>
             </div>
           </motion.div>
+          )}
         </div>
       </div>
     </section>

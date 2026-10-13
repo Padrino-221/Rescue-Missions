@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { motion } from 'framer-motion'
@@ -21,28 +21,15 @@ interface Story {
   content: string
 }
 
-const defaultStoriesSettings = {
-  kicker: 'Our Blog',
-  heading: 'Stories of Hope',
-  description: 'Read inspiring stories of transformation, learn about our events, and stay updated with our latest news.',
-  categories: ['All', 'Success Stories', 'Events', 'Announcements', 'Volunteer Spotlights'],
-}
-
 export default function StoriesContent({ initialSettings }: { initialSettings?: SiteSettings | null }) {
   const { settings, loading } = useSettings(initialSettings)
   const [stories, setStories] = useState<Story[]>([])
   const [activeCategory, setActiveCategory] = useState('All')
   const [searchQuery, setSearchQuery] = useState('')
 
-  const storiesSettings = useMemo(() => {
-    if (!settings?.stories) return defaultStoriesSettings
-    return {
-      kicker: settings.stories.kicker || defaultStoriesSettings.kicker,
-      heading: settings.stories.heading || defaultStoriesSettings.heading,
-      description: settings.stories.description || defaultStoriesSettings.description,
-      categories: settings.stories.categories?.length ? settings.stories.categories : defaultStoriesSettings.categories,
-    }
-  }, [settings])
+  const storiesSettings = settings?.stories
+  const categories = storiesSettings?.categories ?? []
+  const hasHero = Boolean(storiesSettings?.kicker || storiesSettings?.heading || storiesSettings?.description)
 
   useEffect(() => {
     fetch('/api/stories')
@@ -64,6 +51,7 @@ export default function StoriesContent({ initialSettings }: { initialSettings?: 
   return (
     <>
       {/* Hero */}
+      {hasHero && (
       <section className="bg-cream pt-24 pb-6 lg:pt-28 lg:pb-8 overflow-hidden relative">
         <div className="absolute top-24 right-0 w-64 h-64 bg-lime/15 rounded-full blur-3xl pointer-events-none" />
         <div className="container-premium">
@@ -73,16 +61,21 @@ export default function StoriesContent({ initialSettings }: { initialSettings?: 
             transition={{ duration: 0.6 }}
             className="max-w-3xl"
           >
-            <span className="kicker mb-6">{storiesSettings.kicker}</span>
+            {storiesSettings?.kicker && <span className="kicker mb-6">{storiesSettings.kicker}</span>}
+            {storiesSettings?.heading && (
             <h1 className="text-4xl sm:text-5xl md:text-6xl font-serif text-dark">
               {storiesSettings.heading}
             </h1>
+            )}
+            {storiesSettings?.description && (
             <p className="mt-6 text-lg text-dark/60 max-w-xl leading-relaxed">
               {storiesSettings.description}
             </p>
+            )}
           </motion.div>
         </div>
       </section>
+      )}
 
       {/* Featured Story */}
       {featuredStory && (
@@ -96,6 +89,7 @@ export default function StoriesContent({ initialSettings }: { initialSettings?: 
                 className="card-premium overflow-hidden hover:border-dark/30 transition-all duration-300"
               >
                 <div className="grid lg:grid-cols-2 gap-0">
+                  {featuredStory.image && (
                   <div className="relative h-64 lg:h-auto">
                     <Image
                       src={featuredStory.image}
@@ -105,6 +99,7 @@ export default function StoriesContent({ initialSettings }: { initialSettings?: 
                       className="object-cover object-top"
                     />
                   </div>
+                  )}
                   <div className="p-8 lg:p-12">
                     <span className="pill-tag text-xs mb-4">{featuredStory.category}</span>
                     <h2 className="mt-2 text-2xl lg:text-3xl font-serif text-dark">
@@ -139,7 +134,7 @@ export default function StoriesContent({ initialSettings }: { initialSettings?: 
           {/* Filters */}
           <div className="flex flex-col md:flex-row gap-4 mb-8 justify-between items-center">
             <div className="flex flex-wrap gap-2">
-              {storiesSettings.categories.map((category) => (
+              {categories.map((category) => (
                 <button
                   key={category}
                   onClick={() => setActiveCategory(category)}
@@ -177,6 +172,7 @@ export default function StoriesContent({ initialSettings }: { initialSettings?: 
               >
                 <Link href={`/stories/${story.id}`} className="block group">
                   <div className="card-premium overflow-hidden hover:border-dark/30 transition-all duration-300 h-full">
+                    {story.image && (
                     <div className="relative h-48">
                     <Image
                       src={story.image}
@@ -186,6 +182,7 @@ export default function StoriesContent({ initialSettings }: { initialSettings?: 
                       className="object-cover transition-transform duration-700 group-hover:scale-105"
                     />
                   </div>
+                    )}
                     <div className="p-6">
                       <span className="pill-tag text-xs">{story.category}</span>
                       <h3 className="mt-3 text-lg font-serif text-dark group-hover:text-dark-100 transition-colors">

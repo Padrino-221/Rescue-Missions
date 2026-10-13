@@ -1,28 +1,14 @@
 'use client'
 
-import { useMemo } from 'react'
 import { useSettings } from '@/lib/useSettings'
 import type { SiteSettings } from '@/lib/settings'
-
-const defaultPartners = {
-  kicker: 'Supported by individuals and corporate organisations',
-  items: [
-    { name: 'Individual Donors' },
-    { name: 'Volunteer Community' },
-    { name: 'Corporate Partners' },
-    { name: 'Community Supporters' },
-  ],
-}
 
 export default function Partners({ initialSettings }: { initialSettings?: SiteSettings | null }) {
   const { settings, loading } = useSettings(initialSettings)
 
-  const partners = useMemo(() => {
-    if (settings?.partners?.items?.length) return settings.partners
-    return defaultPartners
-  }, [settings])
-
+  const partners = settings?.partners
   if (loading) return null
+  if (!partners || (partners.items ?? []).length === 0) return null
 
   return (
     <section className="py-16 bg-cream border-y border-dark/10">

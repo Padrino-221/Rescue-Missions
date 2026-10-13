@@ -12,8 +12,8 @@ import CallToAction from '@/components/CallToAction'
 export async function generateMetadata(): Promise<Metadata> {
   const settings = await getSettings()
   const orgName = settings?.general?.orgName || 'Rescue Mission Orphanage'
-  const tagline = settings?.general?.tagline || 'Give Hope To Children In Need'
-  const description = settings?.general?.description || 'A dedicated charity organization focused on creating sustainable solutions for those in need.'
+  const tagline = settings?.general?.tagline || ''
+  const description = settings?.general?.description || ''
   const siteUrl = settings?.siteUrl || 'https://rescuemissionsgh.org'
 
   return {
@@ -31,14 +31,14 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function Home() {
   const settings = await getSettings()
   const orgName = settings?.general?.orgName || 'Rescue Mission Orphanage'
-  const tagline = settings?.general?.tagline || 'Give Hope To Children In Need'
-  const description = settings?.general?.description || 'A dedicated charity organization focused on creating sustainable solutions for orphaned children in Ghana through education, healthcare, and shelter.'
+  const tagline = settings?.general?.tagline || ''
+  const description = settings?.general?.description || ''
   const siteUrl = settings?.siteUrl || 'https://rescuemissionsgh.org'
-  const foundedYear = settings?.general?.foundedYear || '2025'
-  const phone1 = settings?.contact?.phone1 || '+233-24-567-890'
-  const email1 = settings?.contact?.email1 || 'info@rescuemission.org'
-  const address1 = settings?.contact?.address1 || 'Accra'
-  const address2 = settings?.contact?.address2 || 'Ghana'
+  const foundedYear = settings?.general?.foundedYear || ''
+  const phone1 = settings?.contact?.phone1 || ''
+  const email1 = settings?.contact?.email1 || ''
+  const address1 = settings?.contact?.address1 || ''
+  const address2 = settings?.contact?.address2 || ''
   const socialItems = settings?.social?.items || []
 
   return (

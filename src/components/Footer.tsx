@@ -19,13 +19,13 @@ export default function Footer({ initialSettings }: { initialSettings?: SiteSett
 
   const orgName = settings?.general?.orgName || 'Rescue Mission'
   const tagline = settings?.general?.tagline || ''
-  const description = settings?.general?.description || 'Creating sustainable solutions for children in need — empowering them to build a better future.'
-  const phone = settings?.contact?.phone1 || '+1 (234) 567-890'
-  const email = settings?.contact?.email1 || 'info@rescuemission.org'
+  const description = settings?.general?.description || ''
+  const phone = settings?.contact?.phone1 || ''
+  const email = settings?.contact?.email1 || ''
   const address1 = settings?.contact?.address1 || ''
   const address2 = settings?.contact?.address2 || ''
-  const fullAddress = [address1, address2].filter(Boolean).join(', ') || '123 Hope Street, City, Country'
-  const copyrightYear = settings?.general?.copyrightYear || '2024'
+  const fullAddress = [address1, address2].filter(Boolean).join(', ')
+  const copyrightYear = settings?.general?.copyrightYear || ''
 
   const socialLinks = (settings?.social?.items || []).filter(s => s.url && s.name)
 
@@ -46,19 +46,27 @@ export default function Footer({ initialSettings }: { initialSettings?: SiteSett
             {tagline && (
               <p className="text-xs text-cream/40 italic mb-5 -mt-2">{tagline}</p>
             )}
+            {description && (
             <p className="text-cream/45 text-sm max-w-xs leading-relaxed mb-5">
               {description}
             </p>
+            )}
             <div className="space-y-2.5 text-sm">
+              {phone && (
               <a href={`tel:${phone.replace(/[^0-9+]/g, '')}`} className="flex items-center gap-2.5 text-cream/45 hover:text-lime transition-colors">
                 <PiPhone className="w-4 h-4" /> {phone}
               </a>
+              )}
+              {email && (
               <a href={`mailto:${email}`} className="flex items-center gap-2.5 text-cream/45 hover:text-lime transition-colors">
                 <PiEnvelope className="w-4 h-4" /> {email}
               </a>
+              )}
+              {fullAddress && (
               <div className="flex items-center gap-2.5 text-cream/45">
                 <PiMapPin className="w-4 h-4" /> {fullAddress}
               </div>
+              )}
             </div>
           </div>
 
@@ -105,7 +113,7 @@ export default function Footer({ initialSettings }: { initialSettings?: SiteSett
       {/* Bottom */}
       <div className="border-t border-white/8">
         <div className="container-premium py-5 flex flex-col sm:flex-row justify-between items-center gap-3">
-          <p className="text-cream/30 text-xs">&copy; {copyrightYear} {orgName}. All rights reserved.</p>
+          <p className="text-cream/30 text-xs">&copy; {copyrightYear ? `${copyrightYear} ` : ''}{orgName}. All rights reserved.</p>
           <div className="flex gap-5 text-xs text-cream/30">
             <Link href="/about" className="hover:text-cream/60 transition-colors">Privacy</Link>
             <Link href="/about" className="hover:text-cream/60 transition-colors">Terms</Link>

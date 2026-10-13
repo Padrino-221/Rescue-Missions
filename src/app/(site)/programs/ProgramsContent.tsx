@@ -1,6 +1,5 @@
 'use client'
 
-import { useMemo } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { motion } from 'framer-motion'
@@ -9,42 +8,28 @@ import { programIcons } from '@/lib/programIcons'
 import { useSettings } from '@/lib/useSettings'
 import type { SiteSettings } from '@/lib/settings'
 
-const defaultPrograms = {
-  kicker: 'Our Programs',
-  heading: 'Comprehensive Support',
-  description: "We offer holistic programs designed to address every aspect of a child's development and well-being.",
-  ctaHeading: 'Want to Support Our Programs?',
-  ctaDescription: 'Contact us to learn how you can support our programs.',
-  items: [
-    { id: 'education', icon: 'graduation-cap', title: 'Education', subtitle: 'Bright Futures Program', description: 'We believe every child deserves access to quality education. Our education program provides schooling, tutoring, and educational resources to help children reach their full potential.', features: ['Primary & Secondary School Support', 'Tutoring & Homework Help', 'Scholarship Programs', 'Vocational Training'], impact: { beneficiaries: '2,500+', schools: '15', teachers: '50+' }, image: 'https://images.unsplash.com/photo-1503676260728-1c00da094a0b?auto=format&fit=crop&w=1000&q=80' },
-    { id: 'healthcare', icon: 'heart', title: 'Healthcare', subtitle: 'Healthy Hearts Initiative', description: 'Comprehensive healthcare services ensure children receive proper medical care, vaccinations, and health education to thrive physically and mentally.', features: ['Regular Health Check-ups', 'Vaccination Programs', 'Mental Health Support', 'Health Education'], impact: { beneficiaries: '3,000+', clinics: '5', staff: '25+' }, image: 'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=1000&q=80' },
-    { id: 'nutrition', icon: 'lightning', title: 'Nutrition', subtitle: 'Nourish Hope Program', description: 'Proper nutrition is essential for child development. We provide nutritious meals and nutrition education to ensure healthy growth.', features: ['Daily Nutritious Meals', 'Nutrition Education', 'Supplement Programs', 'Community Gardens'], impact: { meals: '500,000+', gardens: '10', volunteers: '100+' }, image: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=1000&q=80' },
-    { id: 'shelter', icon: 'house', title: 'Shelter', subtitle: 'Safe Haven Project', description: 'Safe, nurturing environments where children can live, grow, and feel secure. Our shelters provide more than just a roof \u2014 they provide a home.', features: ['Safe Living Spaces', 'Family-like Environment', 'Recreational Facilities', 'Life Skills Training'], impact: { children: '500+', facilities: '8', caregivers: '40+' }, image: 'https://images.unsplash.com/photo-1598928506311-c55ded91a20c?auto=format&fit=crop&w=1000&q=80' },
-    { id: 'aftercare', icon: 'gear', title: 'Aftercare', subtitle: 'Future Ready Program', description: 'Supporting children as they transition to independence with job training, mentorship, and ongoing support systems.', features: ['Career Counseling', 'Job Placement Assistance', 'Mentorship Programs', 'Alumni Network'], impact: { graduates: '1,200+', placements: '85%', mentors: '200+' }, image: 'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=1000&q=80' },
-    { id: 'community', icon: 'users', title: 'Community', subtitle: 'Community Empowerment', description: 'Strengthening communities through awareness programs, parent training, and local partnerships to create sustainable change.', features: ['Parent Workshops', 'Community Outreach', 'Local Partnerships', 'Awareness Campaigns'], impact: { families: '5,000+', events: '100+', partners: '30+' }, image: 'https://images.unsplash.com/photo-1531482615713-2afd69097998?auto=format&fit=crop&w=1000&q=80' },
-  ],
-}
-
 export default function ProgramsContent({ initialSettings }: { initialSettings?: SiteSettings | null }) {
   const { settings, loading } = useSettings(initialSettings)
 
-  const programsData = useMemo(() => {
-    if (!settings?.programs?.items?.length) return defaultPrograms
-    return {
-      kicker: settings.programs.kicker || defaultPrograms.kicker,
-      heading: settings.programs.heading || defaultPrograms.heading,
-      description: settings.programs.description || defaultPrograms.description,
-      ctaHeading: settings.programs.ctaHeading || defaultPrograms.ctaHeading,
-      ctaDescription: settings.programs.ctaDescription || defaultPrograms.ctaDescription,
-      items: settings.programs.items,
-    }
-  }, [settings])
-
+  const saved = settings?.programs
   if (loading) return null
+  if (!saved) return null
+  const programsData = {
+    kicker: saved.kicker || '',
+    heading: saved.heading || '',
+    description: saved.description || '',
+    ctaHeading: saved.ctaHeading || '',
+    ctaDescription: saved.ctaDescription || '',
+    items: saved.items ?? [],
+  }
+  if (!programsData.kicker && !programsData.heading && !programsData.description && programsData.items.length === 0) return null
+  const hasHero = Boolean(programsData.kicker || programsData.heading || programsData.description)
+  const hasCta = Boolean(programsData.ctaHeading || programsData.ctaDescription)
 
   return (
     <>
 {/* Hero */}
+      {hasHero && (
       <section className="bg-cream pt-24 pb-6 lg:pt-28 lg:pb-8 overflow-hidden relative">
         <div className="absolute top-24 right-0 w-64 h-64 bg-lime/15 rounded-full blur-3xl pointer-events-none" />
         <div className="container-premium">
@@ -54,16 +39,21 @@ export default function ProgramsContent({ initialSettings }: { initialSettings?:
             transition={{ duration: 0.6 }}
             className="max-w-3xl"
           >
-            <span className="kicker mb-6">{programsData.kicker}</span>
+            {programsData.kicker && <span className="kicker mb-6">{programsData.kicker}</span>}
+            {programsData.heading && (
             <h1 className="text-4xl sm:text-5xl md:text-6xl font-serif text-dark">
               {programsData.heading}
             </h1>
+            )}
+            {programsData.description && (
             <p className="mt-6 text-lg text-dark/60 max-w-xl leading-relaxed">
               {programsData.description}
             </p>
+            )}
           </motion.div>
         </div>
       </section>
+      )}
 
       {/* Programs Overview */}
       <section className="section-padding bg-cream">
@@ -92,7 +82,7 @@ export default function ProgramsContent({ initialSettings }: { initialSettings?:
                     </div>
                   </div>
                   <p className="mt-6 text-dark/60 leading-relaxed">{program.description}</p>
-                  
+
                   <div className="mt-8">
                     <h4 className="font-semibold text-dark mb-4">Key Activities:</h4>
                     <ul className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -104,7 +94,7 @@ export default function ProgramsContent({ initialSettings }: { initialSettings?:
                       ))}
                     </ul>
                   </div>
-                  
+
                   <div className="mt-8 flex flex-wrap gap-6">
                     {Object.entries(program.impact ?? {}).map(([key, value]) => (
                       <div key={key}>
@@ -114,7 +104,7 @@ export default function ProgramsContent({ initialSettings }: { initialSettings?:
                     ))}
                   </div>
                 </div>
-                
+
                 <div className={index % 2 === 1 ? 'lg:order-1' : ''}>
                   <div className="relative rounded-[2rem] overflow-hidden aspect-[4/3] h-full bg-dark/5">
                     {program.image && (
@@ -136,13 +126,14 @@ export default function ProgramsContent({ initialSettings }: { initialSettings?:
       </section>
 
       {/* CTA */}
+      {hasCta && (
       <section className="section-padding bg-cream">
         <div className="container-premium">
           <div className="bg-dark rounded-[2.5rem] px-8 md:px-16 py-16 md:py-20 text-center relative overflow-hidden">
             <div className="absolute top-0 right-0 w-80 h-80 bg-lime/10 rounded-full blur-3xl pointer-events-none" />
             <div className="absolute bottom-0 left-0 w-64 h-64 bg-coral/10 rounded-full blur-3xl pointer-events-none" />
-            <h2 className="text-3xl md:text-4xl font-serif text-cream">{programsData.ctaHeading}</h2>
-            <p className="mt-3 text-cream/50 max-w-lg mx-auto">{programsData.ctaDescription}</p>
+            {programsData.ctaHeading && <h2 className="text-3xl md:text-4xl font-serif text-cream">{programsData.ctaHeading}</h2>}
+            {programsData.ctaDescription && <p className="mt-3 text-cream/50 max-w-lg mx-auto">{programsData.ctaDescription}</p>}
             <div className="mt-7 flex flex-wrap justify-center gap-3">
               <Link href="/contact" className="btn-lime">
                 Contact Us
@@ -155,6 +146,7 @@ export default function ProgramsContent({ initialSettings }: { initialSettings?:
           </div>
         </div>
       </section>
+      )}
     </>
   )
 }

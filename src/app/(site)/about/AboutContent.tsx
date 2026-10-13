@@ -5,23 +5,8 @@ import Image from 'next/image'
 import { PiHeartFill, PiEye, PiShieldCheck, PiGlobe, PiUsers, PiArrowRight, PiHandHeart } from 'react-icons/pi'
 import Link from 'next/link'
 import { useSettings } from '@/lib/useSettings'
-import { defaultTeam, resolveTeam, teamSlug } from '@/lib/team'
+import { resolveTeam, teamSlug } from '@/lib/team'
 import type { SiteSettings } from '@/lib/settings'
-
-const defaultValues = [
-  { icon: PiHeartFill, title: 'Compassion', description: 'Empathy at the heart of everything we do.' },
-  { icon: PiShieldCheck, title: 'Integrity', description: 'Transparency and accountability in all operations.' },
-  { icon: PiGlobe, title: 'Impact', description: 'Sustainable solutions creating lasting change.' },
-  { icon: PiUsers, title: 'Collaboration', description: 'Partnerships amplifying our collective impact.' },
-]
-
-const defaultMilestones = [
-  { year: '2008', title: 'Founded', description: 'Established with a vision to help orphaned children.' },
-  { year: '2012', title: 'First 100 Children', description: 'Reached milestone of supporting 100 children.' },
-  { year: '2016', title: 'New Facility', description: 'Opened a new facility to serve more children.' },
-  { year: '2020', title: 'Global Expansion', description: 'Extended reach to 5 countries in Africa and Asia.' },
-  { year: '2024', title: '5,000+ Children', description: 'Celebrated supporting over 5,000 children.' },
-]
 
 const iconMap: Record<string, typeof PiHeartFill> = {
   Compassion: PiHeartFill,
@@ -30,41 +15,30 @@ const iconMap: Record<string, typeof PiHeartFill> = {
   Collaboration: PiUsers,
 }
 
-const defaultStory = {
-  storyHeading: 'A Journey of Hope Since 2008',
-  storyParagraphs: [
-    'Rescue Mission Orphanage was founded with a simple yet powerful vision: to provide every orphaned child with the opportunity to grow, learn, and thrive in a safe and nurturing environment.',
-    'What started as a small shelter for 10 children has grown into a comprehensive organization serving thousands of children across multiple countries.',
-    'Today, we continue to expand our reach and deepen our impact, guided by the belief that every child deserves a chance at a brighter future.',
-  ],
-  missionStatement: 'To provide comprehensive care, education, and support to orphaned and vulnerable children, empowering them to become self-reliant, compassionate, and productive members of society.',
-  visionStatement: 'A world where every orphaned child has access to quality education, healthcare, and the opportunity to realize their full potential in a loving and supportive environment.',
-}
-
-const defaultStoryImage =
-  'https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?auto=format&fit=crop&w=900&q=80'
-
 export default function AboutPage({ initialSettings }: { initialSettings?: SiteSettings | null }) {
   const { settings, loading } = useSettings(initialSettings)
 
   const about = settings?.about
-  const storyHeading = about?.storyHeading || defaultStory.storyHeading
-  const storyParagraphs = about?.storyParagraphs?.length ? about.storyParagraphs : defaultStory.storyParagraphs
-  const missionStatement = about?.missionStatement || defaultStory.missionStatement
-  const visionStatement = about?.visionStatement || defaultStory.visionStatement
-  const storyImageUrl = about?.storyImageUrl || defaultStoryImage
-  const foundedYear = settings?.general?.foundedYear || '2008'
-  const values = about?.values?.length
-    ? about.values.map((v) => ({ icon: iconMap[v.title] || PiHeartFill, title: v.title, description: v.description }))
-    : defaultValues
+  const storyHeading = about?.storyHeading || ''
+  const storyParagraphs = about?.storyParagraphs ?? []
+  const missionStatement = about?.missionStatement || ''
+  const visionStatement = about?.visionStatement || ''
+  const storyImageUrl = about?.storyImageUrl || ''
+  const foundedYear = settings?.general?.foundedYear || ''
+  const values = (about?.values ?? []).map((v) => ({ icon: iconMap[v.title] || PiHeartFill, title: v.title, description: v.description }))
   const team = resolveTeam(about?.team)
-  const milestones = about?.milestones?.length ? about.milestones : defaultMilestones
+  const milestones = about?.milestones ?? []
+  const hasHero = Boolean(about?.kicker || about?.heading || about?.heroDescription)
+  const hasStory = Boolean(storyHeading || storyParagraphs.length || storyImageUrl)
+  const hasMissionVision = Boolean(missionStatement || visionStatement)
 
   if (loading) return null
+  if (!about) return null
 
   return (
     <>
       {/* Hero */}
+      {hasHero && (
       <section className="bg-cream pt-24 pb-8 lg:pt-28 lg:pb-10 overflow-hidden relative">
         <div className="absolute top-24 right-0 w-72 h-72 bg-lime/15 rounded-full blur-3xl pointer-events-none" />
         <div className="absolute bottom-0 left-0 w-48 h-48 bg-coral/10 rounded-full blur-3xl pointer-events-none" />
@@ -75,18 +49,24 @@ export default function AboutPage({ initialSettings }: { initialSettings?: SiteS
             transition={{ duration: 0.6 }}
             className="max-w-3xl"
           >
-            <span className="kicker mb-5">{settings?.about?.kicker || 'About Us'}</span>
+            {about?.kicker && <span className="kicker mb-5">{about.kicker}</span>}
+            {about?.heading && (
             <h1 className="text-4xl sm:text-5xl md:text-6xl font-serif text-dark">
-              {settings?.about?.heading || 'Our Story'}
+              {about.heading}
             </h1>
+            )}
+            {(about?.heroDescription || foundedYear) && (
             <p className="mt-5 text-lg text-dark/55 max-w-xl leading-relaxed">
-              {settings?.about?.heroDescription || 'A journey of hope, dedication, and transformation in the lives of orphaned children since'} {foundedYear}.
+              {about?.heroDescription}{about?.heroDescription && foundedYear ? ` ${foundedYear}.` : foundedYear}
             </p>
+            )}
           </motion.div>
         </div>
       </section>
+      )}
 
       {/* Our Story */}
+      {hasStory && (
       <section className="section-padding bg-cream">
         <div className="container-premium">
           <div className="grid lg:grid-cols-2 gap-10 lg:gap-16 items-center">
@@ -97,16 +77,19 @@ export default function AboutPage({ initialSettings }: { initialSettings?: SiteS
               transition={{ duration: 0.6 }}
             >
               <span className="pill-tag mb-5 inline-block">Our Story</span>
+              {storyHeading && (
               <h2 className="mt-3 text-3xl md:text-4xl font-serif text-dark">
                 {storyHeading}
               </h2>
+              )}
               <div className="mt-6 space-y-3 text-dark/55 text-[15px] leading-relaxed">
                 {storyParagraphs.map((paragraph, i) => (
                   <p key={i}>{paragraph}</p>
                 ))}
               </div>
             </motion.div>
-            
+
+            {storyImageUrl && (
             <motion.div
               initial={{ opacity: 0, x: 20 }}
               whileInView={{ opacity: 1, x: 0 }}
@@ -126,11 +109,14 @@ export default function AboutPage({ initialSettings }: { initialSettings?: SiteS
                 />
               </div>
             </motion.div>
+            )}
           </div>
         </div>
       </section>
+      )}
 
       {/* Mission & Vision */}
+      {hasMissionVision && (
       <section id="mission" className="section-padding bg-white">
         <div className="container-premium">
           <div className="text-center mb-8">
@@ -140,6 +126,7 @@ export default function AboutPage({ initialSettings }: { initialSettings?: SiteS
             </h2>
           </div>
           <div className="grid md:grid-cols-2 gap-5">
+            {missionStatement && (
             <motion.div
               initial={{ opacity: 0, y: 15 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -154,7 +141,9 @@ export default function AboutPage({ initialSettings }: { initialSettings?: SiteS
                 {missionStatement}
               </p>
             </motion.div>
-            
+            )}
+
+            {visionStatement && (
             <motion.div
               initial={{ opacity: 0, y: 15 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -170,11 +159,14 @@ export default function AboutPage({ initialSettings }: { initialSettings?: SiteS
                 {visionStatement}
               </p>
             </motion.div>
+            )}
           </div>
         </div>
       </section>
+      )}
 
       {/* Values */}
+      {values.length > 0 && (
       <section className="section-padding bg-cream">
         <div className="container-premium">
           <div className="text-center mb-8">
@@ -204,8 +196,10 @@ export default function AboutPage({ initialSettings }: { initialSettings?: SiteS
           </div>
         </div>
       </section>
+      )}
 
       {/* Team */}
+      {team.length > 0 && (
       <section id="team" className="section-padding bg-white">
         <div className="container-premium">
           <div className="text-center mb-8">
@@ -253,8 +247,10 @@ export default function AboutPage({ initialSettings }: { initialSettings?: SiteS
           </div>
         </div>
       </section>
+      )}
 
       {/* Timeline */}
+      {milestones.length > 0 && (
       <section className="section-padding bg-cream">
         <div className="container-premium">
           <div className="text-center mb-8">
@@ -311,6 +307,7 @@ export default function AboutPage({ initialSettings }: { initialSettings?: SiteS
           </div>
         </div>
       </section>
+      )}
 
       {/* CTA */}
       <section className="section-padding bg-cream">

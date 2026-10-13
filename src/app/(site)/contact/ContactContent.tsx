@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { PiPhone, PiEnvelope, PiMapPin, PiClock, PiPaperPlaneTilt } from 'react-icons/pi'
 import Input from '@/components/ui/Input'
@@ -9,35 +9,6 @@ import Textarea from '@/components/ui/Textarea'
 import { useSettings } from '@/lib/useSettings'
 import { getSocialIcon } from '@/lib/social-icons'
 import type { SiteSettings } from '@/lib/settings'
-
-const defaultContactInfo = [
-  {
-    icon: PiPhone,
-    title: 'Phone',
-    details: ['+1 (234) 567-890', '+1 (234) 567-891'],
-  },
-  {
-    icon: PiEnvelope,
-    title: 'Email',
-    details: ['info@rescuemission.org', 'donate@rescuemission.org'],
-  },
-  {
-    icon: PiMapPin,
-    title: 'Address',
-    details: ['123 Hope Street', 'City, State 12345'],
-  },
-  {
-    icon: PiClock,
-    title: 'Office Hours',
-    details: ['Mon - Fri: 9:00 AM - 5:00 PM', 'Sat: 9:00 AM - 1:00 PM'],
-  },
-]
-
-const defaultFaqs = [
-  { question: 'How can I volunteer?', answer: 'Visit our Get Involved page or contact us directly to learn about volunteer opportunities.' },
-  { question: 'How do I support the organization?', answer: 'Contact us to learn about volunteering, sponsorship, and partnership opportunities.' },
-  { question: 'How do I sponsor a child?', answer: 'Contact us to learn about our sponsorship program and how you can make a difference.' },
-]
 
 export default function ContactPage({ initialSettings }: { initialSettings?: SiteSettings | null }) {
   const { settings, loading } = useSettings(initialSettings)
@@ -54,40 +25,33 @@ export default function ContactPage({ initialSettings }: { initialSettings?: Sit
   const contact = settings?.contact
   const contactInfo = contact
     ? [
-        { icon: PiPhone, title: 'Phone', details: [contact.phone1 || '+1 (234) 567-890', contact.phone2 || '+1 (234) 567-891'] },
-        { icon: PiEnvelope, title: 'Email', details: [contact.email1 || 'info@rescuemission.org', contact.email2 || 'donate@rescuemission.org'] },
-        { icon: PiMapPin, title: 'Address', details: [contact.address1 || '123 Hope Street', contact.address2 || 'City, State 12345'] },
-        { icon: PiClock, title: 'Office Hours', details: [contact.officeHours1 || 'Mon - Fri: 9:00 AM - 5:00 PM', contact.officeHours2 || 'Sat: 9:00 AM - 1:00 PM'] },
-      ]
-    : defaultContactInfo
+        { icon: PiPhone, title: 'Phone', details: [contact.phone1, contact.phone2].filter(Boolean) as string[] },
+        { icon: PiEnvelope, title: 'Email', details: [contact.email1, contact.email2].filter(Boolean) as string[] },
+        { icon: PiMapPin, title: 'Address', details: [contact.address1, contact.address2].filter(Boolean) as string[] },
+        { icon: PiClock, title: 'Office Hours', details: [contact.officeHours1, contact.officeHours2].filter(Boolean) as string[] },
+      ].filter((info) => info.details.length > 0)
+    : []
 
   const social = settings?.social
   const socialLinks = social?.items?.length
     ? social.items.filter(s => s.url && s.name)
     : []
 
-  const faqs = settings?.faq?.length ? settings.faq : defaultFaqs
+  const faqs = settings?.faq ?? []
 
-  const contactPage = useMemo(() => {
-    if (!settings?.contactPage) return {
-      kicker: 'Get in Touch',
-      heading: 'Contact Us',
-      description: "Have questions? We'd love to hear from you. Send us a message and we'll respond as soon as possible.",
-      formHeading: 'Send us a Message',
-      infoHeading: 'Contact Information',
-      socialHeading: 'Follow Us',
-      faqHeading: 'Frequently Asked Questions',
-    }
-    return {
-      kicker: settings.contactPage.kicker || 'Get in Touch',
-      heading: settings.contactPage.heading || 'Contact Us',
-      description: settings.contactPage.description || "Have questions? We'd love to hear from you. Send us a message and we'll respond as soon as possible.",
-      formHeading: settings.contactPage.formHeading || 'Send us a Message',
-      infoHeading: settings.contactPage.infoHeading || 'Contact Information',
-      socialHeading: settings.contactPage.socialHeading || 'Follow Us',
-      faqHeading: settings.contactPage.faqHeading || 'Frequently Asked Questions',
-    }
-  }, [settings])
+  const savedContactPage = settings?.contactPage
+  const contactPage = savedContactPage
+    ? {
+        kicker: savedContactPage.kicker || '',
+        heading: savedContactPage.heading || '',
+        description: savedContactPage.description || '',
+        formHeading: savedContactPage.formHeading || '',
+        infoHeading: savedContactPage.infoHeading || '',
+        socialHeading: savedContactPage.socialHeading || '',
+        faqHeading: savedContactPage.faqHeading || '',
+      }
+    : null
+  const hasHero = Boolean(contactPage?.kicker || contactPage?.heading || contactPage?.description)
 
   if (loading) return null
 
@@ -114,6 +78,7 @@ export default function ContactPage({ initialSettings }: { initialSettings?: Sit
   return (
     <>
 {/* Hero */}
+      {hasHero && (
       <section className="bg-cream pt-24 pb-6 lg:pt-28 lg:pb-8 overflow-hidden relative">
         <div className="absolute top-24 right-0 w-64 h-64 bg-lime/15 rounded-full blur-3xl pointer-events-none" />
         <div className="container-premium">
@@ -123,16 +88,21 @@ export default function ContactPage({ initialSettings }: { initialSettings?: Sit
             transition={{ duration: 0.6 }}
             className="max-w-3xl"
           >
-            <span className="kicker mb-6">{contactPage.kicker}</span>
+            {contactPage?.kicker && <span className="kicker mb-6">{contactPage.kicker}</span>}
+            {contactPage?.heading && (
             <h1 className="text-4xl sm:text-5xl md:text-6xl font-serif text-dark">
               {contactPage.heading}
             </h1>
+            )}
+            {contactPage?.description && (
             <p className="mt-6 text-lg text-dark/60 max-w-xl leading-relaxed">
               {contactPage.description}
             </p>
+            )}
           </motion.div>
         </div>
       </section>
+      )}
 
       {/* Contact Section */}
       <section className="section-padding bg-cream">
@@ -145,7 +115,7 @@ export default function ContactPage({ initialSettings }: { initialSettings?: Sit
               transition={{ duration: 0.6 }}
               className="lg:col-span-2"
             >
-              <h2 className="text-2xl font-serif text-dark mb-6">{contactPage.formHeading}</h2>
+              {contactPage?.formHeading && <h2 className="text-2xl font-serif text-dark mb-6">{contactPage.formHeading}</h2>}
               <form onSubmit={handleSubmit} className="card-premium p-8 space-y-6">
                 <div className="grid md:grid-cols-2 gap-6">
                   <Input
@@ -211,7 +181,7 @@ export default function ContactPage({ initialSettings }: { initialSettings?: Sit
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.6, delay: 0.2 }}
             >
-              <h2 className="text-2xl font-serif text-dark mb-6">{contactPage.infoHeading}</h2>
+              {contactPage?.infoHeading && <h2 className="text-2xl font-serif text-dark mb-6">{contactPage.infoHeading}</h2>}
               <div className="space-y-6">
                 {contactInfo.map((info) => (
                   <div key={info.title} className="flex items-start gap-4">
@@ -228,6 +198,7 @@ export default function ContactPage({ initialSettings }: { initialSettings?: Sit
                 ))}
               </div>
               
+              {contactPage?.socialHeading && (
               <div className="mt-8">
                 <h3 className="font-semibold text-dark mb-4">{contactPage.socialHeading}</h3>
                 <div className="flex gap-3">
@@ -248,17 +219,21 @@ export default function ContactPage({ initialSettings }: { initialSettings?: Sit
                   })}
                 </div>
               </div>
+              )}
             </motion.div>
           </div>
         </div>
       </section>
 
       {/* FAQ */}
+      {faqs.length > 0 && (
       <section className="section-padding bg-white">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+          {contactPage?.faqHeading && (
           <div className="text-center mb-8">
             <h2 className="text-3xl font-serif text-dark">{contactPage.faqHeading}</h2>
           </div>
+          )}
           
           <div className="space-y-4">
             {faqs.map((faq, index) => (
@@ -277,6 +252,7 @@ export default function ContactPage({ initialSettings }: { initialSettings?: Sit
           </div>
         </div>
       </section>
+      )}
     </>
   )
 }

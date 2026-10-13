@@ -7,23 +7,18 @@ import type { SiteSettings } from '@/lib/settings'
 
 const iconMap = [PiGraduationCap, PiUsers, PiMapPin, PiCurrencyCircleDollar]
 
-const defaultStats = [
-  { value: '2,500+', label: 'Children Educated', description: 'Through our learning programs' },
-  { value: '500+', label: 'Families Supported', description: 'With emergency relief' },
-  { value: '15+', label: 'Communities', description: 'Across multiple regions' },
-  { value: 'GH₵2.5M', label: 'Funds Raised', description: 'From generous donors' },
-]
-
 export default function ImpactStats({ initialSettings }: { initialSettings?: SiteSettings | null }) {
   const { settings, loading } = useSettings(initialSettings)
 
   const impact = settings?.impactStats
-  const kicker = impact?.kicker || 'Our Impact'
-  const heading = impact?.heading || 'Making a Real Difference'
-  const description = impact?.description || 'Measurable, lasting change — from classrooms to clinics, every program is built to lift children out of hardship.'
-  const stats = impact?.stats?.length ? impact.stats : defaultStats
+  const kicker = impact?.kicker || ''
+  const heading = impact?.heading || ''
+  const description = impact?.description || ''
+  const stats = impact?.stats ?? []
 
   if (loading) return null
+  if (!impact) return null
+  if (!kicker && !heading && !description && stats.length === 0) return null
 
   return (
     <section className="bg-dark section-padding relative overflow-hidden">

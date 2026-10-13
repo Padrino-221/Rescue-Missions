@@ -94,9 +94,11 @@ export default async function LeadershipDetailPage({
 
             <div className="lg:col-span-3">
               <h2 className="text-2xl md:text-3xl font-serif text-dark">About {member.name.split(' ')[0]}</h2>
+              {member.bio && (
               <div className="mt-5 space-y-4 text-dark/65 text-[15px] leading-relaxed whitespace-pre-wrap">
-                {member.bio || 'Leadership team member at Rescue Mission Orphanage.'}
+                {member.bio}
               </div>
+              )}
               <div className="mt-8 flex flex-wrap gap-3">
                 <Link href="/contact" className="btn-lime">
                   Contact Us

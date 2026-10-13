@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
@@ -20,26 +20,14 @@ interface Event {
   imageUrl: string
 }
 
-const defaultEventsSettings = {
-  kicker: 'Events',
-  heading: "What's Happening",
-  description: 'Stay updated with our latest events, drives, and community gatherings.',
-}
-
 export default function EventsContent({ initialSettings }: { initialSettings?: SiteSettings | null }) {
   const [events, setEvents] = useState<Event[]>([])
   const [activeFilter, setActiveFilter] = useState<string>('All')
   const [searchQuery, setSearchQuery] = useState('')
   const { settings, loading } = useSettings(initialSettings)
 
-  const eventsSettings = useMemo(() => {
-    if (!settings?.events) return defaultEventsSettings
-    return {
-      kicker: settings.events.kicker || defaultEventsSettings.kicker,
-      heading: settings.events.heading || defaultEventsSettings.heading,
-      description: settings.events.description || defaultEventsSettings.description,
-    }
-  }, [settings])
+  const eventsSettings = settings?.events
+  const hasHero = Boolean(eventsSettings?.kicker || eventsSettings?.heading || eventsSettings?.description)
 
   const filters = ['All', 'Upcoming', 'Completed'] as const
 
@@ -70,6 +58,7 @@ export default function EventsContent({ initialSettings }: { initialSettings?: S
   return (
     <>
       {/* Hero */}
+      {hasHero && (
       <section className="bg-cream pt-24 pb-6 lg:pt-28 lg:pb-8 overflow-hidden relative">
         <div className="absolute top-24 right-0 w-64 h-64 bg-lime/15 rounded-full blur-3xl pointer-events-none" />
         <div className="container-premium">
@@ -79,16 +68,21 @@ export default function EventsContent({ initialSettings }: { initialSettings?: S
             transition={{ duration: 0.6 }}
             className="max-w-3xl"
           >
-            <span className="kicker mb-6">{eventsSettings.kicker}</span>
+            {eventsSettings?.kicker && <span className="kicker mb-6">{eventsSettings.kicker}</span>}
+            {eventsSettings?.heading && (
             <h1 className="text-4xl sm:text-5xl md:text-6xl font-serif text-dark">
               {eventsSettings.heading}
             </h1>
+            )}
+            {eventsSettings?.description && (
             <p className="mt-6 text-lg text-dark/60 max-w-xl leading-relaxed">
               {eventsSettings.description}
             </p>
+            )}
           </motion.div>
         </div>
       </section>
+      )}
 
       {/* Events */}
       <section className="section-padding bg-white">
@@ -131,6 +125,7 @@ export default function EventsContent({ initialSettings }: { initialSettings?: S
                 transition={{ duration: 0.5, delay: index * 0.1 }}
               >
                 <div className="bg-white rounded-2xl border border-dark/10 overflow-hidden hover:border-dark/30 transition-all duration-300 h-full flex flex-col">
+                  {event.imageUrl && (
                   <div className="relative h-48">
                     <Image
                       src={event.imageUrl}
@@ -149,6 +144,7 @@ export default function EventsContent({ initialSettings }: { initialSettings?: S
                       {event.status === 'upcoming' ? 'Upcoming' : 'Completed'}
                     </span>
                   </div>
+                  )}
                   <div className="p-6 flex flex-col flex-1">
                     <span className="pill-tag text-xs self-start">{event.category}</span>
                     <h3 className="mt-3 text-lg font-serif text-dark">{event.title}</h3>

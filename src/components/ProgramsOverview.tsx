@@ -1,6 +1,5 @@
 'use client'
 
-import { useMemo } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { motion } from 'framer-motion'
@@ -14,49 +13,16 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   PiBookOpen,
 }
 
-const defaultExploreOurWork = {
-  kicker: 'Explore Our Work',
-  heading: 'Three paths into our mission',
-  description: 'Start where you feel most moved — learn who we are, give your time, or follow the journeys of children we serve.',
-  items: [
-    {
-      index: '01',
-      title: 'Who We Are',
-      subtitle: 'Our Organization',
-      description: 'Learn about our mission, our values, and the communities we serve.',
-      href: '/about',
-      imageUrl: 'https://images.unsplash.com/photo-1497486751826-5bc8bce4f3f6?auto=format&fit=crop&w=900&q=80',
-    },
-    {
-      index: '02',
-      title: 'Volunteers',
-      subtitle: 'Take Action',
-      description: 'Join our team of dedicated volunteers making a difference on the ground.',
-      href: '/get-involved',
-      imageUrl: 'https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=900&q=80',
-    },
-    {
-      index: '03',
-      title: 'Stories',
-      subtitle: 'Building A Future',
-      description: 'Read inspiring stories of hope, resilience, and transformation.',
-      href: '/stories',
-      imageUrl: 'https://images.unsplash.com/photo-1509099836639-18ba1795216d?auto=format&fit=crop&w=900&q=80',
-    },
-  ],
-}
-
 const iconList = [PiBuildings, PiHandshake, PiBookOpen]
 
 export default function ProgramsOverview({ initialSettings }: { initialSettings?: SiteSettings | null }) {
   const { settings, loading } = useSettings(initialSettings)
 
-  const data = useMemo(() => {
-    if (settings?.exploreOurWork) return settings.exploreOurWork
-    return defaultExploreOurWork
-  }, [settings])
+  const data = settings?.exploreOurWork ?? null
 
   if (loading) return null
+  if (!data) return null
+  if (!data.items?.length && !data.kicker && !data.heading && !data.description) return null
 
   return (
     <section className="section-padding bg-cream">

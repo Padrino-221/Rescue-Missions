@@ -1,6 +1,5 @@
 'use client'
 
-import { useMemo } from 'react'
 import { motion } from 'framer-motion'
 import Image from 'next/image'
 import { PiArrowRight, PiGraduationCap, PiHeartbeat, PiHouse, PiUsers } from 'react-icons/pi'
@@ -16,37 +15,22 @@ const iconMap: Record<string, typeof PiGraduationCap> = {
   users: PiUsers,
 }
 
-const defaultHowWeHelp = {
-  kicker: 'Who We Are',
-  heading: 'Driven by compassion, guided by humanity',
-  description: 'With compassion at our core, we deliver essential aid to children and families facing hardship.',
-  imageUrl: 'https://images.unsplash.com/photo-1509099836639-18ba1795216d?auto=format&fit=crop&w=1000&q=80',
-  imageAlt: 'Caregivers spending time with children at the orphanage',
-  tags: ['Transparent', 'Emergency Relief', 'Led Action', 'Focused Aid', 'Donors Worldwide'],
-  services: [
-    { title: 'Education Programs', description: 'Quality teaching, tutoring, and learning resources for every child in our care.' },
-    { title: 'Healthcare Support', description: 'Check-ups, vaccinations, and mental-health care that keep children thriving.' },
-    { title: 'Safe Shelter', description: 'A warm, secure home where children feel safe enough to simply be kids.' },
-  ],
-}
-
 export default function HowWeHelp({ initialSettings }: { initialSettings?: SiteSettings | null }) {
   const { settings, loading } = useSettings(initialSettings)
 
-  const howWeHelp = useMemo(() => {
-    if (!settings?.howWeHelp) return defaultHowWeHelp
-    return {
-      kicker: settings.howWeHelp.kicker || defaultHowWeHelp.kicker,
-      heading: settings.howWeHelp.heading || defaultHowWeHelp.heading,
-      description: settings.howWeHelp.description || defaultHowWeHelp.description,
-      imageUrl: settings.howWeHelp.imageUrl || defaultHowWeHelp.imageUrl,
-      imageAlt: settings.howWeHelp.imageAlt || defaultHowWeHelp.imageAlt,
-      tags: settings.howWeHelp.tags?.length ? settings.howWeHelp.tags : defaultHowWeHelp.tags,
-      services: settings.howWeHelp.services?.length ? settings.howWeHelp.services : defaultHowWeHelp.services,
-    }
-  }, [settings])
-
+  const saved = settings?.howWeHelp
   if (loading) return null
+  if (!saved) return null
+  const howWeHelp = {
+    kicker: saved.kicker || '',
+    heading: saved.heading || '',
+    description: saved.description || '',
+    imageUrl: saved.imageUrl || '',
+    imageAlt: saved.imageAlt || '',
+    tags: saved.tags ?? [],
+    services: saved.services ?? [],
+  }
+  if (!howWeHelp.kicker && !howWeHelp.heading && !howWeHelp.description && !howWeHelp.imageUrl && howWeHelp.tags.length === 0 && howWeHelp.services.length === 0) return null
 
   return (
     <section className="section-padding bg-white">
@@ -60,16 +44,19 @@ export default function HowWeHelp({ initialSettings }: { initialSettings?: SiteS
             transition={{ duration: 0.8 }}
             className="lg:sticky lg:top-28"
           >
-            <span className="kicker mb-6">{howWeHelp.kicker}</span>
+            {howWeHelp.kicker && <span className="kicker mb-6">{howWeHelp.kicker}</span>}
+            {howWeHelp.heading && (
             <h2 className="text-4xl md:text-5xl font-serif text-dark leading-[1.05]">
               {howWeHelp.heading}
             </h2>
+            )}
 
+            {howWeHelp.imageUrl && (
             <div className="mt-10 relative">
               <div className="rounded-[2rem] overflow-hidden aspect-[4/3] relative">
                 <Image
                   src={howWeHelp.imageUrl}
-                  alt={howWeHelp.imageAlt}
+                  alt={howWeHelp.imageAlt || ''}
                   fill
                   sizes="(min-width: 1024px) 45vw, 100vw"
                   className="object-cover object-top"
@@ -87,6 +74,7 @@ export default function HowWeHelp({ initialSettings }: { initialSettings?: SiteS
                 ))}
               </div>
             </div>
+            )}
           </motion.div>
 
           {/* Right - services */}
@@ -97,9 +85,11 @@ export default function HowWeHelp({ initialSettings }: { initialSettings?: SiteS
             transition={{ duration: 0.8, delay: 0.15 }}
             className="lg:pt-24"
           >
+            {howWeHelp.description && (
             <h3 className="text-2xl md:text-3xl font-serif text-dark leading-snug">
               {howWeHelp.description}
             </h3>
+            )}
 
             <p className="mt-6 text-dark/55 leading-relaxed">
               At our core, we believe giving is more than charity — it&apos;s a shared promise

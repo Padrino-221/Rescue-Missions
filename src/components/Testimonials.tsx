@@ -1,84 +1,46 @@
 'use client'
 
-import { useMemo } from 'react'
 import Image from 'next/image'
 import { motion } from 'framer-motion'
 import { PiStarFill } from 'react-icons/pi'
 import { useSettings } from '@/lib/useSettings'
 import type { SiteSettings } from '@/lib/settings'
 
-const defaultTestimonials = {
-  kicker: 'Testimonials',
-  heading: 'Voices of our community',
-  description: 'Donors, volunteers, and partners share what standing with us means to them.',
-  items: [
-    {
-      quote:
-        'Supporting Rescue Mission has been one of the most rewarding experiences of my life. Seeing the direct impact on children is incredible.',
-      author: 'Sarah Johnson',
-      role: 'Monthly Donor',
-      avatar:
-        'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=100&q=80',
-      rating: 5,
-    },
-    {
-      quote:
-        'Volunteering here changed my perspective on life. The dedication of the team and the joy of the children is truly inspiring.',
-      author: 'Michael Chen',
-      role: 'Volunteer',
-      avatar:
-        'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=100&q=80',
-      rating: 5,
-    },
-    {
-      quote:
-        'As a corporate partner, we have seen firsthand how Rescue Mission transforms communities. Their transparency is unmatched.',
-      author: 'Emily Rodriguez',
-      role: 'Corporate Partner',
-      avatar:
-        'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=100&q=80',
-      rating: 5,
-    },
-  ],
-}
-
 export default function Testimonials({ initialSettings }: { initialSettings?: SiteSettings | null }) {
   const { settings, loading } = useSettings(initialSettings)
 
-  const { sectionHeading, sectionDescription, testimonials } = useMemo(() => {
-    if (!settings?.testimonials?.items?.length) return {
-      sectionHeading: defaultTestimonials.heading,
-      sectionDescription: defaultTestimonials.description,
-      testimonials: defaultTestimonials.items,
-    }
-    return {
-      sectionHeading: settings.testimonials.heading || defaultTestimonials.heading,
-      sectionDescription: settings.testimonials.description || defaultTestimonials.description,
-      testimonials: settings.testimonials.items.map((t) => ({
-        quote: t.quote || '',
-        author: t.author || '',
-        role: t.role || '',
-        avatar: t.avatar || '',
-        rating: (t as { rating?: number }).rating || 5,
-      })),
-    }
-  }, [settings])
-
+  const t = settings?.testimonials
   if (loading) return null
+  if (!t) return null
+  const sectionKicker = t.kicker || ''
+  const sectionHeading = t.heading || ''
+  const sectionDescription = t.description || ''
+  const testimonials = (t.items ?? []).map((item) => ({
+    quote: item.quote || '',
+    author: item.author || '',
+    role: item.role || '',
+    avatar: item.avatar || '',
+    rating: (item as { rating?: number }).rating || 5,
+  }))
+  if (!sectionKicker && !sectionHeading && !sectionDescription && testimonials.length === 0) return null
 
   return (
     <section className="section-padding bg-white">
       <div className="container-premium">
         <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 mb-10">
           <div>
-            <span className="kicker mb-6">{settings?.testimonials?.kicker || 'Testimonials'}</span>
+            {sectionKicker && <span className="kicker mb-6">{sectionKicker}</span>}
+            {sectionHeading && (
             <h2 className="text-4xl md:text-5xl font-serif text-dark">
               {sectionHeading}
             </h2>
+            )}
           </div>
+          {sectionDescription && (
           <p className="text-dark/55 max-w-sm leading-relaxed">
             {sectionDescription}
           </p>
+          )}
         </div>
 
         <div className="grid md:grid-cols-3 gap-8">
