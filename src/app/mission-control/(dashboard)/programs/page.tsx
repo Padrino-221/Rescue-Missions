@@ -443,6 +443,7 @@ export default function ProgramsPage() {
               onChange={(v) => setForm((p) => ({ ...p, image: v }))}
               folder="rescue-mission/programs"
               label="Program Image"
+              aspect={4 / 3}
             />
           </section>
         </form>

@@ -7,6 +7,17 @@ import { PiImageFill, PiPlayFill, PiX } from 'react-icons/pi'
 import { useSettings } from '@/lib/useSettings'
 import type { SiteSettings } from '@/lib/settings'
 
+export function youtubeId(url: string | undefined): string | null {
+  if (!url) return null
+  const match = url.match(/(?:youtube\.com\/(?:watch\?.*v=|embed\/|shorts\/)|youtu\.be\/)([\w-]{11})/)
+  return match ? match[1] : null
+}
+
+export function youtubeThumb(url: string | undefined): string | null {
+  const id = youtubeId(url)
+  return id ? `https://i.ytimg.com/vi/${id}/hqdefault.jpg` : null
+}
+
 export default function GalleryPage({ initialSettings }: { initialSettings?: SiteSettings | null }) {
   const [activeCategory, setActiveCategory] = useState('All')
   const [selectedItem, setSelectedItem] = useState<number | string | null>(null)
@@ -102,7 +113,9 @@ export default function GalleryPage({ initialSettings }: { initialSettings?: Sit
 
           {/* Gallery Grid */}
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
-            {filteredItems.map((item, index) => (
+            {filteredItems.map((item, index) => {
+              const thumb = item.image || youtubeThumb(item.videoUrl) || ''
+              return (
               <motion.div
                 key={String(item.id ?? `${item.title}-${index}`)}
                 initial={{ opacity: 0, scale: 0.95 }}
@@ -115,9 +128,9 @@ export default function GalleryPage({ initialSettings }: { initialSettings?: Sit
                 onClick={() => setSelectedItem(item.id)}
               >
                 <div className={`relative bg-dark/5 ${index % 5 === 0 ? 'h-64 md:h-full' : 'h-48'}`}>
-                  {item.image && (
+                  {thumb && (
                     <Image
-                      src={item.image}
+                      src={thumb}
                       alt={item.alt || item.title}
                       fill
                       sizes="(min-width: 1024px) 25vw, (min-width: 768px) 33vw, 50vw"
@@ -140,13 +153,14 @@ export default function GalleryPage({ initialSettings }: { initialSettings?: Sit
                 </div>
                 
                 {/* Video indicator */}
-                {item.type === 'video' && (
+                {(item.type === 'video' || youtubeId(item.videoUrl)) && (
                   <div className="absolute top-3 right-3 w-8 h-8 bg-dark rounded-full flex items-center justify-center border border-white/20">
                     <PiPlayFill className="w-4 h-4 text-lime ml-0.5" />
                   </div>
                 )}
               </motion.div>
-            ))}
+              )
+            })}
           </div>
         </div>
       </section>
@@ -169,23 +183,36 @@ export default function GalleryPage({ initialSettings }: { initialSettings?: Sit
           <div className="max-w-4xl w-full bg-white rounded-3xl overflow-hidden" onClick={(e) => e.stopPropagation()}>
             {(() => {
               const active = gallerySettings.items.find((item) => String(item.id) === String(selectedItem))
+              const videoId = youtubeId(active?.videoUrl)
               return (
                 <>
                   <div className="relative aspect-video bg-dark/5" role="img" aria-label={active?.alt}>
-                    {active?.image && (
-                      <Image
-                        src={active.image}
-                        alt={active.alt ?? ''}
-                        fill
-                        className="object-cover object-top"
+                    {videoId ? (
+                      <iframe
+                        src={`https://www.youtube.com/embed/${videoId}?rel=0`}
+                        title={active?.title ?? 'Video'}
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowFullScreen
+                        className="absolute inset-0 h-full w-full"
                       />
-                    )}
-                    {active?.type === 'video' && (
-                      <div className="absolute inset-0 flex items-center justify-center bg-dark/30">
-                        <div className="w-16 h-16 bg-lime rounded-full flex items-center justify-center">
-                          <PiPlayFill className="w-8 h-8 text-dark ml-1" />
-                        </div>
-                      </div>
+                    ) : (
+                      <>
+                        {active?.image && (
+                          <Image
+                            src={active.image}
+                            alt={active.alt ?? ''}
+                            fill
+                            className="object-cover object-top"
+                          />
+                        )}
+                        {active?.type === 'video' && (
+                          <div className="absolute inset-0 flex items-center justify-center bg-dark/30">
+                            <div className="w-16 h-16 bg-lime rounded-full flex items-center justify-center">
+                              <PiPlayFill className="w-8 h-8 text-dark ml-1" />
+                            </div>
+                          </div>
+                        )}
+                      </>
                     )}
                   </div>
                   <div className="p-8">

@@ -18,7 +18,17 @@ export default function GetInvolvedPage({ initialSettings }: { initialSettings?:
   const volunteerRoles = settings?.volunteerRoles ?? []
   const sponsorship = settings?.sponsorship ?? null
   const corporate = settings?.corporate ?? null
-  const sponsoredChildren = settings?.sponsoredChildren ?? []
+  // Generic sponsorship needs (cars, gadgets, land, children, ...).
+  // Older saves used `sponsoredChildren`; those are mapped forward so
+  // nothing already published is lost.
+  const sponsorshipNeeds = settings?.sponsorshipNeeds?.length
+    ? settings.sponsorshipNeeds
+    : (settings?.sponsoredChildren ?? []).map((c) => ({
+        title: c.name || '',
+        detail: [c.age ? `Age ${c.age}` : '', c.note || ''].filter(Boolean).join(' • '),
+        amount: '',
+        image: c.image || '',
+      }))
 
   const gi = settings?.getInvolved
   const getInvolved = {
@@ -205,18 +215,20 @@ export default function GetInvolvedPage({ initialSettings }: { initialSettings?:
               </div>
               
               <div className="card-premium p-8">
-                <h3 className="text-xl font-serif text-dark mb-6">Children Awaiting Sponsors</h3>
+                <h3 className="text-xl font-serif text-dark mb-6">For Sponsorship</h3>
                 <div className="space-y-4">
-                  {sponsoredChildren.map((child, i) => (
-                    <div key={child.name || `child-${i}`} className="flex items-center gap-4 p-4 bg-dark/5 rounded-2xl border border-dark/10">
-                      <div className="relative w-16 h-16 rounded-full overflow-hidden bg-dark/10 flex-shrink-0">
-                        {child.image ? (
-                          <Image src={child.image} alt={child.name || 'Child awaiting sponsorship'} fill className="object-cover" sizes="64px" />
+                  {sponsorshipNeeds.map((need, i) => (
+                    <div key={need.title || `need-${i}`} className="flex items-center gap-4 p-4 bg-dark/5 rounded-2xl border border-dark/10">
+                      <div className="relative w-16 h-16 rounded-2xl overflow-hidden bg-dark/10 flex-shrink-0">
+                        {need.image ? (
+                          <Image src={need.image} alt={need.title || 'Sponsorship need'} fill className="object-cover" sizes="64px" />
                         ) : null}
                       </div>
                       <div className="flex-1">
-                        <p className="font-semibold text-dark">{child.name || `Child ${i + 1}`}</p>
-                        <p className="text-dark/60 text-sm">Age {child.age || '—'} • {child.note || 'Needs sponsorship'}</p>
+                        <p className="font-semibold text-dark">{need.title || `Item ${i + 1}`}</p>
+                        {(need.detail || need.amount) && (
+                        <p className="text-dark/60 text-sm">{[need.detail, need.amount].filter(Boolean).join(' • ')}</p>
+                        )}
                       </div>
                       <Link href="/contact" className="text-dark font-semibold text-sm hover:text-dark-100">
                         Sponsor →

@@ -264,7 +264,9 @@ export default function StoriesPage() {
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-lg bg-dark/5 overflow-hidden flex-shrink-0">
+                          {story.image ? (
                           <Image src={story.image} alt={story.title} width={40} height={40} className="w-full h-full object-cover" />
+                          ) : null}
                         </div>
                         <div>
                           <p className="font-semibold text-dark text-sm">{story.title}</p>
@@ -344,7 +346,9 @@ export default function StoriesPage() {
               >
                 <div className="flex items-start gap-3 mb-3">
                   <div className="w-12 h-12 rounded-lg bg-dark/5 overflow-hidden flex-shrink-0">
+                    {story.image ? (
                     <Image src={story.image} alt={story.title} width={48} height={48} className="w-full h-full object-cover" />
+                    ) : null}
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-start justify-between gap-2">
@@ -527,7 +531,7 @@ export default function StoriesPage() {
 
           <section className="space-y-4">
             <SectionLabel>Cover image</SectionLabel>
-            <ImageUpload value={form.image} onChange={(v) => update('image', v)} folder="rescue-mission/stories" label="Story Image" />
+            <ImageUpload value={form.image} onChange={(v) => update('image', v)} folder="rescue-mission/stories" label="Story Image" aspect={4 / 3} />
           </section>
 
           <section className="space-y-4">

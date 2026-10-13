@@ -3,6 +3,7 @@ import { getSettings } from '@/lib/settings'
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
 import './globals.css'
+import 'react-easy-crop/react-easy-crop.css'
 
 export async function generateMetadata(): Promise<Metadata> {
   const settings = await getSettings()

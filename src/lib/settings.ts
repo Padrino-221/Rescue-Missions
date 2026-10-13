@@ -95,7 +95,7 @@ export interface SiteSettings {
     pressHeading: string
     pressDescription: string
     categories: string[]
-    items: { id: number; type: string; category: string; title: string; alt: string; image: string }[]
+    items: { id: number; type: string; category: string; title: string; alt: string; image: string; videoUrl?: string }[]
   }
   stories: {
     kicker: string
@@ -136,7 +136,9 @@ export interface SiteSettings {
   }
   volunteerRoles: { title: string; commitment: string; description: string }[]
   sponsorship: { monthlyAmount: number; benefits: string[] }
-  sponsoredChildren: { name: string; age: string; note: string; image: string }[]
+  sponsorshipNeeds: { title: string; detail: string; amount: string; image: string }[]
+  /** Deprecated: older saves used this; read paths map it to sponsorshipNeeds. */
+  sponsoredChildren?: { name: string; age: string; note: string; image: string }[]
   corporate: {
     tiers: { tier: string; amount: string; benefits: string }[]
     benefits: string[]

@@ -72,7 +72,7 @@ function ArrayField({ items, onAdd, onRemove, onUpdate, fields, folder }: {
   onAdd: () => void
   onRemove: (i: number) => void
   onUpdate: (i: number, key: string, val: string) => void
-  fields: { key: string; label: string; textarea?: boolean; image?: boolean }[]
+  fields: { key: string; label: string; textarea?: boolean; image?: boolean; aspect?: number }[]
   folder?: string
 }) {
   return (
@@ -83,7 +83,7 @@ function ArrayField({ items, onAdd, onRemove, onUpdate, fields, folder }: {
             {fields.map((f) => (
               <div key={f.key}>
                 {f.image ? (
-                  <ImageUpload value={String(item[f.key] || '')} onChange={(v) => onUpdate(i, f.key, v)} folder={folder} label={f.label} />
+                  <ImageUpload value={String(item[f.key] || '')} onChange={(v) => onUpdate(i, f.key, v)} folder={folder} label={f.label} aspect={f.aspect} />
                 ) : (
                   <>
                     <label className={labelCls}>{f.label}</label>
@@ -130,7 +130,7 @@ const defaultSettings = () => ({
   testimonials: { kicker: '', heading: '', description: '', items: [] },
   volunteerRoles: [],
   sponsorship: { monthlyAmount: 0, benefits: [] },
-  sponsoredChildren: [],
+  sponsorshipNeeds: [],
   corporate: { tiers: [], benefits: [] },
   faq: [],
   partners: { kicker: '', items: [] },
@@ -173,6 +173,18 @@ export default function SettingsPage() {
           } else {
             merged[key] = value
           }
+        }
+        // One-time forward migration: older saves kept child-specific
+        // `sponsoredChildren`; the section is now generic `sponsorshipNeeds`.
+        const needs = merged.sponsorshipNeeds
+        const legacy = merged.sponsoredChildren
+        if ((!Array.isArray(needs) || needs.length === 0) && Array.isArray(legacy) && legacy.length > 0) {
+          merged.sponsorshipNeeds = (legacy as Record<string, unknown>[]).map((c) => ({
+            title: String(c.name || ''),
+            detail: [c.age ? `Age ${c.age}` : '', String(c.note || '')].filter(Boolean).join(' • '),
+            amount: '',
+            image: String(c.image || ''),
+          }))
         }
         setBaselineJson(JSON.stringify(merged))
         return merged as typeof prev
@@ -386,7 +398,7 @@ export default function SettingsPage() {
     getinvolved: ['getInvolved'],
     contactpage: ['contactPage'],
     testimonials: ['testimonials'],
-    volunteer: ['volunteerRoles', 'sponsorship', 'sponsoredChildren'],
+    volunteer: ['volunteerRoles', 'sponsorship', 'sponsorshipNeeds'],
     corporate: ['corporate'],
     faq: ['faq', 'partners'],
   }
@@ -510,7 +522,7 @@ export default function SettingsPage() {
                     <div className="grid sm:grid-cols-2 gap-4">
                       <Field label="Hero Image Alt Text" value={settings.homeHero.imageAlt} onChange={(v) => update('homeHero.imageAlt', v)} />
                     </div>
-                    <ImageUpload value={settings.homeHero.imageUrl} onChange={(v) => update('homeHero.imageUrl', v)} folder="rescue-mission/hero" label="Hero Image" />
+                    <ImageUpload value={settings.homeHero.imageUrl} onChange={(v) => update('homeHero.imageUrl', v)} folder="rescue-mission/hero" label="Hero Image" aspect={4 / 3} />
                   </div>
                 </div>
               )}
@@ -526,7 +538,7 @@ export default function SettingsPage() {
                     <Field label="Description" value={settings.exploreOurWork.description} onChange={(v) => update('exploreOurWork.description', v)} textarea />
                     <div className="mt-4">
                       <h3 className="font-semibold text-dark mb-3">Items</h3>
-                      <ArrayField items={settings.exploreOurWork.items} onAdd={() => addArrayItem('exploreOurWork.items', { index: '', title: '', subtitle: '', description: '', href: '', imageUrl: '' })} onRemove={(i) => removeArrayItem('exploreOurWork.items', i)} onUpdate={(i, k, v) => updateArrayItem('exploreOurWork.items', i, k, v)} fields={[{ key: 'index', label: 'Index' }, { key: 'title', label: 'Title' }, { key: 'subtitle', label: 'Subtitle' }, { key: 'description', label: 'Description', textarea: true }, { key: 'href', label: 'Link URL' }, { key: 'imageUrl', label: 'Image', image: true }]} folder="rescue-mission/explore" />
+                      <ArrayField items={settings.exploreOurWork.items} onAdd={() => addArrayItem('exploreOurWork.items', { index: '', title: '', subtitle: '', description: '', href: '', imageUrl: '' })} onRemove={(i) => removeArrayItem('exploreOurWork.items', i)} onUpdate={(i, k, v) => updateArrayItem('exploreOurWork.items', i, k, v)} fields={[{ key: 'index', label: 'Index' }, { key: 'title', label: 'Title' }, { key: 'subtitle', label: 'Subtitle' }, { key: 'description', label: 'Description', textarea: true }, { key: 'href', label: 'Link URL' }, { key: 'imageUrl', label: 'Image', image: true, aspect: 4 / 3 }]} folder="rescue-mission/explore" />
                     </div>
                   </div>
                 </div>
@@ -587,7 +599,7 @@ export default function SettingsPage() {
                         </div>
                       ))}
                       <button onClick={() => addListItem('about.storyParagraphs', '')} className="flex items-center gap-2 text-sm text-dark/60 hover:text-dark mt-2"><PiPlus className="w-4 h-4" /> Add Paragraph</button>
-                      <ImageUpload value={settings.about.storyImageUrl} onChange={(v) => update('about.storyImageUrl', v)} folder="rescue-mission/about" label="Story Image" />
+                      <ImageUpload value={settings.about.storyImageUrl} onChange={(v) => update('about.storyImageUrl', v)} folder="rescue-mission/about" label="Story Image" aspect={4 / 3} />
                     </div>
                   </div>
                   <div className={sectionCls}>
@@ -603,7 +615,7 @@ export default function SettingsPage() {
                   </div>
                   <div className={sectionCls}>
                     <h2 className="text-lg font-serif text-dark mb-4">Team Members</h2>
-                    <ArrayField items={settings.about.team} onAdd={() => addArrayItem('about.team', { name: '', role: '', bio: '', avatar: '' })} onRemove={(i) => removeArrayItem('about.team', i)} onUpdate={(i, k, v) => updateArrayItem('about.team', i, k, v)} fields={[{ key: 'name', label: 'Name' }, { key: 'role', label: 'Role' }, { key: 'bio', label: 'Bio (shown in full on their profile page)', textarea: true }, { key: 'avatar', label: 'Avatar', image: true }]} folder="rescue-mission/team" />
+                    <ArrayField items={settings.about.team} onAdd={() => addArrayItem('about.team', { name: '', role: '', bio: '', avatar: '' })} onRemove={(i) => removeArrayItem('about.team', i)} onUpdate={(i, k, v) => updateArrayItem('about.team', i, k, v)} fields={[{ key: 'name', label: 'Name' }, { key: 'role', label: 'Role' }, { key: 'bio', label: 'Bio (shown in full on their profile page)', textarea: true }, { key: 'avatar', label: 'Avatar', image: true, aspect: 3 / 4 }]} folder="rescue-mission/team" />
                   </div>
                   <div className={sectionCls}>
                     <h2 className="text-lg font-serif text-dark mb-4">Milestones</h2>
@@ -622,7 +634,7 @@ export default function SettingsPage() {
                     </div>
                     <Field label="Description" value={settings.testimonials.description} onChange={(v) => update('testimonials.description', v)} textarea />
                   </div>
-                  <ArrayField items={settings.testimonials.items} onAdd={() => addArrayItem('testimonials.items', { quote: '', author: '', role: '', avatar: '' })} onRemove={(i) => removeArrayItem('testimonials.items', i)} onUpdate={(i, k, v) => updateArrayItem('testimonials.items', i, k, v)} fields={[{ key: 'quote', label: 'Quote', textarea: true }, { key: 'author', label: 'Author Name' }, { key: 'role', label: 'Role' }, { key: 'avatar', label: 'Avatar', image: true }]} folder="rescue-mission/testimonials" />
+                  <ArrayField items={settings.testimonials.items} onAdd={() => addArrayItem('testimonials.items', { quote: '', author: '', role: '', avatar: '' })} onRemove={(i) => removeArrayItem('testimonials.items', i)} onUpdate={(i, k, v) => updateArrayItem('testimonials.items', i, k, v)} fields={[{ key: 'quote', label: 'Quote', textarea: true }, { key: 'author', label: 'Author Name' }, { key: 'role', label: 'Role' }, { key: 'avatar', label: 'Avatar', image: true, aspect: 1 }]} folder="rescue-mission/testimonials" />
                 </div>
               )}
 
@@ -633,9 +645,9 @@ export default function SettingsPage() {
                     <ArrayField items={settings.volunteerRoles} onAdd={() => addArrayItem('volunteerRoles', { title: '', commitment: '', description: '' })} onRemove={(i) => removeArrayItem('volunteerRoles', i)} onUpdate={(i, k, v) => updateArrayItem('volunteerRoles', i, k, v)} fields={[{ key: 'title', label: 'Title' }, { key: 'commitment', label: 'Commitment' }, { key: 'description', label: 'Description' }]} />
                   </div>
                   <div className={sectionCls}>
-                    <h2 className="text-lg font-serif text-dark mb-4">Children Awaiting Sponsors</h2>
-                    <p className="text-dark/50 text-sm mb-4">These appear under Get Involved → Sponsor → Children Awaiting Sponsors.</p>
-                    <ArrayField items={settings.sponsoredChildren} onAdd={() => addArrayItem('sponsoredChildren', { name: '', age: '', note: 'Needs sponsorship', image: '' })} onRemove={(i) => removeArrayItem('sponsoredChildren', i)} onUpdate={(i, k, v) => updateArrayItem('sponsoredChildren', i, k, v)} fields={[{ key: 'name', label: 'Name' }, { key: 'age', label: 'Age' }, { key: 'note', label: 'Note' }, { key: 'image', label: 'Photo', image: true }]} folder="rescue-mission/sponsored-children" />
+                    <h2 className="text-lg font-serif text-dark mb-4">For Sponsorship</h2>
+                    <p className="text-dark/50 text-sm mb-4">Items people can sponsor — e.g. school bus, laptops, land. Shown under Get Involved → Sponsor.</p>
+                    <ArrayField items={settings.sponsorshipNeeds} onAdd={() => addArrayItem('sponsorshipNeeds', { title: '', detail: '', amount: '', image: '' })} onRemove={(i) => removeArrayItem('sponsorshipNeeds', i)} onUpdate={(i, k, v) => updateArrayItem('sponsorshipNeeds', i, k, v)} fields={[{ key: 'title', label: 'Item (e.g. School bus, Laptops, Land)' }, { key: 'detail', label: 'Details' }, { key: 'amount', label: 'Amount (optional)' }, { key: 'image', label: 'Photo', image: true, aspect: 1 }]} folder="rescue-mission/sponsorship-needs" />
                   </div>
                   <div className={sectionCls}>
                     <h2 className="text-lg font-serif text-dark mb-4">Sponsorship</h2>
@@ -704,7 +716,7 @@ export default function SettingsPage() {
                       <Field label="Heading" value={settings.howWeHelp.heading} onChange={(v) => update('howWeHelp.heading', v)} />
                     </div>
                     <Field label="Description" value={settings.howWeHelp.description} onChange={(v) => update('howWeHelp.description', v)} textarea />
-                    <ImageUpload value={settings.howWeHelp.imageUrl} onChange={(v) => update('howWeHelp.imageUrl', v)} folder="rescue-mission/howwehelp" label="Section Image" />
+                    <ImageUpload value={settings.howWeHelp.imageUrl} onChange={(v) => update('howWeHelp.imageUrl', v)} folder="rescue-mission/howwehelp" label="Section Image" aspect={4 / 3} />
                     <Field label="Image Alt Text" value={settings.howWeHelp.imageAlt} onChange={(v) => update('howWeHelp.imageAlt', v)} />
                     <div>
                       <label className={labelCls}>Tags</label>
@@ -736,7 +748,7 @@ export default function SettingsPage() {
                       <Field label="Heading" value={settings.featuredStory.heading} onChange={(v) => update('featuredStory.heading', v)} />
                     </div>
                     <Field label="Description" value={settings.featuredStory.description} onChange={(v) => update('featuredStory.description', v)} textarea />
-                    <ImageUpload value={settings.featuredStory.imageUrl} onChange={(v) => update('featuredStory.imageUrl', v)} folder="rescue-mission/featured" label="Section Image" />
+                    <ImageUpload value={settings.featuredStory.imageUrl} onChange={(v) => update('featuredStory.imageUrl', v)} folder="rescue-mission/featured" label="Section Image" aspect={4 / 3} />
                     <Field label="Image Alt Text" value={settings.featuredStory.imageAlt} onChange={(v) => update('featuredStory.imageAlt', v)} />
                     <div>
                       <h3 className="font-semibold text-dark mb-3">Progress Bars</h3>
@@ -747,7 +759,7 @@ export default function SettingsPage() {
                       <div className="space-y-4">
                         <Field label="Quote Author" value={settings.featuredStory.quoteAuthor} onChange={(v) => update('featuredStory.quoteAuthor', v)} />
                         <Field label="Quote Role" value={settings.featuredStory.quoteRole} onChange={(v) => update('featuredStory.quoteRole', v)} />
-                        <ImageUpload value={settings.featuredStory.quoteAvatar} onChange={(v) => update('featuredStory.quoteAvatar', v)} folder="rescue-mission/featured" label="Author Avatar" />
+                        <ImageUpload value={settings.featuredStory.quoteAvatar} onChange={(v) => update('featuredStory.quoteAvatar', v)} folder="rescue-mission/featured" label="Author Avatar" aspect={1} />
                       </div>
                     </div>
                   </div>

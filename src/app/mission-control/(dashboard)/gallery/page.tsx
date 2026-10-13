@@ -26,6 +26,7 @@ type GalleryItem = {
   title: string
   alt: string
   image: string
+  videoUrl?: string
 }
 
 type GalleryForm = {
@@ -35,6 +36,7 @@ type GalleryForm = {
   type: GalleryItem['type']
   alt: string
   image: string
+  videoUrl: string
 }
 
 const fallbackCategories = ['Events', 'Programs', 'Facilities', 'Children']
@@ -46,6 +48,7 @@ const emptyForm: GalleryForm = {
   type: 'image',
   alt: '',
   image: '',
+  videoUrl: '',
 }
 
 const inputClasses =
@@ -161,6 +164,7 @@ export default function GalleryPage() {
         type: form.type,
         alt: form.alt,
         image: form.image,
+        videoUrl: form.videoUrl.trim() || undefined,
       }
       const next = form.id
         ? items.map((i) => (i.id === form.id ? item : i))
@@ -305,6 +309,7 @@ export default function GalleryPage() {
                               type: item.type,
                               alt: item.alt ?? '',
                               image: item.image,
+                              videoUrl: item.videoUrl ?? '',
                             })
                             setFormOpen(true)
                           }}
@@ -417,7 +422,20 @@ export default function GalleryPage() {
 
           <section className="space-y-4">
             <SectionLabel>Media</SectionLabel>
-            <ImageUpload value={form.image} onChange={(v) => setForm((p) => ({ ...p, image: v }))} folder="rescue-mission/gallery" label="Gallery Image" />
+            {form.type === 'video' && (
+              <div>
+                <label className={labelClasses}>YouTube Link *</label>
+                <input
+                  className={inputClasses}
+                  value={form.videoUrl}
+                  onChange={(e) => setForm((p) => ({ ...p, videoUrl: e.target.value }))}
+                  placeholder="https://www.youtube.com/watch?v=..."
+                  required={form.type === 'video'}
+                />
+                <p className="mt-1.5 text-xs text-dark/40">Paste a YouTube link. It plays on the public gallery page.</p>
+              </div>
+            )}
+            <ImageUpload value={form.image} onChange={(v) => setForm((p) => ({ ...p, image: v }))} folder="rescue-mission/gallery" label={form.type === 'video' ? 'Thumbnail Image (optional — YouTube preview is used when empty)' : 'Gallery Image'} aspect={4 / 3} />
           </section>
         </form>
       </Modal>

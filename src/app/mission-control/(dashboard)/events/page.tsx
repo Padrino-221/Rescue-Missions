@@ -542,7 +542,7 @@ export default function EventsPage() {
 
           <section className="space-y-4">
             <SectionLabel>Cover image</SectionLabel>
-            <ImageUpload value={formState.imageUrl} onChange={(v) => setFormState({ ...formState, imageUrl: v })} folder="rescue-mission/events" label="Event Image" />
+            <ImageUpload value={formState.imageUrl} onChange={(v) => setFormState({ ...formState, imageUrl: v })} folder="rescue-mission/events" label="Event Image" aspect={4 / 3} />
           </section>
         </div>
       </Modal>
