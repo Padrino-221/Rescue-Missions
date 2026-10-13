@@ -531,7 +531,7 @@ export default function StoriesPage() {
 
           <section className="space-y-4">
             <SectionLabel>Cover image</SectionLabel>
-            <ImageUpload value={form.image} onChange={(v) => update('image', v)} folder="rescue-mission/stories" label="Story Image" aspect={4 / 3} />
+            <ImageUpload value={form.image} onChange={(v) => update('image', v)} folder="rescue-mission/stories" label="Story Image" aspect={16 / 9} />
           </section>
 
           <section className="space-y-4">

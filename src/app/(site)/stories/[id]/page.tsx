@@ -126,7 +126,7 @@ export default function StoryDetailPage() {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.2 }}
-            className="relative rounded-[2rem] overflow-hidden aspect-[21/9]"
+            className="relative rounded-[2rem] overflow-hidden aspect-video"
           >
             <Image
               src={story.image}
