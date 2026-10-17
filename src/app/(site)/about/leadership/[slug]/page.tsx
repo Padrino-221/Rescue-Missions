@@ -23,6 +23,9 @@ export async function generateMetadata({
   return {
     title: `${found.member.name} | Leadership | ${orgName}`,
     description: `${found.member.name} — ${found.member.role}. ${found.member.bio}`.slice(0, 160),
+    alternates: {
+      canonical: `/about/leadership/${teamSlug(found.member.name, found.index)}`,
+    },
     openGraph: {
       title: `${found.member.name} | ${orgName}`,
       description: `${found.member.role} at ${orgName}.`,

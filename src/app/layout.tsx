@@ -23,9 +23,9 @@ export async function generateMetadata(): Promise<Metadata> {
     creator: orgName,
     publisher: orgName,
     metadataBase: new URL(siteUrl),
-    alternates: {
-      canonical: '/',
-    },
+    // NOTE: do not set `alternates.canonical` here — root metadata is inherited
+    // by every page, which made Google treat all pages as alternates of the
+    // homepage and refuse to index them. Each page declares its own canonical.
     openGraph: {
       type: 'website',
       locale: 'en_US',

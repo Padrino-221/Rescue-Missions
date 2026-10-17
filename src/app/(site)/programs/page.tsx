@@ -10,6 +10,9 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     title: 'Our Programs',
     description: `Explore ${orgName} programs \u2014 Education, Healthcare, Nutrition, Shelter, Aftercare, and Community support for orphaned children in Ghana.`,
+    alternates: {
+      canonical: '/programs',
+    },
     openGraph: {
       title: `Our Programs | ${orgName}`,
       description: `Explore our Education, Healthcare, Nutrition, Shelter, Aftercare, and Community programs for orphaned children.`,

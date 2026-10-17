@@ -11,6 +11,9 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     title: 'About Us',
     description: `Learn about ${orgName} \u2014 our mission, vision, values, and the team dedicated to providing education, healthcare, and shelter to orphaned children in Ghana.`,
+    alternates: {
+      canonical: '/about',
+    },
     openGraph: {
       title: `About Us | ${orgName}`,
       description,

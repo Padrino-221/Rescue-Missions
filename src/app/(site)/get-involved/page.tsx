@@ -10,6 +10,9 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     title: 'Get Involved',
     description: `Join ${orgName} as a volunteer, sponsor, or corporate partner. There are many ways to help orphaned children in Ghana receive education, healthcare, and shelter.`,
+    alternates: {
+      canonical: '/get-involved',
+    },
     openGraph: {
       title: `Get Involved | ${orgName}`,
       description: `Join us as a volunteer, sponsor, or corporate partner to help orphaned children in Ghana.`,
