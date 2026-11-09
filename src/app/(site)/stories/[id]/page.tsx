@@ -1,5 +1,6 @@
 'use client'
 
+import YouTubeEmbed from '@/components/YouTubeEmbed'
 import { useParams } from 'next/navigation'
 import { useState, useEffect } from 'react'
 import Image from 'next/image'
@@ -18,6 +19,7 @@ interface Story {
   featured: boolean
   image: string
   content: string
+  videoUrl?: string
 }
 
 export default function StoryDetailPage() {
@@ -155,6 +157,7 @@ export default function StoryDetailPage() {
               <div className="prose prose-lg max-w-none text-dark/70 leading-relaxed whitespace-pre-wrap">
                 {story.content}
               </div>
+              <YouTubeEmbed url={story.videoUrl} title={story.title} />
             </motion.div>
           </div>
         </div>

@@ -1,5 +1,6 @@
 'use client'
 
+import { isOptionalYouTubeUrl } from '@/lib/youtube'
 import { useState } from 'react'
 import Image from 'next/image'
 import { motion } from 'framer-motion'
@@ -33,6 +34,7 @@ type Story = {
   featured: boolean
   image: string
   content: string
+  videoUrl: string
 }
 
 const defaultCategories = ['All', 'Success Stories', 'Events', 'Announcements', 'Volunteer Spotlights']
@@ -47,6 +49,7 @@ const emptyForm = {
   featured: false,
   image: '',
   content: '',
+  videoUrl: '',
 }
 
 const inputClasses =
@@ -110,6 +113,7 @@ export default function StoriesPage() {
       featured: story.featured,
       image: story.image,
       content: story.content,
+      videoUrl: story.videoUrl ?? '',
     })
     setEditingId(story.id)
     setFormOpen(true)
@@ -117,6 +121,10 @@ export default function StoriesPage() {
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (!isOptionalYouTubeUrl(form.videoUrl)) {
+      toast('Enter a valid YouTube video URL.', 'error')
+      return
+    }
     setSaving(true)
     try {
       const res = await fetch(editingId ? `/api/stories/${editingId}` : '/api/stories', {
@@ -492,6 +500,16 @@ export default function StoriesPage() {
 
           <section className="space-y-4">
             <SectionLabel>Organize</SectionLabel>
+            <label className={labelClasses}>
+              YouTube video URL (optional)
+              <input
+                className={inputClasses}
+                type="url"
+                value={form.videoUrl}
+                onChange={(e) => update('videoUrl', e.target.value)}
+                placeholder="https://www.youtube.com/watch?v=..."
+              />
+            </label>
             <div className="grid gap-4 sm:grid-cols-2">
               <Select
                 label="Category"

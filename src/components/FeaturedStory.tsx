@@ -53,19 +53,19 @@ export default function FeaturedStory({ initialSettings }: { initialSettings?: S
 
             {/* Floating quote */}
             {featured.quote && (
-            <div className="absolute -bottom-8 -right-4 lg:right-0 bg-white rounded-2xl p-7 border border-dark/10 max-w-xs">
-              <span className="block text-5xl font-serif leading-none text-lime">&ldquo;</span>
+            <div className="absolute -bottom-8 -right-4 lg:right-0 bg-white rounded-2xl p-4 border border-dark/10 max-w-[17rem]">
+              <span className="block text-3xl font-serif leading-none text-lime">&ldquo;</span>
               <p className="text-dark/60 italic text-sm leading-relaxed">
                 {featured.quote}
               </p>
-              <div className="mt-5 pt-4 border-t border-dark/10 flex items-center gap-3">
+              <div className="mt-3 pt-2 border-t border-dark/10 flex items-center gap-2">
                 {featured.quoteAvatar && (
                 <Image
                   src={featured.quoteAvatar}
                   alt={featured.quoteAuthor || ''}
-                  width={40}
-                  height={40}
-                  className="rounded-full object-cover"
+                  width={32}
+                  height={32}
+                  className="h-8 w-8 shrink-0 rounded-full object-cover"
                 />
                 )}
                 <div>

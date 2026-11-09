@@ -10,8 +10,10 @@ CREATE TABLE IF NOT EXISTS events (
   location TEXT NOT NULL DEFAULT '',
   category TEXT NOT NULL DEFAULT 'Community',
   status TEXT NOT NULL DEFAULT 'upcoming',
-  image_url TEXT NOT NULL DEFAULT ''
+  image_url TEXT NOT NULL DEFAULT '',
+  video_url TEXT NOT NULL DEFAULT ''
 );
+ALTER TABLE events ADD COLUMN IF NOT EXISTS video_url TEXT NOT NULL DEFAULT '';
 `
 
 let ready: Promise<void> | null = null

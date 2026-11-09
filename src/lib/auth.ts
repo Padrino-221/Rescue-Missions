@@ -1,8 +1,12 @@
 import type { NextAuthOptions } from 'next-auth'
 import CredentialsProvider from 'next-auth/providers/credentials'
+import { getServerSession } from 'next-auth'
 
-const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'admin@rescuemission.org'
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'RescueMission2024!'
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL?.trim()
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD
+const secret = process.env.NEXTAUTH_SECRET?.trim()
+
+export const adminAuthConfigured = Boolean(ADMIN_EMAIL && ADMIN_PASSWORD?.trim() && secret)
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -14,6 +18,8 @@ export const authOptions: NextAuthOptions = {
       },
       async authorize(credentials) {
         if (
+          adminAuthConfigured &&
+          ADMIN_EMAIL &&
           credentials?.email === ADMIN_EMAIL &&
           credentials?.password === ADMIN_PASSWORD
         ) {
@@ -49,5 +55,11 @@ export const authOptions: NextAuthOptions = {
       return session
     },
   },
-  secret: process.env.NEXTAUTH_SECRET || 'rescue-mission-secret-key-2024',
+  secret,
+}
+
+export async function getAdminSession() {
+  if (!adminAuthConfigured) return null
+  const session = await getServerSession(authOptions)
+  return (session?.user as { role?: string } | undefined)?.role === 'admin' ? session : null
 }

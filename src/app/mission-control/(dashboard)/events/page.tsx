@@ -15,6 +15,7 @@ import {
 } from 'react-icons/pi'
 import Modal from '@/components/dashboard/Modal'
 import Select from '@/components/ui/Select'
+import Input from '@/components/ui/Input'
 import ImageUpload from '@/components/ui/ImageUpload'
 import { useToast } from '@/components/ui/Toast'
 import { useAlert } from '@/components/ui/Alert'
@@ -29,6 +30,7 @@ interface Event {
   category: string
   status: string
   imageUrl: string
+  videoUrl: string
 }
 
 const defaultFormState = {
@@ -40,6 +42,7 @@ const defaultFormState = {
   category: 'Community',
   status: 'upcoming',
   imageUrl: '',
+  videoUrl: '',
 }
 
 const inputClasses =
@@ -116,6 +119,7 @@ export default function EventsPage() {
       category: event.category,
       status: event.status,
       imageUrl: event.imageUrl,
+      videoUrl: event.videoUrl ?? '',
     })
     setShowModal(true)
   }
@@ -542,6 +546,7 @@ export default function EventsPage() {
 
           <section className="space-y-4">
             <SectionLabel>Cover image</SectionLabel>
+            <Input label="YouTube video URL (optional)" type="url" value={formState.videoUrl} onChange={(e) => setFormState({ ...formState, videoUrl: e.target.value })} />
             <ImageUpload value={formState.imageUrl} onChange={(v) => setFormState({ ...formState, imageUrl: v })} folder="rescue-mission/events" label="Event Image" aspect={4 / 3} />
           </section>
         </div>

@@ -1,10 +1,11 @@
+import { isOptionalYouTubeUrl } from '@/lib/youtube'
 import { NextResponse } from 'next/server'
 import { query, readJson } from '@/lib/db'
 import { requireAuth } from '@/lib/api-auth'
 import { ensureEventsTable } from '@/lib/events'
 
 const EVENT_COLUMNS = `id, title, description, date, time, location, category, status,
-  image_url AS "imageUrl"`
+  image_url AS "imageUrl", video_url AS "videoUrl"`
 
 export async function GET() {
   try {
@@ -23,6 +24,9 @@ export async function POST(request: Request) {
 
   const body = await readJson(request)
   if (!body) return NextResponse.json({ error: 'Invalid body' }, { status: 400 })
+  if (body.videoUrl !== undefined && !isOptionalYouTubeUrl(body.videoUrl)) {
+    return NextResponse.json({ error: 'Enter a valid YouTube video URL' }, { status: 400 })
+  }
 
   const title = String(body.title ?? '')
   if (!title) return NextResponse.json({ error: 'Title is required' }, { status: 400 })
@@ -30,8 +34,8 @@ export async function POST(request: Request) {
   try {
     await ensureEventsTable()
     const rows = await query(
-      `INSERT INTO events (title, description, date, time, location, category, status, image_url)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8)
+      `INSERT INTO events (title, description, date, time, location, category, status, image_url, video_url)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
        RETURNING ${EVENT_COLUMNS}`,
       [
         title,
@@ -42,6 +46,7 @@ export async function POST(request: Request) {
         String(body.category ?? 'Community'),
         String(body.status ?? 'upcoming'),
         String(body.imageUrl ?? ''),
+        String(body.videoUrl ?? '').trim(),
       ]
     )
     return NextResponse.json(rows[0], { status: 201 })

@@ -1,3 +1,5 @@
+import { isOptionalYouTubeUrl } from '@/lib/youtube'
+import { ensureStoryVideoColumn } from '@/lib/stories'
 import { NextResponse } from 'next/server'
 import { query, updateRow, readJson } from '@/lib/db'
 import { requireAuth } from '@/lib/api-auth'
@@ -12,6 +14,7 @@ const EDIT_FIELDS = [
   'featured',
   'image',
   'content',
+  'videoUrl',
 ]
 
 type Params = { params: Promise<{ id: string }> }
@@ -20,9 +23,10 @@ export async function GET(_request: Request, { params }: Params) {
   const id = Number((await params).id)
   if (Number.isNaN(id)) return NextResponse.json({ error: 'Invalid id' }, { status: 400 })
 
+  await ensureStoryVideoColumn()
   const rows = await query(
     `SELECT id, title, excerpt, category, author, date, read_time AS "readTime",
-            featured, image, content
+            featured, image, content, video_url AS "videoUrl"
      FROM stories WHERE id = $1`,
     [id]
   )
@@ -40,6 +44,11 @@ export async function PATCH(request: Request, { params }: Params) {
     return NextResponse.json({ error: 'Invalid request' }, { status: 400 })
   }
 
+  if (body.videoUrl !== undefined && !isOptionalYouTubeUrl(body.videoUrl)) {
+    return NextResponse.json({ error: 'Enter a valid YouTube video URL' }, { status: 400 })
+  }
+
+  await ensureStoryVideoColumn()
   const row = await updateRow('stories', id, body, EDIT_FIELDS)
   if (!row) return NextResponse.json({ error: 'Not found' }, { status: 404 })
   return NextResponse.json(row)

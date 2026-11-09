@@ -1,5 +1,6 @@
 'use client'
 
+import YouTubeEmbed from '@/components/YouTubeEmbed'
 import { useState, useEffect } from 'react'
 import { useParams } from 'next/navigation'
 import Image from 'next/image'
@@ -24,6 +25,7 @@ interface Event {
   category: string
   status: 'upcoming' | 'completed'
   imageUrl: string
+  videoUrl?: string
 }
 
 export default function EventDetailPage() {
@@ -166,6 +168,7 @@ export default function EventDetailPage() {
               <p className="text-dark/70 leading-relaxed whitespace-pre-wrap">
                 {event.description}
               </p>
+              <YouTubeEmbed url={event.videoUrl} title={event.title} align="left" />
             </motion.div>
 
             {/* Right Column - Sidebar */}

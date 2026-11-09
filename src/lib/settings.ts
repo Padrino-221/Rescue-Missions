@@ -1,4 +1,6 @@
+import type { PoolClient } from 'pg'
 import { pool } from './db'
+import { youtubeId } from './youtube'
 
 export interface SiteSettings {
   general: {
@@ -116,6 +118,7 @@ export interface SiteSettings {
     volunteerDescription: string
     sponsorHeading: string
     sponsorDescription: string
+    sponsorshipVideoUrl?: string
     corporateHeading: string
     corporateDescription: string
   }
@@ -161,7 +164,7 @@ export interface SiteSettings {
       imageUrl: string
     }[]
   }
-  cta: { kicker: string; heading: string; description: string }
+  cta: { kicker: string; heading: string; description: string; videoUrl?: string }
 }
 
 function sanitizeString(value: string): string {
@@ -207,10 +210,15 @@ export async function getSettings(): Promise<SiteSettings> {
     await ensureSettingsTable()
     const rows = await pool.query('SELECT data FROM site_settings WHERE key = $1', ['main'])
     if (rows.rows.length > 0 && rows.rows[0].data) {
-      return rows.rows[0].data as SiteSettings
+      const settings = rows.rows[0].data as SiteSettings
+      const legacyVideoUrl = settings.cta?.videoUrl
+      if (settings.getInvolved?.sponsorshipVideoUrl === undefined && youtubeId(legacyVideoUrl)) {
+        settings.getInvolved = { ...settings.getInvolved, sponsorshipVideoUrl: legacyVideoUrl }
+      }
+      return loadLegacyEntries(settings, pool)
     }
   } catch {}
-  return {} as SiteSettings
+  return loadLegacyEntries({} as SiteSettings, pool).catch(() => ({} as SiteSettings))
 }
 
 function isPlainObject(value: unknown): value is Record<string, unknown> {
@@ -299,17 +307,64 @@ function normalizeSettings(value: unknown): unknown {
   return sanitized
 }
 
+async function loadLegacyEntries(settings: SiteSettings, db: Pick<PoolClient, 'query'>) {
+  if (Array.isArray(settings.programs?.items) && Array.isArray(settings.gallery?.items)) return settings
+
+  const { rows: [tables] } = await db.query<{ programs: string | null; gallery: string | null }>(
+    "SELECT to_regclass('programs') AS programs, to_regclass('gallery_items') AS gallery"
+  )
+  if (!Array.isArray(settings.programs?.items) && tables.programs) {
+    const { rows } = await db.query(
+      'SELECT id, title, subtitle, icon, description, status, beneficiaries FROM programs ORDER BY id'
+    )
+    if (rows.length) {
+      settings.programs = {
+        ...settings.programs,
+        items: rows.map((row) => ({
+          ...row,
+          id: String(row.id),
+          features: [],
+          impact: { beneficiaries: String(row.beneficiaries) },
+          image: '',
+        })) as SiteSettings['programs']['items'],
+      }
+    }
+  }
+  if (!Array.isArray(settings.gallery?.items) && tables.gallery) {
+    const { rows } = await db.query<SiteSettings['gallery']['items'][number]>(
+      'SELECT id, type, category, title, image, title AS alt FROM gallery_items ORDER BY id DESC'
+    )
+    if (rows.length) settings.gallery = { ...settings.gallery, items: rows }
+  }
+  return settings
+}
+
+export async function updateSettings<T>(update: (settings: SiteSettings) => T): Promise<T> {
+  await ensureSettingsTable()
+  const client = await pool.connect()
+  try {
+    await client.query('BEGIN')
+    await client.query("INSERT INTO site_settings (key, data) VALUES ('main', '{}') ON CONFLICT DO NOTHING")
+    const { rows } = await client.query<{ data: SiteSettings }>(
+      "SELECT data FROM site_settings WHERE key = 'main' FOR UPDATE"
+    )
+    const settings = await loadLegacyEntries(rows[0].data, client)
+    const result = update(settings)
+    await client.query("UPDATE site_settings SET data = $1 WHERE key = 'main'", [JSON.stringify(settings)])
+    await client.query('COMMIT')
+    return result
+  } catch (error) {
+    await client.query('ROLLBACK')
+    throw error
+  } finally {
+    client.release()
+  }
+}
+
 export async function saveSettings(settings: SiteSettings): Promise<void> {
-  const cleaned = normalizeSettings(settings) as SiteSettings
-  const existing = await getSettings()
-  const merged = deepMerge(
-    existing as unknown as Record<string, unknown>,
-    cleaned as unknown as Record<string, unknown>
-  )
-  const json = JSON.stringify(merged)
-  await pool.query(
-    `INSERT INTO site_settings (key, data) VALUES ('main', $1)
-     ON CONFLICT (key) DO UPDATE SET data = $1`,
-    [json]
-  )
+  const cleaned = normalizeSettings(settings) as Record<string, unknown>
+  await updateSettings((existing) => {
+    const merged = deepMerge(existing as unknown as Record<string, unknown>, cleaned)
+    Object.assign(existing, merged)
+  })
 }

@@ -1,5 +1,7 @@
 'use client'
 
+import YouTubeEmbed from '@/components/YouTubeEmbed'
+
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { PiHeartFill, PiUsers, PiBuilding, PiCheck } from 'react-icons/pi'
@@ -13,6 +15,45 @@ import type { SiteSettings } from '@/lib/settings'
 
 export default function GetInvolvedPage({ initialSettings }: { initialSettings?: SiteSettings | null }) {
   const [activeTab, setActiveTab] = useState('volunteer')
+  const [volunteerRole, setVolunteerRole] = useState('')
+  const [submitting, setSubmitting] = useState(false)
+  const [applicationStatus, setApplicationStatus] = useState<'success' | 'error' | null>(null)
+
+  async function submitApplication(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    const form = event.currentTarget
+    const fields = new FormData(form)
+    const phone = String(fields.get('phone') ?? '').trim()
+    const experience = String(fields.get('experience') ?? '').trim()
+    const message = [
+      volunteerRole && `Preferred role: ${volunteerRole}`,
+      phone && `Phone: ${phone}`,
+      experience,
+    ].filter(Boolean).join('\n\n')
+
+    setSubmitting(true)
+    setApplicationStatus(null)
+    try {
+      const response = await fetch('/api/contacts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: fields.get('name'),
+          email: fields.get('email'),
+          subject: 'Volunteer Application',
+          message,
+        }),
+      })
+      if (!response.ok) throw new Error('Submission failed')
+      form.reset()
+      setVolunteerRole('')
+      setApplicationStatus('success')
+    } catch {
+      setApplicationStatus('error')
+    } finally {
+      setSubmitting(false)
+    }
+  }
   const { settings, loading } = useSettings(initialSettings)
 
   const volunteerRoles = settings?.volunteerRoles ?? []
@@ -140,40 +181,58 @@ export default function GetInvolvedPage({ initialSettings }: { initialSettings?:
               
               <div className="card-premium p-8">
                 <h3 className="text-xl font-serif text-dark mb-6">Volunteer Application</h3>
-                <form className="space-y-4">
+                <form className="space-y-4" onSubmit={submitApplication}>
                   <Input
                     label="Full Name"
                     type="text"
+                    name="name"
+                    maxLength={150}
+                    required
                     placeholder="Your name"
                   />
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <Input
                       label="Email"
                       type="email"
+                      name="email"
+                      maxLength={254}
+                      required
                       placeholder="email@example.com"
                     />
                     <Input
                       label="Phone"
                       type="tel"
+                      name="phone"
+                      maxLength={50}
                       placeholder="+1 234 567 890"
                     />
                   </div>
                   <Select
                     label="Preferred Role"
                     placeholder="Select a role"
+                    value={volunteerRole}
+                    onChange={setVolunteerRole}
                     options={volunteerRoles.map((role) => ({ label: role.title, value: role.title }))}
                   />
                   <Textarea
                     label="Tell us about yourself"
                     rows={4}
+                    name="experience"
+                    maxLength={4500}
+                    required
                     placeholder="Share your experience and motivation..."
                   />
                   <button
                     type="submit"
+                    disabled={submitting}
                     className="btn-primary w-full"
                   >
-                    Submit Application
+                    {submitting ? 'Submitting…' : 'Submit Application'}
                   </button>
+                  <p role="status" className="text-sm text-dark/70">
+                    {applicationStatus === 'success' && 'Your application was sent. Thank you for volunteering.'}
+                    {applicationStatus === 'error' && 'We could not send your application. Check your details and try again.'}
+                  </p>
                 </form>
               </div>
             </motion.div>
@@ -236,6 +295,7 @@ export default function GetInvolvedPage({ initialSettings }: { initialSettings?:
                     </div>
                   ))}
                 </div>
+                <YouTubeEmbed url={gi?.sponsorshipVideoUrl} title="For Sponsorship" />
               </div>
             </motion.div>
           )}

@@ -1,10 +1,11 @@
+import { isOptionalYouTubeUrl } from '@/lib/youtube'
 import { NextResponse } from 'next/server'
 import { query, updateRow, readJson } from '@/lib/db'
 import { requireAuth } from '@/lib/api-auth'
 import { ensureEventsTable } from '@/lib/events'
 
 const EVENT_COLUMNS = `id, title, description, date, time, location, category, status,
-  image_url AS "imageUrl"`
+  image_url AS "imageUrl", video_url AS "videoUrl"`
 
 const EDIT_FIELDS = [
   'title',
@@ -15,6 +16,7 @@ const EDIT_FIELDS = [
   'category',
   'status',
   'imageUrl',
+  'videoUrl',
 ]
 
 type Params = { params: Promise<{ id: string }> }
@@ -45,6 +47,10 @@ export async function PATCH(request: Request, { params }: Params) {
   const body = await readJson(request)
   if (!body || Number.isNaN(id)) {
     return NextResponse.json({ error: 'Invalid request' }, { status: 400 })
+  }
+
+  if (body.videoUrl !== undefined && !isOptionalYouTubeUrl(body.videoUrl)) {
+    return NextResponse.json({ error: 'Enter a valid YouTube video URL' }, { status: 400 })
   }
 
   try {

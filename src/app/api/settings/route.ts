@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { getSettings, saveSettings } from '@/lib/settings'
 import { requireAuth } from '@/lib/api-auth'
+import { isOptionalYouTubeUrl } from '@/lib/youtube'
 
 export const dynamic = 'force-dynamic'
 
@@ -20,6 +21,10 @@ export async function PUT(request: Request) {
 
   try {
     const settings = await request.json()
+    const videoUrl = settings?.getInvolved?.sponsorshipVideoUrl
+    if (videoUrl !== undefined && !isOptionalYouTubeUrl(videoUrl)) {
+      return NextResponse.json({ error: 'Enter a valid YouTube video URL' }, { status: 400 })
+    }
     await saveSettings(settings)
     return NextResponse.json({ success: true })
   } catch (error) {

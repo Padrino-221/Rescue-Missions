@@ -34,7 +34,8 @@ CREATE TABLE IF NOT EXISTS stories (
   read_time TEXT NOT NULL DEFAULT '',
   featured BOOLEAN NOT NULL DEFAULT FALSE,
   image TEXT NOT NULL DEFAULT '',
-  content TEXT NOT NULL DEFAULT ''
+  content TEXT NOT NULL DEFAULT '',
+  video_url TEXT NOT NULL DEFAULT ''
 );
 
 CREATE TABLE IF NOT EXISTS contacts (
@@ -74,7 +75,8 @@ CREATE TABLE IF NOT EXISTS events (
   location TEXT NOT NULL DEFAULT '',
   category TEXT NOT NULL DEFAULT 'Community',
   status TEXT NOT NULL DEFAULT 'upcoming',
-  image_url TEXT NOT NULL DEFAULT ''
+  image_url TEXT NOT NULL DEFAULT '',
+  video_url TEXT NOT NULL DEFAULT ''
 );
 
 CREATE TABLE IF NOT EXISTS settings (
